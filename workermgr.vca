@@ -99,7 +99,6 @@ Quit
 ENDPROC
 PROCEDURE Init
 _VFP.Caption = "ParallelFox Worker"
-_VFP.Visible = .t.
 * Set Unattended mode unless in debug mode
 If _VFP.StartMode <> 0
 	Sys(2335,0)
