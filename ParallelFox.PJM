@@ -1,0 +1,29 @@
+Version=  1.20
+Author=
+Company=
+Address=
+City=
+State=
+Zip=
+Country=
+SaveCode=.T.
+Debug=.T.
+Encrypt=.F.
+NoLogo=.F.
+CommentStyle=1
+Comments=
+CompanyName= 
+FileDescription= 
+LegalCopyright=
+LegalTrademarks=
+ProductName= 
+Major=0
+Minor=5
+Revision=0
+AutoIncrement=.F.
+[OLEServers]
+C:\VFPX\ParallelFox\parallelfox.exe,parallelfox,parallelfox,parallelfox Type Library,0,{59DFDB10-DA6C-421F-93B8-CA92AD163223}
+workermgr,c:\vfpx\parallelfox\workermgr.vcx,parallelfox.workermgr,0,parallelfox.workermgr,,1,{111E172D-0E4A-4D47-9218-FA33345211B4},{21D2FA45-748E-4FC7-9712-5C816E9B2ADD}
+[OLEServersEnd]
+[ProjectFiles]
+[EOF]
