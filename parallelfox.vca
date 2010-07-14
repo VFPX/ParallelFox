@@ -1,0 +1,1187 @@
+SccTextX Version 1.0.0.1
+PLATFORM C(8,0),UNIQUEID C(10,0),TIMESTAMP N(10,0),CLASS M(4,0),CLASSLOC M(4,0),BASECLASS M(4,0),OBJNAME M(4,0),PARENT M(4,0),PROPERTIES M(4,0),PROTECTED M(4,0),METHODS M(4,0),OBJCODE M(4,0),OLE M(4,0),OLE2 M(4,0),RESERVED1 M(4,0),RESERVED2 M(4,0),RESERVED3 M(4,0),RESERVED4 M(4,0),RESERVED5 M(4,0),RESERVED6 M(4,0),RESERVED7 M(4,0),RESERVED8 M(4,0),USER M(4,0)
+1252
+
+[ RECORD]
+[PLATFORM] COMMENT 
+[UNIQUEID] Class     
+[START RESERVED1]
+VERSION =   3.00[END RESERVED1]
+
+[ RECORD]
+[PLATFORM] WINDOWS 
+[UNIQUEID] _2XP193DS4
+[CLASS] custom
+[BASECLASS] custom
+[OBJNAME] amanager
+[START PROPERTIES]
+
+Name = "amanager"
+_memberdata =      271<VFPData><memberdata name="createparameterobject" display="CreateParameterObject"/><memberdata name="createparameterclause" display="CreateParameterClause"/><memberdata name="aarraycopy" display="aArrayCopy"/><memberdata name="copyarray" display="CopyArray"/></VFPData>
+[END PROPERTIES]
+[START METHODS]
+PROCEDURE copyarray
+* Copy array to worker.
+* ACOPY doesn't work when run from worker on array that is COM object property.
+* Must pass array as parameter to worker.
+Lparameters laArray
+
+Debugout Time(0), Program()
+
+Acopy(laArray, This.aArrayCopy)
+
+ENDPROC
+PROCEDURE createparameterclause
+* Convert parameter object into variables
+* Pass in parameter variables by reference ("out" variables)
+Lparameters loParameters, tPar1, tPar2, tPar3, tPar4, tPar5, tPar6, ;
+	tPar7, tPar8, tPar9, tPar10, tPar11, tPar12, tPar13, ;
+	tPar14, tPar15, tPar16, tPar17, tPar18, tPar19, tPar20, ;
+	tPar21, tPar22, tPar23, tPar24, tPar25
+Local lnPCount, lnParameter, lcParameter, lcParameterClause
+
+Debugout Time(0), Program()
+
+* Convert array to parameters and parameter clause
+lcParameterClause = ""
+lnPCount = loParameters.nPCount
+For lnParameter = 1 to lnPCount
+	lcParameter = "tPar" + Transform(lnParameter)
+	
+	* Build parameter clause
+	If !Empty(lcParameterClause)
+		lcParameterClause = lcParameterClause + ", "
+	EndIf 
+	If loParameters.IsArray(lcParameter)
+		* Arrays have to be copied from object property and passed by reference
+		loParameters.CopyArray(lcParameter, This)
+		Dimension &lcParameter.[1]
+		Acopy(This.aArrayCopy, &lcParameter)
+		lcParameterClause = lcParameterClause + "@" + lcParameter
+	Else
+		&lcParameter = loParameters.&lcParameter
+		lcParameterClause = lcParameterClause + lcParameter
+	EndIf 
+EndFor 
+
+Return lcParameterClause
+
+
+ENDPROC
+PROCEDURE createparameterobject
+* Convert parameters into parameter object
+* Pass in all parameters by reference in case any are arrays.
+Lparameters lnPCount, tPar1, tPar2, tPar3, tPar4, tPar5, tPar6, ;
+	tPar7, tPar8, tPar9, tPar10, tPar11, tPar12, tPar13, ;
+	tPar14, tPar15, tPar16, tPar17, tPar18, tPar19, tPar20, ;
+	tPar21, tPar22, tPar23, tPar24, tPar25
+Local lnParameter, lcParameter, loParameters as Parameters of ParallelFox.vcx, lvValue
+
+Debugout Time(0), Program()
+
+loParameters = NewObject("Parameters","ParallelFox.vcx")
+loParameters.nPCount = lnPCount
+* AddProperty(loParameters, "nPCount", lnPCount)
+
+* Create array of serialized parameters 
+For lnParameter = 1 to lnPCount
+	lcParameter = "tPar" + Transform(lnParameter)
+	If Type(lcParameter, 1) = "A"
+		* Arrays have to be copied to object property
+		AddProperty(loParameters, lcParameter + "[1]")
+		Acopy(&lcParameter, loParameters.&lcParameter)
+	Else 
+		AddProperty(loParameters, lcParameter)
+		loParameters.&lcParameter = Evaluate(lcParameter)
+	EndIf 
+EndFor 
+	
+Return loParameters
+ENDPROC
+[END METHODS]
+[START RESERVED1]
+Class[END RESERVED1]
+[START RESERVED2]
+1[END RESERVED2]
+[START RESERVED3]
+*copyarray Copy array.
+*createparameterclause Create parameter clause from parameter object.
+*createparameterobject 
+^aarraycopy[1,0] 
+_memberdata XML Metadata for customizable properties
+[END RESERVED3]
+[START RESERVED6]
+Pixels[END RESERVED6]
+
+[ RECORD]
+[PLATFORM] COMMENT 
+[UNIQUEID] RESERVED  
+[OBJNAME] amanager
+
+[ RECORD]
+[PLATFORM] WINDOWS 
+[UNIQUEID] _2YT0NV2N3
+[CLASS] custom
+[BASECLASS] custom
+[OBJNAME] command
+[START PROPERTIES]
+Name = "command"
+_memberdata =      419<VFPData><memberdata name="ccommandtype" display="cCommandType"/><memberdata name="ccommand" display="cCommand"/><memberdata name="cclass" display="cClass"/><memberdata name="cmodule" display="cModule"/><memberdata name="oparameters" display="oParameters"/><memberdata name="nworker" display="nWorker"/><memberdata name="oevents" display="oEvents"/><memberdata name="cinapplication" display="cInApplication"/></VFPData>
+cclass = 
+ccommand = 
+ccommandtype = 
+cinapplication = 
+cmodule = 
+nworker = 0
+oevents = .NULL.
+oparameters = .NULL.
+[END PROPERTIES]
+[START RESERVED1]
+Class[END RESERVED1]
+[START RESERVED2]
+1[END RESERVED2]
+[START RESERVED3]
+_memberdata XML Metadata for customizable properties
+cclass Class containing command (if applicable).
+ccommand Command.
+ccommandtype Command type.
+cinapplication Application containing class library.
+cmodule Module/Class Library containing command (if applicable).
+nworker Specifies which worker to run on.  0 means next available. Used to run a command on all workers.
+oevents Events object.
+oparameters Parameter object.
+[END RESERVED3]
+[START RESERVED6]
+Pixels[END RESERVED6]
+
+[ RECORD]
+[PLATFORM] COMMENT 
+[UNIQUEID] RESERVED  
+[OBJNAME] command
+
+[ RECORD]
+[PLATFORM] WINDOWS 
+[UNIQUEID] _2YX0JA1AX
+[CLASS] custom
+[BASECLASS] custom
+[OBJNAME] events
+[START PROPERTIES]
+
+Name = "events"
+_memberdata =      353<VFPData><memberdata name="ncommands" display="nCommands"/><memberdata name="complete" display="Complete"/><memberdata name="updateprogress" display="UpdateProgress"/><memberdata name="returndata" display="ReturnData"/><memberdata name="returnerror" display="ReturnError"/><memberdata name="updatecommandcount" display="UpdateCommandCount"/></VFPData>
+ncommands = 0
+[END PROPERTIES]
+[START METHODS]
+PROCEDURE complete
+Lparameters lvReturn
+
+Debugout Time(0), Program(), lvReturn
+
+This.nCommands = This.nCommands - 1 
+
+ENDPROC
+PROCEDURE returndata
+* Fires when Worker.ReturnData() is called on worker.
+Lparameters tPar1, tPar2, tPar3, tPar4, tPar5, tPar6, ;
+	tPar7, tPar8, tPar9, tPar10, tPar11, tPar12, tPar13, ;
+	tPar14, tPar15, tPar16, tPar17, tPar18, tPar19, tPar20, ;
+	tPar21, tPar22, tPar23, tPar24, tPar25, tPar26
+	
+Debugout Time(0), Program(), tPar1, tPar2, tPar3, tPar4, tPar5, tPar6, ;
+	tPar7, tPar8, tPar9, tPar10, tPar11, tPar12, tPar13, ;
+	tPar14, tPar15, tPar16, tPar17, tPar18, tPar19, tPar20, ;
+	tPar21, tPar22, tPar23, tPar24, tPar25, tPar26
+ENDPROC
+PROCEDURE returnerror
+* Return error to main process
+LPARAMETERS lnError, lcMethod, lnLine, lcMessage, lcCode
+
+Debugout Time(0), Program(), lnError, lcMethod, lnLine, lcMessage, lcCode
+
+This.nCommands = This.nCommands - 1 
+
+
+ENDPROC
+PROCEDURE updatecommandcount
+* Update number of commands currently running.
+Lparameters llAllWorkers
+Local lnCommands
+
+If llAllWorkers
+	lnCommands = _Screen.ParPoolMgr.nWorkerCount
+Else
+	lnCommands = 1
+EndIf 
+
+This.nCommands = This.nCommands + lnCommands
+
+ENDPROC
+PROCEDURE updateprogress
+* Send progress update to main process
+Lparameters lnProgress, lcMessage
+
+Debugout Time(0), Program(), lnProgress, lcMessage
+ENDPROC
+[END METHODS]
+[START RESERVED1]
+Class[END RESERVED1]
+[START RESERVED2]
+1[END RESERVED2]
+[START RESERVED3]
+*complete Fires when worker has finished executing command.
+*returndata Fires when Worker.ReturnData() is called on worker.
+*returnerror Return error to main process.
+*updatecommandcount Update number of commands currently running.
+*updateprogress Fires when Worker.UpdateProgress() is called on worker.
+_memberdata XML Metadata for customizable properties
+ncommands Number of commands currently queued or running.
+[END RESERVED3]
+[START RESERVED6]
+Pixels[END RESERVED6]
+
+[ RECORD]
+[PLATFORM] COMMENT 
+[UNIQUEID] RESERVED  
+[OBJNAME] events
+
+[ RECORD]
+[PLATFORM] WINDOWS 
+[UNIQUEID] _2XO1B7PVN
+[CLASS] custom
+[BASECLASS] custom
+[OBJNAME] parallel
+[START PROPERTIES]
+Name = "parallel"
+_events = NULL
+_memberdata =      753<VFPData><memberdata name="do" display="Do"/><memberdata name="startworkers" display="StartWorkers"/><memberdata name="cpucount" display="CPUCount"/><memberdata name="setworkercount" display="SetWorkerCount"/><memberdata name="docmd" display="DoCmd"/><memberdata name="execscript" display="ExecScript"/><memberdata name="call" display="Call"/><memberdata name="bindevent" display="BindEvent"/><memberdata name="wait" display="Wait"/><memberdata name="_events" display="_Events"/><memberdata name="callmethod" display="CallMethod"/><memberdata name="stopworkers" display="StopWorkers"/><memberdata name="onerror" display="OnError"/><memberdata name="clearqueue" display="ClearQueue"/><memberdata name="setworkerclass" display="SetWorkerClass"/></VFPData>
+cpucount = 0
+[END PROPERTIES]
+[START METHODS]
+PROCEDURE Destroy
+Debugout Time(0), Program()
+
+UnBindEvents(This)
+
+ENDPROC
+PROCEDURE Init
+* Instantiate parallel pool manager
+If Type("_Screen.ParPoolMgr") <> "O" or IsNull(_Screen.ParPoolMgr)
+	_Screen.NewObject("ParPoolMgr", "ParPoolMgr", "ParallelFox.vcx")
+EndIf 
+
+This.CPUCount = _Screen.ParPoolMgr.nCPUCount
+
+This._Events = NewObject("Events", "ParallelFox.vcx")
+This.BindEvent("ReturnError", _Screen.ParPoolMgr, "HandleError")
+
+ENDPROC
+PROCEDURE bindevent
+* Bind to worker events
+Lparameters cEvent, oEventHandler, cDelegate, nFlags
+
+Debugout Time(0), Program(), cEvent, cDelegate
+
+cEvent = Alltrim(cEvent)
+nFlags = Evl(nFlags, 0)
+
+* Unbind global error handler if overriding
+If Upper(cEvent) = "RETURNERROR"
+	UnBindEvents(This._Events, "ReturnError", _Screen.ParPoolMgr, "HandleError")
+EndIf 
+
+BindEvent(This._Events, cEvent, oEventHandler, cDelegate, nFlags)
+
+
+ENDPROC
+PROCEDURE call
+* Execute program on worker
+Lparameters cFunction, lAllWorkers, tPar1, tPar2, tPar3, tPar4, tPar5, tPar6, ;
+	tPar7, tPar8, tPar9, tPar10, tPar11, tPar12, tPar13, ;
+	tPar14, tPar15, tPar16, tPar17, tPar18, tPar19, tPar20, ;
+	tPar21, tPar22, tPar23, tPar24
+Local loParameters
+
+Debugout Time(0), Program(), cFunction, lAllWorkers, tPar1, tPar2, tPar3, tPar4, tPar5, tPar6, ;
+	tPar7, tPar8, tPar9, tPar10, tPar11, tPar12, tPar13, ;
+	tPar14, tPar15, tPar16, tPar17, tPar18, tPar19, tPar20, ;
+	tPar21, tPar22, tPar23, tPar24
+	
+This._Events.UpdateCommandCount(lAllWorkers)
+	
+loParameters = _Screen.ParPoolMgr.CreateParameterObject(Pcount()-2, @tPar1, @tPar2, @tPar3, @tPar4, ;
+	@tPar5, @tPar6, @tPar7, @tPar8, @tPar9, @tPar10, @tPar11, ;
+	@tPar12, @tPar13, @tPar14, @tPar15, @tPar16, @tPar17, @tPar18, ;
+	@tPar19, @tPar20, @tPar21, @tPar22, @tPar23, @tPar24)
+	
+_Screen.ParPoolMgr.QueueCommand("Call", cFunction,,,,loParameters, lAllWorkers, This._Events)
+
+
+ENDPROC
+PROCEDURE callmethod
+* Execute/call class method on worker.
+Lparameters cMethod, cClassName, cModule, cInApplication, lAllWorkers, ;
+	tPar1, tPar2, tPar3, tPar4, tPar5, tPar6, ;
+	tPar7, tPar8, tPar9, tPar10, tPar11, tPar12, tPar13, ;
+	tPar14, tPar15, tPar16, tPar17, tPar18, tPar19, tPar20, ;
+	tPar21
+Local loParameters
+
+Debugout Time(0), Program(), cMethod, cClassName, cModule, cInApplication, lAllWorkers, ;
+	tPar1, tPar2, tPar3, tPar4, tPar5, tPar6, ;
+	tPar7, tPar8, tPar9, tPar10, tPar11, tPar12, tPar13, ;
+	tPar14, tPar15, tPar16, tPar17, tPar18, tPar19, tPar20, ;
+	tPar21
+	
+This._Events.UpdateCommandCount(lAllWorkers)
+	
+loParameters = _Screen.ParPoolMgr.CreateParameterObject(Pcount()-5, @tPar1, @tPar2, @tPar3, @tPar4, ;
+	@tPar5, @tPar6, @tPar7, @tPar8, @tPar9, @tPar10, @tPar11, ;
+	@tPar12, @tPar13, @tPar14, @tPar15, @tPar16, @tPar17, @tPar18, ;
+	@tPar19, @tPar20, @tPar21)
+	
+_Screen.ParPoolMgr.QueueCommand("CallMethod", cMethod, cClassName, cModule, cInApplication, ;
+	loParameters, lAllWorkers, This._Events)
+
+ENDPROC
+PROCEDURE clearqueue
+* Remove all pending commands from queue.
+
+Debugout Time(0), Program()
+
+_Screen.ParPoolMgr.ClearQueue()
+ENDPROC
+PROCEDURE do
+* Execute program on worker
+Lparameters cPRG, cInProgram, lAllWorkers, tPar1, tPar2, tPar3, tPar4, tPar5, tPar6, ;
+	tPar7, tPar8, tPar9, tPar10, tPar11, tPar12, tPar13, ;
+	tPar14, tPar15, tPar16, tPar17, tPar18, tPar19, tPar20, ;
+	tPar21, tPar22, tPar23
+Local loParameters
+
+Debugout Time(0), Program(), cPRG, cInProgram, lAllWorkers, tPar1, tPar2, tPar3, tPar4, tPar5, tPar6, ;
+	tPar7, tPar8, tPar9, tPar10, tPar11, tPar12, tPar13, ;
+	tPar14, tPar15, tPar16, tPar17, tPar18, tPar19, tPar20, ;
+	tPar21, tPar22, tPar23
+
+This._Events.UpdateCommandCount(lAllWorkers)
+	
+loParameters = _Screen.ParPoolMgr.CreateParameterObject(Pcount()-3, @tPar1, @tPar2, @tPar3, @tPar4, ;
+	@tPar5, @tPar6, @tPar7, @tPar8, @tPar9, @tPar10, @tPar11, ;
+	@tPar12, @tPar13, @tPar14, @tPar15, @tPar16, @tPar17, @tPar18, ;
+	@tPar19, @tPar20, @tPar21, @tPar22, @tPar23)
+	
+_Screen.ParPoolMgr.QueueCommand("Do", cPRG, cInProgram,,,loParameters, lAllWorkers, This._Events)
+
+ENDPROC
+PROCEDURE docmd
+Lparameters cCommand, lAllWorkers
+
+Debugout Time(0), Program(), cCommand, lAllWorkers
+
+This._Events.UpdateCommandCount(lAllWorkers)
+	
+_Screen.ParPoolMgr.QueueCommand("DoCmd", cCommand,,,,, lAllWorkers, This._Events)
+ENDPROC
+PROCEDURE execscript
+* Execute script on worker
+Lparameters cScript, lAllWorkers, tPar1, tPar2, tPar3, tPar4, tPar5, tPar6, ;
+	tPar7, tPar8, tPar9, tPar10, tPar11, tPar12, tPar13, ;
+	tPar14, tPar15, tPar16, tPar17, tPar18, tPar19, tPar20, ;
+	tPar21, tPar22, tPar23, tPar24
+Local loParameters
+
+Debugout Time(0), Program(), "(Script)", lAllWorkers, tPar1, tPar2, tPar3, tPar4, tPar5, tPar6, ;
+	tPar7, tPar8, tPar9, tPar10, tPar11, tPar12, tPar13, ;
+	tPar14, tPar15, tPar16, tPar17, tPar18, tPar19, tPar20, ;
+	tPar21, tPar22, tPar23, tPar24
+	
+This._Events.UpdateCommandCount(lAllWorkers)
+	
+loParameters = _Screen.ParPoolMgr.CreateParameterObject(Pcount()-2, @tPar1, @tPar2, @tPar3, @tPar4, ;
+	@tPar5, @tPar6, @tPar7, @tPar8, @tPar9, @tPar10, @tPar11, ;
+	@tPar12, @tPar13, @tPar14, @tPar15, @tPar16, @tPar17, @tPar18, ;
+	@tPar19, @tPar20, @tPar21, @tPar22, @tPar23, @tPar24)
+	
+_Screen.ParPoolMgr.QueueCommand("ExecScript", cScript,,,,loParameters, lAllWorkers, This._Events)
+
+
+ENDPROC
+PROCEDURE onerror
+Lparameters cOnErrorCommand
+
+Debugout Time(0), Program(), cOnErrorCommand
+
+_Screen.ParPoolMgr.cOnError = cOnErrorCommand
+ENDPROC
+PROCEDURE setworkerclass
+* Change worker class from default. lcClass and lcLibrary are used in debug mode.
+Lparameters cCOMProgID, cClass, cLibrary
+
+Debugout Time(0), Program(), cCOMProgID, cClass, cLibrary
+
+_Screen.ParPoolMgr.cWorkerCOMProgID = cCOMProgID
+_Screen.ParPoolMgr.cWorkerClass = cClass
+_Screen.ParPoolMgr.cWorkerLibrary = cLibrary
+ENDPROC
+PROCEDURE setworkercount
+* Set number of workers. 
+* Defaults to CPU count. 
+* Set before starting workers.
+* TODO: Add support for separate count for Terminal Server
+Lparameters nWorkerCount
+
+Debugout Time(0), Program(), nWorkerCount
+
+_Screen.ParPoolMgr.nWorkerCount = Max(Round(nWorkerCount, 0), 1)
+
+ENDPROC
+PROCEDURE startworkers
+* Start worker processes
+* Same EXE is used for all workers
+Lparameters cProcedureFile, cDirectory, lDebugMode
+
+Debugout Time(0), Program(), cProcedureFile, cDirectory, lDebugMode
+
+_Screen.ParPoolMgr.StartWorkers(cProcedureFile, cDirectory, lDebugMode)
+ENDPROC
+PROCEDURE stopworkers
+* Stop worker processes
+* Pass .T. to stop worker processes immediately. Otherwise, existing commands will finish first.
+Lparameters lStopImmediately
+
+Debugout Time(0), Program(), lStopImmediately
+
+If lStopImmediately
+	_Screen.ParPoolMgr.StopWorkers()
+Else
+	_Screen.ParPoolMgr.QueueCommand("StopWorkers")
+EndIf 
+ENDPROC
+PROCEDURE wait
+* Wait until workers have finished processing queued commands.
+
+Debugout Time(0), Program(), "Start"
+
+Local lnKey
+Do while This._Events.nCommands > 0 and _Screen.ParPoolMgr.nBusyWorkers > 0
+	* Sleep() blocks worker processes, so use INKEY() to wait
+	lnKey = Inkey(.1, "H")
+	* ON Escape doesn't work during INKEY() and VFP can appear locked up.
+	* CTRL+X will force exit from Wait.
+	If lnKey = 24
+		Exit 
+	EndIf 
+EndDo 
+
+Debugout Time(0), Program(), "Complete"
+ENDPROC
+[END METHODS]
+[START RESERVED1]
+Class[END RESERVED1]
+[START RESERVED2]
+1[END RESERVED2]
+[START RESERVED3]
+*bindevent Bind to worker events: "Complete", "UpdateProgress", "ReturnData", "ReturnError".
+*call Execute/call function on worker.
+*callmethod Execute/call class method on worker.
+*clearqueue Remove all pending commands from queue.
+*do Execute program on worker.
+*docmd Execute single command on worker.
+*execscript Execute script on worker.
+*onerror Set up global handler for worker errors. Available variables are nError, cMethod, nLine, cMessage, cCode. Example: Parallel.OnError("Do MyErrorHandler with nError, cMethod, nLine, cMessage, cCode")
+*setworkerclass Change worker class from default. lcClass and lcLibrary are used in debug mode.
+*setworkercount Set number of workers. Defaults to CPU count. Set before starting workers.
+*startworkers Start worker processes.
+*stopworkers Stop worker processes.
+*wait Wait until workers have finished processing queued commands.
+_events Use Parallel.BindEvent().
+_memberdata XML Metadata for customizable properties
+cpucount Number of logical processors on machine.
+[END RESERVED3]
+[START RESERVED6]
+Pixels[END RESERVED6]
+
+[ RECORD]
+[PLATFORM] COMMENT 
+[UNIQUEID] RESERVED  
+[OBJNAME] parallel
+
+[ RECORD]
+[PLATFORM] WINDOWS 
+[UNIQUEID] _2YX10COEF
+[CLASS] custom
+[BASECLASS] custom
+[OBJNAME] parameters
+[START PROPERTIES]
+Name = "parameters"
+_memberdata = <VFPData><memberdata name="npcount" display="nPCount"/><memberdata name="isarray" display="IsArray"/><memberdata name="copyarray" display="CopyArray"/></VFPData>
+npcount = 0
+[END PROPERTIES]
+[START METHODS]
+PROCEDURE copyarray
+* Copy array to worker.
+* ACOPY doesn't work when run from worker on array that is COM object property.
+* Must pass array as parameter to worker.
+Lparameters lcParameter, loManager as aManager of ParallelFox.vcx
+Local lcArray
+Local array laTemp[1]
+
+lcArray = "This." + lcParameter
+Acopy(&lcArray, laTemp)
+
+loManager.CopyArray(@laTemp)
+ENDPROC
+PROCEDURE isarray
+* Returns .T. if specified parameter is an array.
+* Type("aArray", 1) does not work when called from worker.
+Lparameters lcParameter
+Local llIsArray
+
+lcParameter = "This." + lcParameter
+llIsArray = (Type(lcParameter, 1) = "A")
+
+Return llIsArray
+
+ENDPROC
+[END METHODS]
+[START RESERVED1]
+Class[END RESERVED1]
+[START RESERVED2]
+1[END RESERVED2]
+[START RESERVED3]
+*copyarray Copy array to worker.
+*isarray Returns .T. if specified parameter is an array.
+_memberdata XML Metadata for customizable properties
+npcount Number of parameters.
+[END RESERVED3]
+[START RESERVED6]
+Pixels[END RESERVED6]
+
+[ RECORD]
+[PLATFORM] COMMENT 
+[UNIQUEID] RESERVED  
+[OBJNAME] parameters
+
+[ RECORD]
+[PLATFORM] WINDOWS 
+[UNIQUEID] _2XP17XKBP
+[CLASS] amanager
+[CLASSLOC] parallelfox.vcx
+[BASECLASS] custom
+[OBJNAME] parpoolmgr
+[START PROPERTIES]
+
+Name = "parpoolmgr"
+_memberdata =      947<VFPData><memberdata name="ncpucount" display="nCPUCount"/><memberdata name="nworkercount" display="nWorkerCount"/><memberdata name="startworkers" display="StartWorkers"/><memberdata name="workers" display="Workers"/><memberdata name="nbusyworkers" display="nBusyWorkers"/><memberdata name="queuecommand" display="QueueCommand"/><memberdata name="processqueue" display="ProcessQueue"/><memberdata name="commandqueue" display="CommandQueue"/><memberdata name="ldebugmode" display="lDebugMode"/><memberdata name="stopworkers" display="StopWorkers"/><memberdata name="handleerror" display="HandleError"/><memberdata name="conerror" display="cOnError"/><memberdata name="clearqueue" display="ClearQueue"/><memberdata name="cworkercomprogid" display="cWorkerCOMProgID"/><memberdata name="cworkerclass" display="cWorkerClass"/><memberdata name="cworkerlibrary" display="cWorkerLibrary"/><memberdata name="nprocessing" display="nProcessing"/></VFPData>
+commandqueue = 
+conerror = 
+cworkerclass = WorkerMgr
+cworkercomprogid = ParallelFox.WorkerMgr
+cworkerlibrary = WorkerMgr.vcx
+ldebugmode = .F.
+nbusyworkers = 0
+ncpucount = 0
+nprocessing = 0
+nworkercount = 0
+workers = .NULL.
+[END PROPERTIES]
+[START PROTECTED]
+ldebugmode
+nprocessing
+[END PROTECTED]
+[START METHODS]
+PROCEDURE Init
+* Number of logical processors on machine.
+This.nCPUCount = Evl(Val(GetEnv("NUMBER_OF_PROCESSORS")), 1)
+This.nWorkerCount = This.nCPUCount
+
+This.Workers = CreateObject("Collection")
+This.CommandQueue = CreateObject("Collection")
+
+Return DoDefault()
+ENDPROC
+PROCEDURE clearqueue
+* Remove all pending commands from queue.
+
+Debugout Time(0), Program()
+
+This.CommandQueue = NULL
+This.CommandQueue = CreateObject("Collection")
+
+ENDPROC
+PROCEDURE handleerror
+* Global error handler. Set up with Parallel.OnError()
+Lparameters nError, cMethod, nLine, cMessage, cCode
+Local lcOnError
+
+Debugout Time(0), Program(), nError, cMethod, nLine, cMessage, cCode
+
+lcOnError = This.cOnError
+&lcOnError
+
+ENDPROC
+PROCEDURE processqueue
+Local lnCommands, lnCommand, loWorkerProxy as WorkerProxy of ParallelFox.vcx, ;
+	lnCommandNum, llSendCommand, lnWorker
+
+* This method can be interrupted and called again by worker events
+* Make sure it completely finishes before calling again
+This.nProcessing = This.nProcessing + 1 
+If This.nProcessing > 1
+	* Queue is currently being processed, so set flag to process again and return
+	Debugout Time(0), Program(), "Already processing. Will process again."	
+	Return
+EndIf 
+
+* Stop workers
+If This.nBusyWorkers = 0 and This.CommandQueue.Count = 1 ;
+		and Upper(This.CommandQueue(1).cCommandType) = "STOPWORKERS"
+	This.StopWorkers()
+	This.nProcessing = This.nProcessing - 1 
+	Return 
+EndIf 
+
+* Return if all workers busy
+If This.nBusyWorkers >= This.Workers.Count or This.CommandQueue.Count = 0
+	Debugout Time(0), Program(), "No workers or commands available"
+	This.nProcessing = This.nProcessing - 1 
+	Return
+EndIf 
+
+Debugout Time(0), Program(), "---- Process Queue Start ----"
+
+lnCommands = This.CommandQueue.Count
+lnCommandNum = 1
+For lnCommand = 1 to lnCommands
+
+	If This.nBusyWorkers >= This.Workers.Count or Upper(This.CommandQueue(lnCommandNum).cCommandType) = "STOPWORKERS"
+		Exit 
+	EndIf 
+	
+	llSendCommand = .f.
+	
+	* Which worker to run on can be specified.  0 means next available. Used to run a command on all workers.
+	lnWorker = This.CommandQueue(lnCommandNum).nWorker
+	If !Empty(lnWorker)
+		loWorkerProxy = This.Workers(lnWorker)
+		If !loWorkerProxy.lBusy
+			loWorkerProxy.lLocked = .f.
+			llSendCommand = .t.
+		Else
+			* If specific worker is busy, we'll try again next time
+			* Lock worker so it can't be used by other commands
+			loWorkerProxy.lLocked = .t.
+			lnCommandNum = lnCommandNum + 1 
+		EndIf 
+	Else 
+		* Find worker that is not busy or locked
+		For each loWorkerProxy in This.Workers FoxObject
+			If !loWorkerProxy.lBusy and !loWorkerProxy.lLocked
+				llSendCommand = .t.
+				Exit 
+			EndIf 
+		EndFor 
+	EndIf 
+	
+	If llSendCommand 
+		* Mark worker as busy
+		loWorkerProxy.lBusy = .t.
+		This.nBusyWorkers = This.nBusyWorkers + 1 
+		* Send command to worker
+		loWorkerProxy.SendCommand(This.CommandQueue(lnCommandNum))
+		* Delete command from queue
+		This.CommandQueue.Remove(lnCommandNum)
+	EndIf 
+
+EndFor 
+
+Debugout Time(0), Program(), "---- Process Queue End ----"
+
+This.nProcessing = This.nProcessing - 1 
+* Process again if necessary
+If This.nProcessing > 0
+	This.ProcessQueue()
+EndIf 
+
+ENDPROC
+PROCEDURE queuecommand
+* Add command to queue.
+Lparameters lcCommandType, lcCommand, lcClass, lcModule, lcInApplication, ;
+	loParameters, llAllWorkers, loEvents
+Local loCommand as Command of ParallelFox.vcx, lnWorker, lnWorkerCnt
+
+Debugout Time(0), Program(), lcCommandType, lcCommand, lcClass, lcModule, ;
+	lcInApplication, llAllWorkers
+
+If llAllWorkers
+	* Queue command for all workers
+	lnWorkerCnt = This.nWorkerCount
+Else
+	* Queue for next available worker
+	lnWorkerCnt = 1
+EndIf 
+
+For lnWorker = 1 to lnWorkerCnt 
+	* Create command object
+	loCommand = NewObject("Command", "ParallelFox.vcx")
+	loCommand.cCommandType = Evl(lcCommandType, "")
+	loCommand.cCommand = Evl(lcCommand, "")
+	loCommand.cClass = Evl(lcClass, "")
+	loCommand.cModule = Evl(lcModule, "")
+	loCommand.cInApplication = Evl(lcInApplication, "")
+	loCommand.oParameters = loParameters
+	loCommand.oEvents = loEvents
+	If llAllWorkers
+		loCommand.nWorker = lnWorker
+	EndIf 
+	* Add to queue
+	This.CommandQueue.Add(loCommand)
+EndFor 
+
+This.ProcessQueue()
+ 
+ENDPROC
+PROCEDURE startworkers
+* Start worker processes
+* Same EXE is used for all workers
+Lparameters lcProcedureFile, lcDirectory, llDebugMode
+Local lnWorker, loWorkerProxy as WorkerProxy of ParallelFox.vcx
+
+Debugout Time(0), Program(), lcProcedureFile, lcDirectory, llDebugMode
+
+If This.Workers.Count > 0
+	Assert .f. Message "Workers already started."
+	Return
+EndIf 
+
+This.lDebugMode = llDebugMode
+
+For lnWorker = 1 to This.nWorkerCount
+	loWorkerProxy = NewObject("WorkerProxy", "ParallelFox.vcx", "", lcProcedureFile, lcDirectory, llDebugMode)
+	ComArray(loWorkerProxy, 11)
+	This.Workers.Add(loWorkerProxy)
+EndFor 
+
+ENDPROC
+PROCEDURE stopworkers
+* Stop worker processes
+Local loWorkerProxy as WorkerProxy of ParallelFox.vcx
+
+Debugout Time(0), Program()
+
+* Release workers
+For each loWorkerProxy in This.Workers FoxObject
+	loWorkerProxy.StopWorker()
+EndFor 
+
+This.Workers = NULL
+This.Workers = CreateObject("Collection")
+This.nBusyWorkers = 0
+
+* Clear command queue
+This.ClearQueue()
+
+ENDPROC
+[END METHODS]
+[START RESERVED1]
+Class[END RESERVED1]
+[START RESERVED2]
+1[END RESERVED2]
+[START RESERVED3]
+*clearqueue Remove all pending commands from queue.
+*handleerror Global Error Handler.
+*processqueue Process command queue.
+*queuecommand Add command to queue.
+*startworkers Start worker processes.
+*stopworkers Stop worker processes.
+commandqueue Command queue collection.
+conerror On Error command.
+cworkerclass Worker class name (used in debug mode).
+cworkercomprogid COM ProgID for worker class.
+cworkerlibrary Worker class library (used in debug mode).
+ldebugmode Start workers in Debug mode.
+nbusyworkers Number of workers currently processing commands.
+ncpucount Number of logical processors on machine.
+nprocessing Number of times ProcessQueue has been called.
+nworkercount Number of workers. Defaults to CPU count.
+workers Workers collection.
+[END RESERVED3]
+[START RESERVED6]
+Pixels[END RESERVED6]
+
+[ RECORD]
+[PLATFORM] COMMENT 
+[UNIQUEID] RESERVED  
+[OBJNAME] parpoolmgr
+
+[ RECORD]
+[PLATFORM] WINDOWS 
+[UNIQUEID] _2XR0NRM8S
+[CLASS] timer
+[BASECLASS] timer
+[OBJNAME] tmrcommand
+[START PROPERTIES]
+Enabled = .F.
+Height = 23
+Interval = 10
+Name = "tmrcommand"
+Width = 23
+_memberdata = <VFPData><memberdata name="processcommand" display="ProcessCommand"/><memberdata name="lprocessed" display="lProcessed"/><memberdata name="omanager" display="oManager"/></VFPData>
+lprocessed = 
+omanager = .NULL.
+[END PROPERTIES]
+[START METHODS]
+PROCEDURE Timer
+* Worker Command timer
+* Timer is used to process command so main thread does not
+*	wait on command to complete.
+* Timer is enabled for each command and only fires once.
+Local loManager
+
+This.Enabled = .f.
+Doevents 
+* Timer can fire more than once before it is enabled.
+* Doevents usually prevents this from happening, but this code ensures it.
+If This.lProcessed
+	Return 
+EndIf 
+This.lProcessed = .t.
+
+* Hold reference to manager for minimum time to help avoid dangling objects
+loManager = This.oManager
+This.oManager = NULL
+loManager.ProcessCommand() 
+
+ENDPROC
+PROCEDURE processcommand
+* Process current command
+Lparameters loManager
+
+This.oManager = loManager
+This.lProcessed = .f.
+This.Enabled = .t.
+
+ENDPROC
+[END METHODS]
+[START RESERVED1]
+Class[END RESERVED1]
+[START RESERVED2]
+1[END RESERVED2]
+[START RESERVED3]
+*processcommand Process current command.
+_memberdata XML Metadata for customizable properties
+lprocessed Is .T. if command already processed.
+omanager Manager class that processes command.
+[END RESERVED3]
+[START RESERVED6]
+Pixels[END RESERVED6]
+
+[ RECORD]
+[PLATFORM] COMMENT 
+[UNIQUEID] RESERVED  
+[OBJNAME] tmrcommand
+
+[ RECORD]
+[PLATFORM] WINDOWS 
+[UNIQUEID] _2XO1B8M8D
+[CLASS] custom
+[BASECLASS] custom
+[OBJNAME] worker
+[START PROPERTIES]
+Name = "worker"
+_lastprogressupdate = 0
+_memberdata =      615<VFPData><memberdata name="updateprogress" display="UpdateProgress"/><memberdata name="progressinterval" display="ProgressInterval"/><memberdata name="_lastprogressupdate" display="_LastProgressUpdate"/><memberdata name="returndata" display="ReturnData"/><memberdata name="startcriticalsection" display="StartCriticalSection"/><memberdata name="endcriticalsection" display="EndCriticalSection"/><memberdata name="_criticalsections" display="_CriticalSections"/><memberdata name="sleep" display="Sleep"/><memberdata name="cpucount" display="CPUCount"/><memberdata name="returnerror" display="ReturnError"/></VFPData>
+cpucount = 0
+progressinterval = 1
+[END PROPERTIES]
+[START PROTECTED]
+_lastprogressupdate
+[END PROTECTED]
+[START METHODS]
+PROCEDURE Destroy
+* End any active critical sections
+Local lnRows, lnRow, lnhMutex 
+
+Debugout Time(0), Program()
+
+lnRows = Alen(This._CriticalSections, 1)
+For lnRow = 1 to lnRows
+	lnhMutex = This._CriticalSections[lnRow,2]
+	If !Empty(lnhMutex)
+		ReleaseMutex(lnhMutex)
+	EndIf 
+EndFor 
+
+
+ENDPROC
+PROCEDURE Init
+* Number of logical processors on machine.
+This.CPUCount = Evl(Val(GetEnv("NUMBER_OF_PROCESSORS")), 1)
+
+* Load DLLs
+DECLARE Sleep IN kernel32 INTEGER dwMilliseconds
+
+DECLARE INTEGER CreateMutex IN kernel32;
+    INTEGER lpMutexAttributes,;
+    INTEGER bInitialOwner,;
+    STRING  lpName
+    
+DECLARE INTEGER WaitForSingleObject IN kernel32;
+    INTEGER hHandle,;
+    INTEGER dwMilliseconds
+   
+DECLARE INTEGER ReleaseMutex IN kernel32;
+    INTEGER hMutex
+
+
+ENDPROC
+PROCEDURE endcriticalsection
+* End Critical Section of code.
+Lparameters cCriticalSectionName
+Local lnhMutex, lnRow
+
+Debugout Time(0), Program(), cCriticalSectionName
+
+* Find and release mutex
+lnRow = Ascan(This._CriticalSections, cCriticalSectionName, 1, 0, 1, 8)
+lnhMutex = This._CriticalSections[lnRow,2]
+ReleaseMutex(lnhMutex)
+
+* Remove from array
+Adel(This._CriticalSections, lnRow)
+ENDPROC
+PROCEDURE returndata
+* Return data to main process.
+* BindEvent() does not work with parameters passed by reference, so all parameters must be
+*	passed by value.  This prevents arrays from being supported.
+Lparameters tPar1, tPar2, tPar3, tPar4, tPar5, tPar6, ;
+	tPar7, tPar8, tPar9, tPar10, tPar11, tPar12, tPar13, ;
+	tPar14, tPar15, tPar16, tPar17, tPar18, tPar19, tPar20, ;
+	tPar21, tPar22, tPar23, tPar24, tPar25, tPar26
+Local lnPCount, lnParameter, lcParameter, lcParameterClause
+
+Debugout Time(0), Program(), tPar1, tPar2, tPar3, tPar4, tPar5, tPar6, ;
+	tPar7, tPar8, tPar9, tPar10, tPar11, tPar12, tPar13, ;
+	tPar14, tPar15, tPar16, tPar17, tPar18, tPar19, tPar20, ;
+	tPar21, tPar22, tPar23, tPar24, tPar25, tPar26
+
+* Build parameter clause
+lcParameterClause = ""
+lnPCount = Pcount()
+For lnParameter = 1 to lnPCount
+	* Pass parameters by reference in case passed by reference to this method
+	lcParameter = "tPar" + Transform(lnParameter)
+	If !Empty(lcParameterClause)
+		lcParameterClause = lcParameterClause + ", "
+	EndIf 
+	lcParameterClause = lcParameterClause + lcParameter
+EndFor 
+
+If _Screen.oMainProcess.IsRunning()
+	_Screen.oWorkerEvents.ReturnData(&lcParameterClause)
+EndIf 
+
+ENDPROC
+PROCEDURE returnerror
+* Return error to main process.
+Lparameters nError, cMethod, nLine, cMessage, cCode
+
+Debugout Time(0), Program(), nError, cMethod, nLine, cMessage, cCode
+
+If _Screen.oMainProcess.IsRunning()
+	_Screen.oWorkerEvents.ReturnError(nError, cMethod, nLine, cMessage, cCode)
+EndIf 
+
+ENDPROC
+PROCEDURE sleep
+* Pause execution if machine contains the specified number CPUs or fewer. 
+* Omit lnCPUCount (or pass 0) to pause regardless of CPUs.
+Lparameters nMilliseconds, nCPUCount
+
+nMilliseconds = Evl(nMilliseconds, 0)
+If Empty(nCPUCount) or This.CPUCount <= nCPUCount
+	Debugout Time(0), Program(), nMilliseconds
+	Sleep(nMilliseconds)
+EndIf 
+ENDPROC
+PROCEDURE startcriticalsection
+* Start Critical Section of code. Use a unique (but not random) name for each critical section.
+Lparameters cCriticalSectionName
+Local lnhMutex, lnHandleCount
+
+#DEFINE INFINITE 0xFFFFFFFF
+
+Debugout Time(0), Program(), cCriticalSectionName
+
+lnhMutex = CreateMutex(0, 0, cCriticalSectionName)
+
+* Wait for other processes to finish critical section
+WaitForSingleObject(lnhMutex, INFINITE)
+
+* Add handle to array so we can access it by name
+lnHandleCount = Alen(This._CriticalSections, 1)
+If lnHandleCount = 1 and Empty(This._CriticalSections[1,1])
+	lnHandleCount = 1
+Else
+	lnHandleCount = lnHandleCount + 1 
+EndIf 
+Dimension This._CriticalSections[lnHandleCount,2]
+This._CriticalSections[lnHandleCount,1] = cCriticalSectionName
+This._CriticalSections[lnHandleCount,2] = lnhMutex
+
+ENDPROC
+PROCEDURE updateprogress
+* Send progress update to main process
+* Pass .T. to llForceUpdate to disregard Worker.ProgressInterval.
+Lparameters nProgress, cMessage, lForceUpdate
+Local lnSeconds
+
+Debugout Time(0), Program(), nProgress, cMessage, lForceUpdate
+
+lnSeconds = Seconds() - This._LastProgressUpdate
+If lForceUpdate or lnSeconds < 0 or lnSeconds >= This.ProgressInterval
+	If _Screen.oMainProcess.IsRunning()
+		_Screen.oWorkerEvents.UpdateProgress(nProgress, cMessage)
+	EndIf 
+	This._LastProgressUpdate = Seconds()
+EndIf 
+
+ENDPROC
+[END METHODS]
+[START RESERVED1]
+Class[END RESERVED1]
+[START RESERVED2]
+1[END RESERVED2]
+[START RESERVED3]
+*endcriticalsection End Critical Section of code.
+*returndata Return data to main process. Due to limitations with VFP BindEvent(), arrays are not supported and cannot be returned.
+*returnerror Return error to main process.
+*sleep Pause execution if machine contains the specified number CPUs or fewer. Omit lnCPUCount (or pass 0) to pause regardless of CPUs.
+*startcriticalsection Start Critical Section of code. Use a unique (but not random) name for each critical section.
+*updateprogress Send progress update to main process. Pass .T. to llForceUpdate to disregard Worker.ProgressInterval.
+^_criticalsections[1,2] Use Worker.StartCriticalSection().
+_lastprogressupdate Time of last progress update sent to main process.
+_memberdata XML Metadata for customizable properties
+cpucount Number of logical processors on machine.
+progressinterval Minimum number of seconds between progress updates (default is 1 second).
+[END RESERVED3]
+[START RESERVED6]
+Pixels[END RESERVED6]
+
+[ RECORD]
+[PLATFORM] COMMENT 
+[UNIQUEID] RESERVED  
+[OBJNAME] worker
+
+[ RECORD]
+[PLATFORM] WINDOWS 
+[UNIQUEID] _2XO1BA4B4
+[CLASS] custom
+[BASECLASS] custom
+[OBJNAME] workerproxy
+[START PROPERTIES]
+
+Name = "workerproxy"
+_memberdata =      415<VFPData><memberdata name="lbusy" display="lBusy"/><memberdata name="oworker" display="oWorker"/><memberdata name="sendcommand" display="SendCommand"/><memberdata name="complete" display="Complete"/><memberdata name="llocked" display="lLocked"/><memberdata name="ldebugmode" display="lDebugMode"/><memberdata name="stopworker" display="StopWorker"/><memberdata name="handleerror" display="HandleError"/></VFPData>
+lbusy = .F.
+ldebugmode = .F.
+llocked = .F.
+oworker = .NULL.
+[END PROPERTIES]
+[START PROTECTED]
+ldebugmode
+oworker
+[END PROTECTED]
+[START METHODS]
+PROCEDURE Destroy
+Debugout Time(0), Program()
+ENDPROC
+PROCEDURE Init
+* Create worker process
+Lparameters lcProcedureFile, lcDirectory, llDebugMode
+
+Debugout Time(0), Program(), lcProcedureFile, lcDirectory, llDebugMode
+
+* Debug mode starts workers in full VFP.
+If llDebugMode and _VFP.StartMode = 0
+	Local loVFP as VisualFoxPro.Application, lcWorkerVCX
+	loVFP = CreateObject("VisualFoxPro.Application")
+	loVFP.Visible = .t.
+	lcWorkerVCX = FullPath(_Screen.ParPoolMgr.cWorkerLibrary)
+ 	loVFP.DoCmd("CD " + JustPath(lcWorkerVCX))
+	This.oWorker = loVFP.Eval([NewObject("] + _Screen.ParPoolMgr.cWorkerClass + [","] + lcWorkerVCX + [")])
+	This.lDebugMode = .t.
+Else 
+	This.oWorker = CreateObject(_Screen.ParPoolMgr.cWorkerCOMProgID)
+EndIf 
+
+This.oWorker.SetMainProcess(_VFP)
+lcDirectory = ["] + Evl(lcDirectory, FullPath("")) + ["]
+This.oWorker.DoCmd("CD " + lcDirectory)
+If !Empty(lcProcedureFile)
+	lcProcedureFile = ["] + lcProcedureFile + ["]
+	This.oWorker.DoCmd("Set Procedure To " + lcProcedureFile + " Additive")
+EndIf 
+
+
+ENDPROC
+PROCEDURE complete
+Lparameters lvReturn
+
+Debugout Time(0), Program(), lvReturn
+
+This.lBusy = .f.
+_Screen.ParPoolMgr.nBusyWorkers = _Screen.ParPoolMgr.nBusyWorkers - 1 
+_Screen.ParPoolMgr.ProcessQueue()
+
+ENDPROC
+PROCEDURE handleerror
+Lparameters lnError, lcMethod, lnLine, lcMessage, lcCode
+
+Debugout Time(0), Program(), lnError, lcMethod, lnLine, lcMessage, lcCode
+
+This.Complete()
+ENDPROC
+PROCEDURE sendcommand
+* Send command to worker process.
+Lparameters loCommand as Command of ParallelFox.vcx
+
+Debugout Time(0), Program(), loCommand.cCommandType, loCommand.cCommand, ;
+	loCommand.cClass, loCommand.cModule
+
+* Bind to Complete event
+BindEvent(loCommand.oEvents, "Complete", This, "Complete")
+BindEvent(loCommand.oEvents, "ReturnError", This, "HandleError", 1)
+
+This.oWorker.SendCommand(loCommand)
+
+ENDPROC
+PROCEDURE stopworker
+Debugout Time(0), Program()
+
+This.oWorker = NULL
+ENDPROC
+[END METHODS]
+[START RESERVED1]
+Class[END RESERVED1]
+[START RESERVED2]
+1[END RESERVED2]
+[START RESERVED3]
+*complete Fires when worker has finished executing command.
+*handleerror Fires when error returned from worker.
+*sendcommand Send command to worker process.
+*stopworker Stop worker process.
+_memberdata XML Metadata for customizable properties
+lbusy Worker is busy processing command.
+ldebugmode Start workers in Debug mode.
+llocked Is .T. when worker is locked to a specific command and was busy when command queue was processed.
+oworker Reference to Worker process.
+[END RESERVED3]
+[START RESERVED6]
+Pixels[END RESERVED6]
+
+[ RECORD]
+[PLATFORM] COMMENT 
+[UNIQUEID] RESERVED  
+[OBJNAME] workerproxy
+[EOF]
