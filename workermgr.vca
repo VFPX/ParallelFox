@@ -79,7 +79,7 @@ Pixels[END RESERVED6]
 [OBJNAME] workermgr
 [START PROPERTIES]
 Name = "workermgr"
-_memberdata =      947<VFPData><memberdata name="deserializeparameters" display="DeserializeParameters"/><memberdata name="instantiateipc" display="InstantiateIPC"/><memberdata name="instantiatejson" display="InstantiateJSON"/><memberdata name="processmessage" display="ProcessMessage"/><memberdata name="registerworker" display="RegisterWorker"/><memberdata name="hwndmain" display="hWndMain"/><memberdata name="ocmdtimer" display="oCmdTimer"/><memberdata name="processcommand" display="ProcessCommand"/><memberdata name="ocommand" display="oCommand"/><memberdata name="createcommandobject" display="CreateCommandObject"/><memberdata name="execscript" display="ExecScript"/><memberdata name="call" display="Call"/><memberdata name="sendcommand" display="SendCommand"/><memberdata name="docmd" display="DoCmd"/><memberdata name="callmethod" display="CallMethod"/><memberdata name="do" display="Do"/><memberdata name="setmainprocess" display="SetMainProcess"/></VFPData>
+_memberdata =     1009<VFPData><memberdata name="deserializeparameters" display="DeserializeParameters"/><memberdata name="instantiateipc" display="InstantiateIPC"/><memberdata name="instantiatejson" display="InstantiateJSON"/><memberdata name="processmessage" display="ProcessMessage"/><memberdata name="registerworker" display="RegisterWorker"/><memberdata name="hwndmain" display="hWndMain"/><memberdata name="ocmdtimer" display="oCmdTimer"/><memberdata name="processcommand" display="ProcessCommand"/><memberdata name="ocommand" display="oCommand"/><memberdata name="createcommandobject" display="CreateCommandObject"/><memberdata name="execscript" display="ExecScript"/><memberdata name="call" display="Call"/><memberdata name="sendcommand" display="SendCommand"/><memberdata name="docmd" display="DoCmd"/><memberdata name="callmethod" display="CallMethod"/><memberdata name="do" display="Do"/><memberdata name="setmainprocess" display="SetMainProcess"/><memberdata name="setworkerevents" display="SetWorkerEvents"/></VFPData>
 ocmdtimer = .NULL.
 ocommand = .NULL.
 [END PROPERTIES]
@@ -104,9 +104,6 @@ If _VFP.StartMode <> 0
 	Sys(2335,0)
 EndIf 
 This.oCmdTimer = NewObject("tmrCommand", "ParallelFox.vcx")
-If VarType(_Screen.oWorkerEvents) = "U"
-	_Screen.AddProperty("oWorkerEvents", NULL)
-EndIf 
 
 Return DoDefault()
 ENDPROC
@@ -245,7 +242,6 @@ Debugout Time(0), Program(), loCommand.cCommandType, loCommand.cCommand, ;
 	loCommand.cClass, loCommand.cModule
 
 This.oCommand = loCommand
-_Screen.oWorkerEvents = loCommand.oEvents
 
 * Timer is used to start command without blocking main process
 This.oCmdTimer.ProcessCommand(This)
@@ -265,6 +261,16 @@ loMainProcess.StartTimer()
 _Screen.oMainProcess = loMainProcess
 
 ENDPROC
+PROCEDURE setworkerevents
+* Set reference to worker events object.
+Lparameters loWorkerEvents
+
+If VarType(_Screen.oWorkerEvents) = "U"
+	_Screen.AddProperty("oWorkerEvents", NULL)
+EndIf 
+
+_Screen.oWorkerEvents = loWorkerEvents
+ENDPROC
 [END METHODS]
 [START RESERVED1]
 Class[END RESERVED1]
@@ -279,6 +285,7 @@ Class[END RESERVED1]
 *processcommand Process command.
 *sendcommand Send command to worker process.
 *setmainprocess Set reference to main process.
+*setworkerevents Set reference to worker events object.
 ocmdtimer Timer used to start command asynchronously.
 ocommand Command object.
 [END RESERVED3]
