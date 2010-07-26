@@ -168,7 +168,7 @@ Pixels[END RESERVED6]
 [START PROPERTIES]
 
 Name = "events"
-_memberdata =      353<VFPData><memberdata name="ncommands" display="nCommands"/><memberdata name="complete" display="Complete"/><memberdata name="updateprogress" display="UpdateProgress"/><memberdata name="returndata" display="ReturnData"/><memberdata name="returnerror" display="ReturnError"/><memberdata name="updatecommandcount" display="UpdateCommandCount"/></VFPData>
+_memberdata =      581<VFPData><memberdata name="ncommands" display="nCommands"/><memberdata name="complete" display="Complete"/><memberdata name="updateprogress" display="UpdateProgress"/><memberdata name="returndata" display="ReturnData"/><memberdata name="returnerror" display="ReturnError"/><memberdata name="updatecommandcount" display="UpdateCommandCount"/><memberdata name="loadcursor" display="LoadCursor"/><memberdata name="returncursor" display="ReturnCursor"/><memberdata name="setdatasession" display="SetDataSession"/><memberdata name="getdatasession" display="GetDataSession"/></VFPData>
 ncommands = 0
 [END PROPERTIES]
 [START METHODS]
@@ -179,6 +179,42 @@ Debugout Time(0), Program(), lvReturn
 
 This.nCommands = This.nCommands - 1 
 
+ENDPROC
+PROCEDURE getdatasession
+* Return data session ID of events object.
+
+Return Set("Datasession")
+ENDPROC
+PROCEDURE loadcursor
+* Load cursor from temp table.
+Lparameters lcAlias, lcTempFile
+Local lnCurrentArea, lcDBC
+
+Debugout Time(0), Program(), lcAlias, lcTempFile
+
+lnCurrentArea = Select()
+lcDBC = Dbc()
+
+Select * from (lcTempFile) ;
+	into cursor (lcAlias) NoFilter ReadWrite
+
+* Close/erase temp files
+Set Database To (lcTempFile)
+Close Databases 
+Erase (lcTempFile + ".*")
+
+Set Database To (lcDBC)
+Select (lnCurrentArea)
+
+* Fire event
+This.ReturnCursor(lcAlias)
+
+ENDPROC
+PROCEDURE returncursor
+* Fires when Worker.ReturnCursor() is called on worker and after cursor has been loaded.
+Lparameters lcAlias
+
+Debugout Time(0), Program(), lcAlias
 ENDPROC
 PROCEDURE returndata
 * Fires when Worker.ReturnData() is called on worker.
@@ -201,6 +237,17 @@ Debugout Time(0), Program(), lnError, lcMethod, lnLine, lcMessage, lcCode
 This.nCommands = This.nCommands - 1 
 
 
+ENDPROC
+PROCEDURE setdatasession
+* Set data session so events occur in same session as Parallel object.
+* BindEvent does not cause data session switch, so this object needs to be in same datasession
+Lparameters lnDataSession
+
+Try 
+	Set Datasession To (lnDataSession)
+Catch
+	* If data session not available, stay in current session
+EndTry 
 ENDPROC
 PROCEDURE updatecommandcount
 * Update number of commands currently running.
@@ -229,8 +276,12 @@ Class[END RESERVED1]
 1[END RESERVED2]
 [START RESERVED3]
 *complete Fires when worker has finished executing command.
+*getdatasession Return data session ID of events object.
+*loadcursor Load cursor from temp table.
+*returncursor Fires when Worker.ReturnCursor() is called on worker and after cursor has been loaded.
 *returndata Fires when Worker.ReturnData() is called on worker.
 *returnerror Return error to main process.
+*setdatasession Set data session so events occur in same session as Parallel object.
 *updatecommandcount Update number of commands currently running.
 *updateprogress Fires when Worker.UpdateProgress() is called on worker.
 _memberdata XML Metadata for customizable properties
@@ -251,9 +302,10 @@ Pixels[END RESERVED6]
 [BASECLASS] custom
 [OBJNAME] parallel
 [START PROPERTIES]
+
 Name = "parallel"
 _events = NULL
-_memberdata =      753<VFPData><memberdata name="do" display="Do"/><memberdata name="startworkers" display="StartWorkers"/><memberdata name="cpucount" display="CPUCount"/><memberdata name="setworkercount" display="SetWorkerCount"/><memberdata name="docmd" display="DoCmd"/><memberdata name="execscript" display="ExecScript"/><memberdata name="call" display="Call"/><memberdata name="bindevent" display="BindEvent"/><memberdata name="wait" display="Wait"/><memberdata name="_events" display="_Events"/><memberdata name="callmethod" display="CallMethod"/><memberdata name="stopworkers" display="StopWorkers"/><memberdata name="onerror" display="OnError"/><memberdata name="clearqueue" display="ClearQueue"/><memberdata name="setworkerclass" display="SetWorkerClass"/></VFPData>
+_memberdata =      755<VFPData><memberdata name="do" display="Do"/><memberdata name="startworkers" display="StartWorkers"/><memberdata name="cpucount" display="CPUCount"/><memberdata name="setworkercount" display="SetWorkerCount"/><memberdata name="docmd" display="DoCmd"/><memberdata name="execscript" display="ExecScript"/><memberdata name="call" display="Call"/><memberdata name="bindevent" display="BindEvent"/><memberdata name="wait" display="Wait"/><memberdata name="_events" display="_Events"/><memberdata name="callmethod" display="CallMethod"/><memberdata name="stopworkers" display="StopWorkers"/><memberdata name="onerror" display="OnError"/><memberdata name="clearqueue" display="ClearQueue"/><memberdata name="setworkerclass" display="SetWorkerClass"/></VFPData>
 cpucount = 0
 [END PROPERTIES]
 [START METHODS]
@@ -457,18 +509,27 @@ EndIf
 ENDPROC
 PROCEDURE wait
 * Wait until workers have finished processing queued commands.
+Lparameters lAllWorkers
 
 Debugout Time(0), Program(), "Start"
 
 Local lnKey
-Do while This._Events.nCommands > 0 and _Screen.ParPoolMgr.nBusyWorkers > 0
+Do while .t.
 	* Sleep() blocks worker processes, so use INKEY() to wait
 	lnKey = Inkey(.1, "H")
+	Do Case
 	* ON Escape doesn't work during INKEY() and VFP can appear locked up.
 	* CTRL+X will force exit from Wait.
-	If lnKey = 24
+	Case lnKey = 24
 		Exit 
-	EndIf 
+	* Wait for commands from current instance of Parallel object
+	Case !lAllWorkers and !(This._Events.nCommands > 0 and _Screen.ParPoolMgr.nBusyWorkers > 0)
+		Exit 
+	* Wait for commands from all instances of Parallel object
+	Case lAllWorkers and !(_Screen.ParPoolMgr.nBusyWorkers > 0 ;
+			or (Type("_Screen.ParPoolMgr.CommandQueue.Count") = "N" and _Screen.ParPoolMgr.CommandQueue.Count > 0))
+		Exit 
+	EndCase 
 EndDo 
 
 Debugout Time(0), Program(), "Complete"
@@ -903,7 +964,7 @@ Pixels[END RESERVED6]
 [START PROPERTIES]
 Name = "worker"
 _lastprogressupdate = 0
-_memberdata =      615<VFPData><memberdata name="updateprogress" display="UpdateProgress"/><memberdata name="progressinterval" display="ProgressInterval"/><memberdata name="_lastprogressupdate" display="_LastProgressUpdate"/><memberdata name="returndata" display="ReturnData"/><memberdata name="startcriticalsection" display="StartCriticalSection"/><memberdata name="endcriticalsection" display="EndCriticalSection"/><memberdata name="_criticalsections" display="_CriticalSections"/><memberdata name="sleep" display="Sleep"/><memberdata name="cpucount" display="CPUCount"/><memberdata name="returnerror" display="ReturnError"/></VFPData>
+_memberdata =      719<VFPData><memberdata name="updateprogress" display="UpdateProgress"/><memberdata name="progressinterval" display="ProgressInterval"/><memberdata name="_lastprogressupdate" display="_LastProgressUpdate"/><memberdata name="returndata" display="ReturnData"/><memberdata name="startcriticalsection" display="StartCriticalSection"/><memberdata name="endcriticalsection" display="EndCriticalSection"/><memberdata name="_criticalsections" display="_CriticalSections"/><memberdata name="sleep" display="Sleep"/><memberdata name="cpucount" display="CPUCount"/><memberdata name="returnerror" display="ReturnError"/><memberdata name="isworker" display="IsWorker"/><memberdata name="returncursor" display="ReturnCursor"/></VFPData>
 cpucount = 0
 progressinterval = 1
 [END PROPERTIES]
@@ -962,6 +1023,44 @@ ReleaseMutex(lnhMutex)
 
 * Remove from array
 Adel(This._CriticalSections, lnRow)
+ENDPROC
+PROCEDURE isworker
+* Returns .T. if currently running in Worker process.
+
+Return Type("_Screen.oWorkerEvents") = "O"
+ENDPROC
+PROCEDURE returncursor
+* Return cursor to main process.
+Lparameters cAlias
+Local cDirectory, lcTempName, lcTempFile, lnCurrentArea, lcDBC
+
+cAlias = Evl(cAlias, Alias())
+cDirectory = Evl(cDirectory, Sys(2023))
+
+Do while .t.
+	lcTempName = Sys(2015)
+	lcTempFile = Addbs(cDirectory) + lcTempName
+	If !File(lcTempFile + ".dbf") and !File(lcTempFile + ".dbc")
+		Exit
+	EndIf
+EndDo 
+
+* Create database to support long field names
+lcDBC = Dbc()
+lnCurrentArea = Select()
+Create Database (lcTempFile)
+
+* Copy cursor to temp table
+Select (cAlias)
+Copy To (lcTempFile) Database (lcTempFile)
+
+Set Database To (lcTempFile)
+Close Databases 
+Set Database To (lcDBC)
+Select (lnCurrentArea)
+
+_Screen.oWorkerEvents.LoadCursor(cAlias, lcTempFile)
+
 ENDPROC
 PROCEDURE returndata
 * Return data to main process.
@@ -1067,6 +1166,8 @@ Class[END RESERVED1]
 1[END RESERVED2]
 [START RESERVED3]
 *endcriticalsection End Critical Section of code.
+*isworker Returns .T. if currently running in Worker process.
+*returncursor Return cursor to main process.
 *returndata Return data to main process. Due to limitations with VFP BindEvent(), arrays are not supported and cannot be returned.
 *returnerror Return error to main process.
 *sleep Pause execution if machine contains the specified number CPUs or fewer. Omit lnCPUCount (or pass 0) to pause regardless of CPUs.
@@ -1093,12 +1194,12 @@ Pixels[END RESERVED6]
 [BASECLASS] custom
 [OBJNAME] workerproxy
 [START PROPERTIES]
-
 Name = "workerproxy"
-_memberdata =      415<VFPData><memberdata name="lbusy" display="lBusy"/><memberdata name="oworker" display="oWorker"/><memberdata name="sendcommand" display="SendCommand"/><memberdata name="complete" display="Complete"/><memberdata name="llocked" display="lLocked"/><memberdata name="ldebugmode" display="lDebugMode"/><memberdata name="stopworker" display="StopWorker"/><memberdata name="handleerror" display="HandleError"/></VFPData>
+_memberdata =      459<VFPData><memberdata name="lbusy" display="lBusy"/><memberdata name="oworker" display="oWorker"/><memberdata name="sendcommand" display="SendCommand"/><memberdata name="complete" display="Complete"/><memberdata name="llocked" display="lLocked"/><memberdata name="ldebugmode" display="lDebugMode"/><memberdata name="stopworker" display="StopWorker"/><memberdata name="handleerror" display="HandleError"/><memberdata name="oevents" display="oEvents"/></VFPData>
 lbusy = .F.
 ldebugmode = .F.
 llocked = .F.
+oevents = .NULL.
 oworker = .NULL.
 [END PROPERTIES]
 [START PROTECTED]
@@ -1136,12 +1237,24 @@ If !Empty(lcProcedureFile)
 	This.oWorker.DoCmd("Set Procedure To " + lcProcedureFile + " Additive")
 EndIf 
 
+* Set up worker events
+This.oEvents = NewObject("Events", "ParallelFox.vcx")
+This.oEvents.Name = "WorkerProxyEvents"	&& to distinguish object from other events objects during debugging
+This.oWorker.SetWorkerEvents(This.oEvents)
+BindEvent(This.oEvents, "Complete", This, "Complete", 1)
+BindEvent(This.oEvents, "ReturnError", This, "HandleError", 1)
+
 
 ENDPROC
 PROCEDURE complete
 Lparameters lvReturn
 
 Debugout Time(0), Program(), lvReturn
+
+* Unbind command events and rebind events to this object
+UnBindEvents(This.oEvents)
+BindEvent(This.oEvents, "Complete", This, "Complete", 1)
+BindEvent(This.oEvents, "ReturnError", This, "HandleError", 1)
 
 This.lBusy = .f.
 _Screen.ParPoolMgr.nBusyWorkers = _Screen.ParPoolMgr.nBusyWorkers - 1 
@@ -1162,9 +1275,15 @@ Lparameters loCommand as Command of ParallelFox.vcx
 Debugout Time(0), Program(), loCommand.cCommandType, loCommand.cCommand, ;
 	loCommand.cClass, loCommand.cModule
 
-* Bind to Complete event
-BindEvent(loCommand.oEvents, "Complete", This, "Complete")
-BindEvent(loCommand.oEvents, "ReturnError", This, "HandleError", 1)
+* Make sure events objects are in same data session
+This.oEvents.SetDataSession(loCommand.oEvents.GetDataSession())
+
+* Bind events to current event object
+BindEvent(This.oEvents, "Complete", loCommand.oEvents, "Complete")
+BindEvent(This.oEvents, "ReturnError", loCommand.oEvents, "ReturnError")
+BindEvent(This.oEvents, "ReturnData", loCommand.oEvents, "ReturnData")
+BindEvent(This.oEvents, "UpdateProgress", loCommand.oEvents, "UpdateProgress")
+BindEvent(This.oEvents, "ReturnCursor", loCommand.oEvents, "ReturnCursor")
 
 This.oWorker.SendCommand(loCommand)
 
@@ -1188,6 +1307,7 @@ _memberdata XML Metadata for customizable properties
 lbusy Worker is busy processing command.
 ldebugmode Start workers in Debug mode.
 llocked Is .T. when worker is locked to a specific command and was busy when command queue was processed.
+oevents Reference to worker events object.
 oworker Reference to Worker process.
 [END RESERVED3]
 [START RESERVED6]
