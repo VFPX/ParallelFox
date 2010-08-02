@@ -666,6 +666,7 @@ Debugout Time(0), Program()
 This.CommandQueue = NULL
 This.CommandQueue = CreateObject("Collection")
 
+This.nProcessing = 0
 ENDPROC
 PROCEDURE handleerror
 * Global error handler. Set up with Parallel.OnError()
@@ -684,8 +685,13 @@ Local lnCommands, lnCommand, loWorkerProxy as WorkerProxy of ParallelFox.vcx, ;
 
 * This method can be interrupted and called again by worker events
 * Make sure it completely finishes before calling again
-This.nProcessing = This.nProcessing + 1 
-If This.nProcessing > 1
+* nProcessing=0 means ProcessQueue is not currently running and queue can be processed now
+* nProcessing=1 means ProcessQueue is currently running
+* nProcessing=2 means run ProcessQueue again at the end of the current run
+* Need to do evaluation and assignment in single line of code so it doesn't get interrupted (hope this works)
+If Iif(This.nProcessing > 0, ;
+		This.WriteExpression("nProcessing", "2"), ;
+		!This.WriteExpression("nProcessing", "1"))
 	* Queue is currently being processed, so set flag to process again and return
 	Debugout Time(0), Program(), "Already processing. Will process again."	
 	Return
@@ -695,14 +701,20 @@ EndIf
 If This.nBusyWorkers = 0 and This.CommandQueue.Count = 1 ;
 		and Upper(This.CommandQueue(1).cCommandType) = "STOPWORKERS"
 	This.StopWorkers()
-	This.nProcessing = This.nProcessing - 1 
 	Return 
 EndIf 
 
 * Return if all workers busy
 If This.nBusyWorkers >= This.Workers.Count or This.CommandQueue.Count = 0
-	Debugout Time(0), Program(), "No workers or commands available"
-	This.nProcessing = This.nProcessing - 1 
+	Debugout Time(0), Program(), "No workers or commands available", This.nBusyWorkers, This.CommandQueue.Count
+	* Process again if necessary
+	* Need to do evaluation and assignment in single line of code so it doesn't get interrupted
+	If Iif(This.nProcessing > 1, ;
+			This.WriteExpression("nProcessing", "0"), ;
+			!This.WriteExpression("nProcessing", "0"))
+		Debugout Time(0), Program(), "Processing again."	
+		This.ProcessQueue()
+	EndIf 
 	Return
 EndIf 
 
@@ -755,9 +767,12 @@ EndFor
 
 Debugout Time(0), Program(), "---- Process Queue End ----"
 
-This.nProcessing = This.nProcessing - 1 
 * Process again if necessary
-If This.nProcessing > 0
+* Need to do evaluation and assignment in single line of code so it doesn't get interrupted
+If Iif(This.nProcessing > 1, ;
+		This.WriteExpression("nProcessing", "0"), ;
+		!This.WriteExpression("nProcessing", "0"))
+	Debugout Time(0), Program(), "Processing again."	
 	This.ProcessQueue()
 EndIf 
 
@@ -1222,7 +1237,7 @@ If llDebugMode and _VFP.StartMode = 0
 	loVFP = CreateObject("VisualFoxPro.Application")
 	loVFP.Visible = .t.
 	lcWorkerVCX = FullPath(_Screen.ParPoolMgr.cWorkerLibrary)
- 	loVFP.DoCmd("CD " + JustPath(lcWorkerVCX))
+ 	loVFP.DoCmd([CD "] + JustPath(lcWorkerVCX) + ["])
 	This.oWorker = loVFP.Eval([NewObject("] + _Screen.ParPoolMgr.cWorkerClass + [","] + lcWorkerVCX + [")])
 	This.lDebugMode = .t.
 Else 
