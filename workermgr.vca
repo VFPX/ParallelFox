@@ -159,7 +159,7 @@ Local tPar1, tPar2, tPar3, tPar4, tPar5, tPar6, ;
 	tPar21, tPar22, tPar23, tPar24, tPar25
 Local lcParameterClause
 
-If !loParameters.nPCount < 1
+If loParameters.nPCount > 0
 	lcParameterClause = This.CreateParameterClause(loParameters, @tPar1, @tPar2, @tPar3, @tPar4, ;
 		@tPar5, @tPar6, @tPar7, @tPar8, @tPar9, @tPar10, @tPar11, ;
 		@tPar12, @tPar13, @tPar14, @tPar15, @tPar16, @tPar17, @tPar18, ;
@@ -191,14 +191,17 @@ Local tPar1, tPar2, tPar3, tPar4, tPar5, tPar6, ;
 	tPar21, tPar22, tPar23, tPar24, tPar25
 Local lcParameterClause
 	
-lcParameterClause = This.CreateParameterClause(loParameters, @tPar1, @tPar2, @tPar3, @tPar4, ;
-	@tPar5, @tPar6, @tPar7, @tPar8, @tPar9, @tPar10, @tPar11, ;
-	@tPar12, @tPar13, @tPar14, @tPar15, @tPar16, @tPar17, @tPar18, ;
-	@tPar19, @tPar20, @tPar21, @tPar22, @tPar23, @tPar24, @tPar25)
-
-Debugout Time(0), Program(), "(Script)", lcParameterClause 
-	
-Return ExecScript(lcScript, &lcParameterClause)
+If loParameters.nPCount > 0
+	lcParameterClause = This.CreateParameterClause(loParameters, @tPar1, @tPar2, @tPar3, @tPar4, ;
+		@tPar5, @tPar6, @tPar7, @tPar8, @tPar9, @tPar10, @tPar11, ;
+		@tPar12, @tPar13, @tPar14, @tPar15, @tPar16, @tPar17, @tPar18, ;
+		@tPar19, @tPar20, @tPar21, @tPar22, @tPar23, @tPar24, @tPar25)
+	Debugout Time(0), Program(), "(Script)", lcParameterClause 
+	Return ExecScript(lcScript, &lcParameterClause)
+Else
+	Debugout Time(0), Program(), "(Script)"
+	Return ExecScript(lcScript)
+EndIf 
 
 
 ENDPROC
