@@ -822,6 +822,9 @@ Lparameters lnWorkerCount, lnTerminalServerCount
 
 Debugout Time(0), Program(), lnWorkerCount, lnTerminalServerCount
 
+lnWorkerCount = Evl(lnWorkerCount, 0)
+lnTerminalServerCount = Evl(lnTerminalServerCount, 0)
+
 If Bittest(Val(Os(10)), 4) and !Bittest(Val(Os(10)), 8)	&& Terminal Server with multiple users
 	This.nWorkerCount = Max(Round(lnTerminalServerCount, 0), 1)
 Else 
