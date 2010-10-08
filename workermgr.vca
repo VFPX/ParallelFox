@@ -1,4 +1,4 @@
-SccTextX Version 1.0.0.1
+SCCTEXT Version 4.0.0.2
 PLATFORM C(8,0),UNIQUEID C(10,0),TIMESTAMP N(10,0),CLASS M(4,0),CLASSLOC M(4,0),BASECLASS M(4,0),OBJNAME M(4,0),PARENT M(4,0),PROPERTIES M(4,0),PROTECTED M(4,0),METHODS M(4,0),OBJCODE M(4,0),OLE M(4,0),OLE2 M(4,0),RESERVED1 M(4,0),RESERVED2 M(4,0),RESERVED3 M(4,0),RESERVED4 M(4,0),RESERVED5 M(4,0),RESERVED6 M(4,0),RESERVED7 M(4,0),RESERVED8 M(4,0),USER M(4,0)
 1252
 
@@ -232,7 +232,7 @@ Otherwise
 EndCase
 
 * Fire Complete event
-If _Screen.oMainProcess.IsRunning()
+If _Screen.oMainProcess.IsRunning() and Type("_Screen.oWorkerEvents.Name") = "C"
 	_Screen.oWorkerEvents.Complete(lvReturn)
 EndIf 
 
