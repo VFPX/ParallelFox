@@ -100,9 +100,12 @@ ENDPROC
 PROCEDURE Init
 _VFP.Caption = "ParallelFox Worker"
 * Set Unattended mode unless in debug mode
-If _VFP.StartMode <> 0
+* Make sure an error handler is in place on worker or displaying UI 
+*	can cause worker to crash.
+If _VFP.StartMode > 1
 	Sys(2335,0)
 EndIf 
+Set TablePrompt Off
 This.oCmdTimer = NewObject("tmrCommand", "ParallelFox.vcx")
 
 Return DoDefault()
