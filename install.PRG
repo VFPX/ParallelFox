@@ -11,7 +11,62 @@ Else
 	MessageBox("ParallelFox was NOT registered.", 16, "ParallelFox")
 EndIf 
 
+If MessageBox("Do you want to install ParallelFox IntelliSense scripts? (Recommended)", 4+32, "ParallelFox IntelliSense") = 6
+	Do InstallFFI
+EndIf
+
+MessageBox("Install Complete.", 64, "ParallelFox")
+
 Return 
+
+* Install IntelliSense scripts
+* Currently, this does not overwrite existing entries, but that may change if necessary
+Procedure InstallFFI
+Local lnCurrentArea, lcScript, lcProxyClassLib, lcProxyEXE
+
+lnCurrentArea = Select()
+Select 0
+Use (_FoxCode) Again Alias FFIFoxCode
+
+* Parallel Script
+Locate for Lower(Abbrev) = "parallel " and Type = "U" and !Deleted()
+If !Found()
+	Append From FFI\ParFoxCode for Lower(Abbrev) = "parallel" and Type = "U"
+EndIf 
+
+* Parallel Type
+Locate for Lower(Abbrev) = "parallel " and Type = "T" and !Deleted()
+If !Found()
+	Append From FFI\ParFoxCode for Lower(Abbrev) = "parallel" and Type = "T"
+EndIf 
+
+* Worker Script
+Locate for Lower(Abbrev) = "worker " and Type = "U" and !Deleted()
+If !Found()
+	Append From FFI\ParFoxCode for Lower(Abbrev) = "worker" and Type = "U"
+EndIf 
+
+* Worker Type
+Locate for Lower(Abbrev) = "worker " and Type = "T" and !Deleted()
+If !Found()
+	Append From FFI\ParFoxCode for Lower(Abbrev) = "worker" and Type = "T"
+EndIf 
+
+* FFI Script
+* Worker Script
+Locate for Lower(Abbrev) = "handleffi " and Type = "S" and !Deleted()
+If !Found()
+	Append From FFI\ParFoxCode for Lower(Abbrev) = "handleffi" and Type = "S"
+	lcProxyClassLib = FullPath("FFI\FFI.vcx")
+	lcProxyEXE = FullPath("FFI\FoxCode.EXE")
+	Replace Data with Textmerge(Data)
+EndIf 
+
+Use
+Use in Select("ParFoxCode")
+Select (lnCurrentArea)
+
+EndProc 
 
 Function ShellExec
 LParameter lcLink, lcAction, lcParms
