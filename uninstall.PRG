@@ -11,7 +11,26 @@ Else
 	MessageBox("ParallelFox was NOT unregistered.", 16, "ParallelFox")
 EndIf 
 
+If MessageBox("Uninstall ParallelFox IntelliSense scripts?", 4+32, "ParallelFox IntelliSense") = 6
+	Do UninstallFFI
+EndIf
+
+MessageBox("Uninstall Complete.", 64, "ParallelFox")
+
 Return 
+
+Procedure UninstallFFI
+Local lnCurrentArea
+
+lnCurrentArea = Select()
+Select 0
+Use (_FoxCode) Again Alias FFIFoxCode
+Delete for InList(Lower(abbrev), "parallel ", "worker ", "handleffi ")
+Use
+
+Select (lnCurrentArea)
+EndProc 
+
 
 Function ShellExec
 LParameter lcLink, lcAction, lcParms
