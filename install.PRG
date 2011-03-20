@@ -54,9 +54,9 @@ EndIf
 
 * FFI Script
 * Worker Script
-Locate for Lower(Abbrev) = "handleffi " and Type = "S" and !Deleted()
+Locate for Lower(Abbrev) = "pfhandleffi " and Type = "S" and !Deleted()
 If !Found()
-	Append From FFI\ParFoxCode for Lower(Abbrev) = "handleffi" and Type = "S"
+	Append From FFI\ParFoxCode for Lower(Abbrev) = "pfhandleffi" and Type = "S"
 	lcProxyClassLib = FullPath("FFI\FFI.vcx")
 	lcProxyEXE = FullPath("FFI\FoxCode.EXE")
 	Replace Data with Textmerge(Data)
