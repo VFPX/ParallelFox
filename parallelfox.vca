@@ -15,9 +15,9 @@ VERSION =   3.00[END RESERVED1]
 [BASECLASS] custom
 [OBJNAME] amanager
 [START PROPERTIES]
-
 Name = "amanager"
-_memberdata =      271<VFPData><memberdata name="createparameterobject" display="CreateParameterObject"/><memberdata name="createparameterclause" display="CreateParameterClause"/><memberdata name="aarraycopy" display="aArrayCopy"/><memberdata name="copyarray" display="CopyArray"/></VFPData>
+_memberdata =      403<VFPData><memberdata name="createparameterobject" display="CreateParameterObject"/><memberdata name="createparameterclause" display="CreateParameterClause"/><memberdata name="aarraycopy" display="aArrayCopy"/><memberdata name="copyarray" display="CopyArray"/><memberdata name="detecthyperthreading" display="DetectHyperThreading"/><memberdata name="lhyperthreading" display="lHyperThreading"/></VFPData>
+lhyperthreading = .NULL.
 [END PROPERTIES]
 [START METHODS]
 PROCEDURE copyarray
@@ -98,6 +98,28 @@ EndFor
 	
 Return loParameters
 ENDPROC
+PROCEDURE detecthyperthreading
+* Use WMI to determine if HyperThreading is turned on
+* This only works on Windows XP SP3, Windows Server 2003, and later because
+*	underlying Windows APIs were not added until those versions.
+Local lcWMIFolder, loWMI, lcolProcessors, loProcessor
+
+This.lHyperThreading = .F.
+
+lcWMIFolder = Addbs(GetEnv("SystemRoot")) + "System32\WBEM\"
+If Directory(lcWMIFolder)	&& make sure installed
+	loWMI = GetObject("winmgmts:\\.\root\cimv2")
+	lcolProcessors = loWMI.ExecQuery("Select * from Win32_Processor")
+	For each loProcessor in lcolProcessors FoxObject
+		If Type("loProcessor.NumberOfCores")<> "U" and Type("loProcessor.NumberOfLogicalProcessors")<> "U"
+			* If logical processors > actual cores, HT must be turned on
+			If loProcessor.NumberOfLogicalProcessors > loProcessor.NumberOfCores
+				This.lHyperThreading = .T.
+			EndIf 
+		EndIf 
+	EndFor 
+EndIf 
+ENDPROC
 [END METHODS]
 [START RESERVED1]
 Class[END RESERVED1]
@@ -107,8 +129,10 @@ Class[END RESERVED1]
 *copyarray Copy array.
 *createparameterclause Create parameter clause from parameter object.
 *createparameterobject 
+*detecthyperthreading Detect if HyperThreading is turned on.
 ^aarraycopy[1,0] 
 _memberdata XML Metadata for customizable properties
+lhyperthreading Is .T. when HyperThreading is turned on.
 [END RESERVED3]
 [START RESERVED6]
 Pixels[END RESERVED6]
@@ -302,10 +326,9 @@ Pixels[END RESERVED6]
 [BASECLASS] custom
 [OBJNAME] parallel
 [START PROPERTIES]
-
 Name = "parallel"
 _events = NULL
-_memberdata =      755<VFPData><memberdata name="do" display="Do"/><memberdata name="startworkers" display="StartWorkers"/><memberdata name="cpucount" display="CPUCount"/><memberdata name="setworkercount" display="SetWorkerCount"/><memberdata name="docmd" display="DoCmd"/><memberdata name="execscript" display="ExecScript"/><memberdata name="call" display="Call"/><memberdata name="bindevent" display="BindEvent"/><memberdata name="wait" display="Wait"/><memberdata name="_events" display="_Events"/><memberdata name="callmethod" display="CallMethod"/><memberdata name="stopworkers" display="StopWorkers"/><memberdata name="onerror" display="OnError"/><memberdata name="clearqueue" display="ClearQueue"/><memberdata name="setworkerclass" display="SetWorkerClass"/></VFPData>
+_memberdata =      825<VFPData><memberdata name="do" display="Do"/><memberdata name="startworkers" display="StartWorkers"/><memberdata name="cpucount" display="CPUCount"/><memberdata name="setworkercount" display="SetWorkerCount"/><memberdata name="docmd" display="DoCmd"/><memberdata name="execscript" display="ExecScript"/><memberdata name="call" display="Call"/><memberdata name="bindevent" display="BindEvent"/><memberdata name="wait" display="Wait"/><memberdata name="_events" display="_Events"/><memberdata name="callmethod" display="CallMethod"/><memberdata name="stopworkers" display="StopWorkers"/><memberdata name="onerror" display="OnError"/><memberdata name="clearqueue" display="ClearQueue"/><memberdata name="setworkerclass" display="SetWorkerClass"/><memberdata name="detecthyperthreading" display="DetectHyperThreading"/></VFPData>
 cpucount = 0
 [END PROPERTIES]
 [START METHODS]
@@ -401,6 +424,15 @@ PROCEDURE clearqueue
 Debugout Time(0), Program()
 
 _Screen.ParPoolMgr.ClearQueue()
+ENDPROC
+PROCEDURE detecthyperthreading
+* Returns .T. when HyperThreading is Enabled.
+* Default value is NULL.  Detection is a little slow, so only run once.
+If IsNull(_Screen.ParPoolMgr.lHyperThreading)
+	_Screen.ParPoolMgr.DetectHyperThreading()
+EndIf
+
+Return _Screen.ParPoolMgr.lHyperThreading
 ENDPROC
 PROCEDURE do
 * Execute program on worker
@@ -544,6 +576,7 @@ Class[END RESERVED1]
 *call Execute/call function on worker.
 *callmethod Execute/call class method on worker.
 *clearqueue Remove all pending commands from queue.
+*detecthyperthreading Returns .T. when HyperThreading is enabled.
 *do Execute program on worker.
 *docmd Execute single command on worker.
 *execscript Execute script on worker.
@@ -629,8 +662,9 @@ Pixels[END RESERVED6]
 [BASECLASS] custom
 [OBJNAME] parpoolmgr
 [START PROPERTIES]
+
 Name = "parpoolmgr"
-_memberdata =     1005<VFPData><memberdata name="ncpucount" display="nCPUCount"/><memberdata name="nworkercount" display="nWorkerCount"/><memberdata name="startworkers" display="StartWorkers"/><memberdata name="workers" display="Workers"/><memberdata name="nbusyworkers" display="nBusyWorkers"/><memberdata name="queuecommand" display="QueueCommand"/><memberdata name="processqueue" display="ProcessQueue"/><memberdata name="commandqueue" display="CommandQueue"/><memberdata name="ldebugmode" display="lDebugMode"/><memberdata name="stopworkers" display="StopWorkers"/><memberdata name="handleerror" display="HandleError"/><memberdata name="conerror" display="cOnError"/><memberdata name="clearqueue" display="ClearQueue"/><memberdata name="cworkercomprogid" display="cWorkerCOMProgID"/><memberdata name="cworkerclass" display="cWorkerClass"/><memberdata name="cworkerlibrary" display="cWorkerLibrary"/><memberdata name="nprocessing" display="nProcessing"/><memberdata name="setworkercount" display="SetWorkerCount"/></VFPData>
+_memberdata =     1007<VFPData><memberdata name="ncpucount" display="nCPUCount"/><memberdata name="nworkercount" display="nWorkerCount"/><memberdata name="startworkers" display="StartWorkers"/><memberdata name="workers" display="Workers"/><memberdata name="nbusyworkers" display="nBusyWorkers"/><memberdata name="queuecommand" display="QueueCommand"/><memberdata name="processqueue" display="ProcessQueue"/><memberdata name="commandqueue" display="CommandQueue"/><memberdata name="ldebugmode" display="lDebugMode"/><memberdata name="stopworkers" display="StopWorkers"/><memberdata name="handleerror" display="HandleError"/><memberdata name="conerror" display="cOnError"/><memberdata name="clearqueue" display="ClearQueue"/><memberdata name="cworkercomprogid" display="cWorkerCOMProgID"/><memberdata name="cworkerclass" display="cWorkerClass"/><memberdata name="cworkerlibrary" display="cWorkerLibrary"/><memberdata name="nprocessing" display="nProcessing"/><memberdata name="setworkercount" display="SetWorkerCount"/></VFPData>
 commandqueue = 
 conerror = 
 cworkerclass = WorkerMgr
@@ -1233,8 +1267,14 @@ ENDPROC
 PROCEDURE Init
 * Create worker process
 Lparameters lcProcedureFile, lcDirectory, llDebugMode
+Local lhWndForeground
 
 Debugout Time(0), Program(), lcProcedureFile, lcDirectory, llDebugMode
+
+* In Windows XP and earlier, main process can lose focus when 
+*	instantiating COM EXE. Make sure we keep it.
+DECLARE INTEGER GetForegroundWindow IN user32
+lhWndForeground = GetForegroundWindow()
 
 * Debug mode starts workers in full VFP.
 If llDebugMode and _VFP.StartMode = 0
@@ -1248,6 +1288,13 @@ If llDebugMode and _VFP.StartMode = 0
 Else 
 	This.oWorker = CreateObject(_Screen.ParPoolMgr.cWorkerCOMProgID)
 EndIf 
+
+* In Windows XP and earlier, main process can lose focus when 
+*	instantiating COM EXE. Make sure we keep it.
+If GetForegroundWindow() <> lhWndForeground
+	DECLARE INTEGER SetForegroundWindow IN user32 INTEGER hwnd
+	SetForegroundWindow(lhWndForeground)
+EndIf
 
 This.oWorker.SetMainProcess(_VFP)
 lcDirectory = ["] + Evl(lcDirectory, FullPath("")) + ["]
