@@ -1091,16 +1091,20 @@ cDirectory = Evl(cDirectory, Sys(2023))
 
 Do while .t.
 	lcTempName = Sys(2015)
+	* Use critical section to make sure multiple workers don't try to use the same filename
+	This.StartCriticalSection("ReturnCursor" + lcTempName)
 	lcTempFile = Addbs(cDirectory) + lcTempName
 	If !File(lcTempFile + ".dbf") and !File(lcTempFile + ".dbc")
 		Exit
 	EndIf
+	This.EndCriticalSection("ReturnCursor" + lcTempName)
 EndDo 
 
 * Create database to support long field names
 lcDBC = Dbc()
 lnCurrentArea = Select()
 Create Database (lcTempFile)
+This.EndCriticalSection("ReturnCursor" + lcTempName)
 
 * Copy cursor to temp table
 Select (cAlias)
