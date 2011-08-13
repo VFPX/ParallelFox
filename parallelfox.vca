@@ -1283,7 +1283,7 @@ lhWndForeground = GetForegroundWindow()
 * Debug mode starts workers in full VFP.
 If llDebugMode and _VFP.StartMode = 0
 	Local loVFP as VisualFoxPro.Application, lcWorkerVCX
-	loVFP = CreateObject("VisualFoxPro.Application")
+	loVFP = CreateObject("VisualFoxPro.Application." + SUBSTR(VERSION(4),2,1))
 	loVFP.Visible = .t.
 	lcWorkerVCX = FullPath(_Screen.ParPoolMgr.cWorkerLibrary)
  	loVFP.DoCmd([CD "] + JustPath(lcWorkerVCX) + ["])
