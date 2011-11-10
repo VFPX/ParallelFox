@@ -321,6 +321,82 @@ Pixels[END RESERVED6]
 
 [ RECORD]
 [PLATFORM] WINDOWS 
+[UNIQUEID] _3CV0J32BY
+[CLASS] form
+[BASECLASS] form
+[OBJNAME] frmerrorlist
+[START PROPERTIES]
+AutoCenter = .T.
+Caption = "ParallelFox Worker Errors"
+DoCreate = .T.
+Height = 480
+Name = "frmerrorlist"
+Width = 640
+_memberdata = <VFPData><memberdata name="displayerror" display="DisplayError"/><memberdata name="cerrorlist" display="cErrorList"/></VFPData>
+cerrorlist = 
+[END PROPERTIES]
+[START METHODS]
+PROCEDURE displayerror
+* Display error in list.
+Lparameters lnError, lcMethod, lnLine, lcMessage, lcCode
+Local lcErrorMsg
+
+Text to lcErrorMsg TextMerge NoShow
+Error: <<lnError>>
+Message: <<lcMessage>>
+Method: <<lcMethod>>
+Line: <<lnLine>>
+<<Replicate("-",100)>>
+
+EndText 
+
+ThisForm.cErrorList = ThisForm.cErrorList + lcErrorMsg
+* ThisForm.edtErrorList.Value = ThisForm.edtErrorList.Value + lcErrorMsg
+ThisForm.edtErrorList.Refresh()
+
+
+ENDPROC
+[END METHODS]
+[START RESERVED1]
+Class[END RESERVED1]
+[START RESERVED2]
+2[END RESERVED2]
+[START RESERVED3]
+*displayerror Display error in list.
+_memberdata XML Metadata for customizable properties
+cerrorlist List of errors.
+[END RESERVED3]
+[START RESERVED6]
+Pixels[END RESERVED6]
+
+[ RECORD]
+[PLATFORM] WINDOWS 
+[UNIQUEID] _3CV0J60T9
+[CLASS] editbox
+[BASECLASS] editbox
+[OBJNAME] edtErrorList
+[PARENT] frmerrorlist
+[START PROPERTIES]
+Anchor = 15
+ControlSource = "Thisform.cErrorList"
+Height = 478
+Left = 1
+Name = "edtErrorList"
+ReadOnly = .T.
+Top = 1
+Width = 638
+[END PROPERTIES]
+
+[ RECORD]
+[PLATFORM] COMMENT 
+[UNIQUEID] RESERVED  
+[OBJNAME] frmerrorlist
+[START PROPERTIES]
+Arial, 0, 9, 5, 15, 12, 32, 3, 0
+[END PROPERTIES]
+
+[ RECORD]
+[PLATFORM] WINDOWS 
 [UNIQUEID] _2XO1B7PVN
 [CLASS] custom
 [BASECLASS] custom
@@ -662,11 +738,10 @@ Pixels[END RESERVED6]
 [BASECLASS] custom
 [OBJNAME] parpoolmgr
 [START PROPERTIES]
-
 Name = "parpoolmgr"
-_memberdata =     1007<VFPData><memberdata name="ncpucount" display="nCPUCount"/><memberdata name="nworkercount" display="nWorkerCount"/><memberdata name="startworkers" display="StartWorkers"/><memberdata name="workers" display="Workers"/><memberdata name="nbusyworkers" display="nBusyWorkers"/><memberdata name="queuecommand" display="QueueCommand"/><memberdata name="processqueue" display="ProcessQueue"/><memberdata name="commandqueue" display="CommandQueue"/><memberdata name="ldebugmode" display="lDebugMode"/><memberdata name="stopworkers" display="StopWorkers"/><memberdata name="handleerror" display="HandleError"/><memberdata name="conerror" display="cOnError"/><memberdata name="clearqueue" display="ClearQueue"/><memberdata name="cworkercomprogid" display="cWorkerCOMProgID"/><memberdata name="cworkerclass" display="cWorkerClass"/><memberdata name="cworkerlibrary" display="cWorkerLibrary"/><memberdata name="nprocessing" display="nProcessing"/><memberdata name="setworkercount" display="SetWorkerCount"/></VFPData>
+_memberdata =     1115<VFPData><memberdata name="ncpucount" display="nCPUCount"/><memberdata name="nworkercount" display="nWorkerCount"/><memberdata name="startworkers" display="StartWorkers"/><memberdata name="workers" display="Workers"/><memberdata name="nbusyworkers" display="nBusyWorkers"/><memberdata name="queuecommand" display="QueueCommand"/><memberdata name="processqueue" display="ProcessQueue"/><memberdata name="commandqueue" display="CommandQueue"/><memberdata name="ldebugmode" display="lDebugMode"/><memberdata name="stopworkers" display="StopWorkers"/><memberdata name="handleerror" display="HandleError"/><memberdata name="conerror" display="cOnError"/><memberdata name="clearqueue" display="ClearQueue"/><memberdata name="cworkercomprogid" display="cWorkerCOMProgID"/><memberdata name="cworkerclass" display="cWorkerClass"/><memberdata name="cworkerlibrary" display="cWorkerLibrary"/><memberdata name="nprocessing" display="nProcessing"/><memberdata name="setworkercount" display="SetWorkerCount"/><memberdata name="displayerrors" display="DisplayErrors"/><memberdata name="oerrorlist" display="oErrorList"/></VFPData>
 commandqueue = 
-conerror = 
+conerror = This.DisplayErrors(nError, cMethod, nLine, cMessage, cCode)
 cworkerclass = WorkerMgr
 cworkercomprogid = ParallelFox.WorkerMgr
 cworkerlibrary = WorkerMgr.vcx
@@ -675,6 +750,7 @@ nbusyworkers = 0
 ncpucount = 0
 nprocessing = 0
 nworkercount = 0
+oerrorlist = .NULL.
 workers = .NULL.
 [END PROPERTIES]
 [START PROTECTED]
@@ -701,6 +777,17 @@ This.CommandQueue = NULL
 This.CommandQueue = CreateObject("Collection")
 
 This.nProcessing = 0
+ENDPROC
+PROCEDURE displayerrors
+* Default error handler displays list of errors from workers.
+Lparameters lnError, lcMethod, lnLine, lcMessage, lcCode
+
+If Vartype(This.oErrorList) <> "O" or IsNull(This.oErrorList)
+	This.oErrorList = NewObject("frmErrorList", "ParallelFox.vcx")
+	This.oErrorList.Show()
+EndIf 
+
+This.oErrorList.DisplayError(lnError, lcMethod, lnLine, lcMessage, lcCode)
 ENDPROC
 PROCEDURE handleerror
 * Global error handler. Set up with Parallel.OnError()
@@ -914,6 +1001,7 @@ Class[END RESERVED1]
 1[END RESERVED2]
 [START RESERVED3]
 *clearqueue Remove all pending commands from queue.
+*displayerrors Default error handler displays list of errors from workers.
 *handleerror Global Error Handler.
 *processqueue Process command queue.
 *queuecommand Add command to queue.
@@ -930,6 +1018,7 @@ nbusyworkers Number of workers currently processing commands.
 ncpucount Number of logical processors on machine.
 nprocessing Number of times ProcessQueue has been called.
 nworkercount Number of workers. Defaults to CPU count.
+oerrorlist Reference to error list form.
 workers Workers collection.
 [END RESERVED3]
 [START RESERVED6]
@@ -949,7 +1038,7 @@ Pixels[END RESERVED6]
 [START PROPERTIES]
 Enabled = .F.
 Height = 23
-Interval = 10
+Interval = 1
 Name = "tmrcommand"
 Width = 23
 _memberdata = <VFPData><memberdata name="processcommand" display="ProcessCommand"/><memberdata name="lprocessed" display="lProcessed"/><memberdata name="omanager" display="oManager"/></VFPData>
@@ -966,7 +1055,7 @@ Local loManager
 
 This.Enabled = .f.
 Doevents 
-* Timer can fire more than once before it is enabled.
+* Timer can fire more than once before it is disabled.
 * Doevents usually prevents this from happening, but this code ensures it.
 If This.lProcessed
 	Return 
@@ -1070,11 +1159,13 @@ Debugout Time(0), Program(), cCriticalSectionName
 
 * Find and release mutex
 lnRow = Ascan(This._CriticalSections, cCriticalSectionName, 1, 0, 1, 8)
-lnhMutex = This._CriticalSections[lnRow,2]
-ReleaseMutex(lnhMutex)
+If lnRow <> 0
+	lnhMutex = This._CriticalSections[lnRow,2]
+	ReleaseMutex(lnhMutex)
 
-* Remove from array
-Adel(This._CriticalSections, lnRow)
+	* Remove from array
+	Adel(This._CriticalSections, lnRow)
+EndIf 
 ENDPROC
 PROCEDURE isworker
 * Returns .T. if currently running in Worker process.
@@ -1090,21 +1181,23 @@ cAlias = Evl(cAlias, Alias())
 cDirectory = Evl(cDirectory, Sys(2023))
 
 Do while .t.
-	lcTempName = Sys(2015)
-	* Use critical section to make sure multiple workers don't try to use the same filename
-	This.StartCriticalSection("ReturnCursor" + lcTempName)
+	* Sys(2015) may actually return the same value in separate processes
+	* Add ThreadID to the name to make sure it is unique across all workers
+	lcTempName = Sys(2015) + "_" + Transform(_VFP.ThreadId)
 	lcTempFile = Addbs(cDirectory) + lcTempName
 	If !File(lcTempFile + ".dbf") and !File(lcTempFile + ".dbc")
 		Exit
 	EndIf
-	This.EndCriticalSection("ReturnCursor" + lcTempName)
 EndDo 
 
 * Create database to support long field names
 lcDBC = Dbc()
+If !DBused(lcDBC)	
+	* Full path may not work if DBC is compiled into EXE/APP
+	lcDBC = JustStem(JustFname(lcDBC))
+EndIf 
 lnCurrentArea = Select()
 Create Database (lcTempFile)
-This.EndCriticalSection("ReturnCursor" + lcTempName)
 
 * Copy cursor to temp table
 Select (cAlias)
@@ -1295,7 +1388,10 @@ EndIf
 
 * In Windows XP and earlier, main process can lose focus when 
 *	instantiating COM EXE. Make sure we keep it.
-If GetForegroundWindow() <> lhWndForeground
+* This issue apparently only affects IDE, and can cause wrong window 
+*	to get focus at runtime if workers started when main VFP window is not visible.
+*	So, only applying to IDE.  May revisit if issue presents itself at runtime or other scenarios.
+If _VFP.StartMode = 0 and GetForegroundWindow() <> lhWndForeground
 	DECLARE INTEGER SetForegroundWindow IN user32 INTEGER hwnd
 	SetForegroundWindow(lhWndForeground)
 EndIf
