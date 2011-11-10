@@ -26,7 +26,7 @@ Local lnCurrentArea, lcScript, lcProxyClassLib, lcProxyEXE
 
 lnCurrentArea = Select()
 Select 0
-Use (_FoxCode) Again Alias FFIFoxCode
+Use (_FoxCode) Again Alias FFIFoxCode Shared
 
 * Parallel Script
 Locate for Lower(Abbrev) = "parallel " and Type = "U" and !Deleted()
