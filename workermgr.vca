@@ -10,6 +10,51 @@ VERSION =   3.00[END RESERVED1]
 
 [ RECORD]
 [PLATFORM] WINDOWS 
+[UNIQUEID] _3CV0I1GR4
+[CLASS] custom
+[BASECLASS] custom
+[OBJNAME] errorhandler
+[START PROPERTIES]
+Name = "errorhandler"
+_memberdata = <VFPData><memberdata name="handleerror" display="HandleError"/></VFPData>
+[END PROPERTIES]
+[START METHODS]
+PROCEDURE Init
+* Default error handler 
+* Unhandled errors may cause workers to crash when not in debug mode
+
+On Error _Screen.oErrorHandler.HandleError(Error(), Sys(16), Lineno(1), Message(), Message(1))
+ENDPROC
+PROCEDURE handleerror
+* Handle worker error and return to main process
+Lparameters lnError, lcMethod, lnLine, lcMessage, lcCode
+Local Worker as Worker
+Worker = NewObject("Worker", "ParallelFox.vcx")
+
+Worker.ReturnError(lnError, lcMethod, lnLine, lcMessage, lcCode)
+
+* Exit current code containing error and return to command processor
+Return to ProcessCommand 
+ENDPROC
+[END METHODS]
+[START RESERVED1]
+Class[END RESERVED1]
+[START RESERVED2]
+1[END RESERVED2]
+[START RESERVED3]
+*handleerror Handle worker error.
+_memberdata XML Metadata for customizable properties
+[END RESERVED3]
+[START RESERVED6]
+Pixels[END RESERVED6]
+
+[ RECORD]
+[PLATFORM] COMMENT 
+[UNIQUEID] RESERVED  
+[OBJNAME] errorhandler
+
+[ RECORD]
+[PLATFORM] WINDOWS 
 [UNIQUEID] _2Z619GLX6
 [CLASS] custom
 [BASECLASS] custom
@@ -104,6 +149,8 @@ _VFP.Caption = "ParallelFox Worker"
 *	can cause worker to crash.
 If _VFP.StartMode > 1
 	Sys(2335,0)
+	* Default error handler
+	_Screen.NewObject("oErrorHandler", "ErrorHandler", "ParallelFox.vcx")
 EndIf 
 Set TablePrompt Off
 This.oCmdTimer = NewObject("tmrCommand", "ParallelFox.vcx")
