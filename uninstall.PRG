@@ -24,7 +24,7 @@ Local lnCurrentArea
 
 lnCurrentArea = Select()
 Select 0
-Use (_FoxCode) Again Alias FFIFoxCode
+Use (_FoxCode) Again Alias FFIFoxCode Shared
 Delete for InList(Lower(abbrev), "parallel ", "worker ", "pfhandleffi ")
 Use
 
