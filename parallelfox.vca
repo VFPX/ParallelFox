@@ -622,9 +622,19 @@ Lparameters lAllWorkers
 Debugout Time(0), Program(), "Start"
 
 Local lnKey
+lnKey = 0
 Do while .t.
 	* Sleep() blocks worker processes, so use INKEY() to wait
-	lnKey = Inkey(.1, "H")
+	Try 
+		lnKey = Inkey(.1, "H")
+	Catch
+		* INKEY() crashes intermittently. If that happens, use Chrsaw().
+		lnKey = 0
+		If Chrsaw(.1)
+			lnKey = Inkey()
+		EndIf 
+	EndTry 	
+
 	Do Case
 	* ON Escape doesn't work during INKEY() and VFP can appear locked up.
 	* CTRL+X will force exit from Wait.
