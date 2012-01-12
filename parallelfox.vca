@@ -1401,7 +1401,7 @@ EndIf
 * This issue apparently only affects IDE, and can cause wrong window 
 *	to get focus at runtime if workers started when main VFP window is not visible.
 *	So, only applying to IDE.  May revisit if issue presents itself at runtime or other scenarios.
-If _VFP.StartMode = 0 and GetForegroundWindow() <> lhWndForeground
+If _VFP.StartMode = 0 and Os(3)<6 and GetForegroundWindow() <> lhWndForeground
 	DECLARE INTEGER SetForegroundWindow IN user32 INTEGER hwnd
 	SetForegroundWindow(lhWndForeground)
 EndIf
