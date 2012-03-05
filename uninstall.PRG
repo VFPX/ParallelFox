@@ -5,7 +5,7 @@
 * This program requests elevation and confirms registration.
 ShellExec(FullPath("ParallelFox.exe"),"RunAs","/unregserver")
 Wait "Unregistering ParallelFox..." window timeout .5	&& wait for registration to complete
-If !IsRegistered("ParallelFox.WorkerMgr")
+If !IsRegistered("ParallelFox.Application")
 	MessageBox("ParallelFox was unregistered successfully.", 64, "ParallelFox")
 Else
 	MessageBox("ParallelFox was NOT unregistered.", 16, "ParallelFox")
