@@ -17,17 +17,17 @@ FileDescription=ParallelFox
 LegalCopyright=
 LegalTrademarks=
 ProductName=ParallelFox
-Major=0
-Minor=7
+Major=2
+Minor=0
 Revision=0
 AutoIncrement=.F.
 [OLEServers]
-C:\VFPX\ParallelFox\parallelfox.exe,parallelfox,parallelfox,parallelfox Type Library,0,{59DFDB10-DA6C-421F-93B8-CA92AD163223}
-workermgr,c:\vfpx\parallelfox\workermgr.vcx,parallelfox.workermgr,0,parallelfox.workermgr,,1,{111E172D-0E4A-4D47-9218-FA33345211B4},{21D2FA45-748E-4FC7-9712-5C816E9B2ADD}
+C:\VFPX\ParallelFox\parallelfox.exe,parallelfox,ParallelFox,ParallelFox Type Library,0,{59DFDB10-DA6C-421F-93B8-CA92AD163223}
+Application,c:\vfpx\parallelfox\parfoxapp.prg,ParallelFox.Application,0,ParallelFox.Application,,1,{76DE0CE0-CE45-491B-9EDF-6F91CDBD9880},{8865A96C-3A70-4B23-8892-0E8B4F5046F7}
 [OLEServersEnd]
 [ProjectFiles]
-1018407644,V,parallelfox.vcx,.F.,.F.,1252,,,
-1020693467,V,workermgr.vcx,.F.,.T.,1252,,,
+1018407644,V,parallelfox.vcx,.T.,.F.,1252,,,
 1027693923,P,install.prg,.T.,.F.,1252,,,
 1027693937,P,uninstall.prg,.T.,.F.,1252,,,
+1080380716,P,parfoxapp.prg,.F.,.T.,1252,,,
 [EOF]
