@@ -185,6 +185,51 @@ Pixels[END RESERVED6]
 
 [ RECORD]
 [PLATFORM] WINDOWS 
+[UNIQUEID] _3CV0I1GR4
+[CLASS] custom
+[BASECLASS] custom
+[OBJNAME] errorhandler
+[START PROPERTIES]
+Name = "errorhandler"
+_memberdata = <VFPData><memberdata name="handleerror" display="HandleError"/></VFPData>
+[END PROPERTIES]
+[START METHODS]
+PROCEDURE Init
+* Default error handler 
+* Unhandled errors may cause workers to crash when not in debug mode
+
+On Error _Screen.oErrorHandler.HandleError(Error(), Sys(16), Lineno(1), Message(), Message(1))
+ENDPROC
+PROCEDURE handleerror
+* Handle worker error and return to main process
+Lparameters lnError, lcMethod, lnLine, lcMessage, lcCode
+Local Worker as Worker
+Worker = NewObject("Worker", "ParallelFox.vcx")
+
+Worker.ReturnError(lnError, lcMethod, lnLine, lcMessage, lcCode)
+
+* Exit current code containing error and return to command processor
+Return to ProcessCommand 
+ENDPROC
+[END METHODS]
+[START RESERVED1]
+Class[END RESERVED1]
+[START RESERVED2]
+1[END RESERVED2]
+[START RESERVED3]
+*handleerror Handle worker error.
+_memberdata XML Metadata for customizable properties
+[END RESERVED3]
+[START RESERVED6]
+Pixels[END RESERVED6]
+
+[ RECORD]
+[PLATFORM] COMMENT 
+[UNIQUEID] RESERVED  
+[OBJNAME] errorhandler
+
+[ RECORD]
+[PLATFORM] WINDOWS 
 [UNIQUEID] _2YX0JA1AX
 [CLASS] custom
 [BASECLASS] custom
@@ -394,6 +439,68 @@ Width = 638
 [START PROPERTIES]
 Arial, 0, 9, 5, 15, 12, 32, 3, 0
 [END PROPERTIES]
+
+[ RECORD]
+[PLATFORM] WINDOWS 
+[UNIQUEID] _2Z619GLX6
+[CLASS] custom
+[BASECLASS] custom
+[OBJNAME] mainprocess
+[START PROPERTIES]
+Name = "mainprocess"
+_memberdata = <VFPData><memberdata name="omainvfp" display="oMainVFP"/><memberdata name="isrunning" display="IsRunning"/><memberdata name="starttimer" display="StartTimer"/><memberdata name="otimer" display="oTimer"/></VFPData>
+omainvfp = .NULL.
+otimer = 
+[END PROPERTIES]
+[START METHODS]
+PROCEDURE isrunning
+* Check if main process is still running. If not, quit worker.
+This.oTimer.Enabled = .f.
+
+Debugout Time(0), Program()
+
+Try 
+	This.oMainVFP.Eval(1)
+Catch
+	Quit 
+EndTry 
+
+This.oTimer.Enabled = .t.
+Return .t.
+ENDPROC
+PROCEDURE starttimer
+* Start timer to periodically check that main process is still running.
+Local loTimer as Timer
+
+Debugout Time(0), Program()
+
+loTimer = CreateObject("Timer")
+BindEvent(loTimer, "Timer", This, "IsRunning")
+loTimer.Interval = 60000	&& check every minute
+
+This.oTimer = loTimer
+
+
+ENDPROC
+[END METHODS]
+[START RESERVED1]
+Class[END RESERVED1]
+[START RESERVED2]
+1[END RESERVED2]
+[START RESERVED3]
+*isrunning Check if main process is still running. If not, quit worker.
+*starttimer Start timer to periodically check that main process is still running.
+_memberdata XML Metadata for customizable properties
+omainvfp Reference to _VFP object in main process.
+otimer Timer to periodically check that main process is still running.
+[END RESERVED3]
+[START RESERVED6]
+Pixels[END RESERVED6]
+
+[ RECORD]
+[PLATFORM] COMMENT 
+[UNIQUEID] RESERVED  
+[OBJNAME] mainprocess
 
 [ RECORD]
 [PLATFORM] WINDOWS 
@@ -754,7 +861,7 @@ commandqueue =
 conerror = This.DisplayErrors(nError, cMethod, nLine, cMessage, cCode)
 cworkerclass = WorkerMgr
 cworkercomprogid = ParallelFox.WorkerMgr
-cworkerlibrary = WorkerMgr.vcx
+cworkerlibrary = ParallelFox.vcx
 ldebugmode = .F.
 nbusyworkers = 0
 ncpucount = 0
@@ -1350,16 +1457,252 @@ Pixels[END RESERVED6]
 
 [ RECORD]
 [PLATFORM] WINDOWS 
+[UNIQUEID] _2XO1B8UVB
+[CLASS] amanager
+[CLASSLOC] parallelfox.vcx
+[BASECLASS] custom
+[OBJNAME] workermgr
+[START PROPERTIES]
+Name = "workermgr"
+_memberdata =     1009<VFPData><memberdata name="deserializeparameters" display="DeserializeParameters"/><memberdata name="instantiateipc" display="InstantiateIPC"/><memberdata name="instantiatejson" display="InstantiateJSON"/><memberdata name="processmessage" display="ProcessMessage"/><memberdata name="registerworker" display="RegisterWorker"/><memberdata name="hwndmain" display="hWndMain"/><memberdata name="ocmdtimer" display="oCmdTimer"/><memberdata name="processcommand" display="ProcessCommand"/><memberdata name="ocommand" display="oCommand"/><memberdata name="createcommandobject" display="CreateCommandObject"/><memberdata name="execscript" display="ExecScript"/><memberdata name="call" display="Call"/><memberdata name="sendcommand" display="SendCommand"/><memberdata name="docmd" display="DoCmd"/><memberdata name="callmethod" display="CallMethod"/><memberdata name="do" display="Do"/><memberdata name="setmainprocess" display="SetMainProcess"/><memberdata name="setworkerevents" display="SetWorkerEvents"/></VFPData>
+ocmdtimer = .NULL.
+ocommand = .NULL.
+[END PROPERTIES]
+[START PROTECTED]
+call
+callmethod
+do
+execscript
+[END PROTECTED]
+[START METHODS]
+PROCEDURE Destroy
+* Make sure worker is closed
+Debugout Time(0), Program()
+
+Quit
+
+ENDPROC
+PROCEDURE Init
+_VFP.Caption = "ParallelFox Worker"
+* Set Unattended mode unless in debug mode
+* Make sure an error handler is in place on worker or displaying UI 
+*	can cause worker to crash.
+If _VFP.StartMode > 1
+	Sys(2335,0)
+	* Default error handler
+	_Screen.NewObject("oErrorHandler", "ErrorHandler", "ParallelFox.vcx")
+EndIf 
+Set TablePrompt Off
+This.oCmdTimer = NewObject("tmrCommand", "ParallelFox.vcx")
+
+Return DoDefault()
+ENDPROC
+PROCEDURE call
+* Execute/call function on worker
+Lparameters lcFunction, loParameters
+Local tPar1, tPar2, tPar3, tPar4, tPar5, tPar6, ;
+	tPar7, tPar8, tPar9, tPar10, tPar11, tPar12, tPar13, ;
+	tPar14, tPar15, tPar16, tPar17, tPar18, tPar19, tPar20, ;
+	tPar21, tPar22, tPar23, tPar24, tPar25
+Local lcParameterClause, lcFunctionCall
+
+lcParameterClause = This.CreateParameterClause(loParameters, @tPar1, @tPar2, @tPar3, @tPar4, ;
+	@tPar5, @tPar6, @tPar7, @tPar8, @tPar9, @tPar10, @tPar11, ;
+	@tPar12, @tPar13, @tPar14, @tPar15, @tPar16, @tPar17, @tPar18, ;
+	@tPar19, @tPar20, @tPar21, @tPar22, @tPar23, @tPar24, @tPar25)
+
+Debugout Time(0), Program(), lcFunction, lcParameterClause 
+	
+lcFunctionCall = Alltrim(lcFunction)+ "(" + lcParameterClause + ")"
+Return &lcFunctionCall
+
+
+ENDPROC
+PROCEDURE callmethod
+* Execute/call class method on worker.
+Lparameters lcMethod, lcClassName, lcModule, lcInApplication, loParameters
+Local tPar1, tPar2, tPar3, tPar4, tPar5, tPar6, ;
+	tPar7, tPar8, tPar9, tPar10, tPar11, tPar12, tPar13, ;
+	tPar14, tPar15, tPar16, tPar17, tPar18, tPar19, tPar20, ;
+	tPar21, tPar22, tPar23, tPar24, tPar25
+Local lcParameterClause, lcMethodCall, loObject
+	
+lcParameterClause = This.CreateParameterClause(loParameters, @tPar1, @tPar2, @tPar3, @tPar4, ;
+	@tPar5, @tPar6, @tPar7, @tPar8, @tPar9, @tPar10, @tPar11, ;
+	@tPar12, @tPar13, @tPar14, @tPar15, @tPar16, @tPar17, @tPar18, ;
+	@tPar19, @tPar20, @tPar21, @tPar22, @tPar23, @tPar24, @tPar25)
+
+Debugout Time(0), Program(), lcMethod, lcClassName, lcModule, lcInApplication, lcParameterClause 
+	
+loObject = NewObject(lcClassName, lcModule, lcInApplication)
+lcMethodCall = Alltrim(lcMethod)+ "(" + lcParameterClause + ")"
+Return loObject.&lcMethodCall
+
+
+ENDPROC
+PROCEDURE do
+* Execute program on worker
+Lparameters lcPRG, lcInProgram, loParameters
+Local tPar1, tPar2, tPar3, tPar4, tPar5, tPar6, ;
+	tPar7, tPar8, tPar9, tPar10, tPar11, tPar12, tPar13, ;
+	tPar14, tPar15, tPar16, tPar17, tPar18, tPar19, tPar20, ;
+	tPar21, tPar22, tPar23, tPar24, tPar25
+Local lcParameterClause
+
+If loParameters.nPCount > 0
+	lcParameterClause = This.CreateParameterClause(loParameters, @tPar1, @tPar2, @tPar3, @tPar4, ;
+		@tPar5, @tPar6, @tPar7, @tPar8, @tPar9, @tPar10, @tPar11, ;
+		@tPar12, @tPar13, @tPar14, @tPar15, @tPar16, @tPar17, @tPar18, ;
+		@tPar19, @tPar20, @tPar21, @tPar22, @tPar23, @tPar24, @tPar25)
+	* DO passes all parameters by reference, so strip out "@" to avoid syntax error
+	lcParameterClause = Chrtran(lcParameterClause, "@", "")
+	Debugout Time(0), Program(), lcPRG, lcInProgram, lcParameterClause 	
+	Do (lcPRG) in (lcInProgram) with &lcParameterClause
+Else 
+	Debugout Time(0), Program(), lcPRG, lcInProgram
+	Do (lcPRG) in (lcInProgram)
+EndIf 
+
+* No return value from DO command, so always .T.
+ENDPROC
+PROCEDURE docmd
+Lparameters lcCommand
+
+Debugout Time(0), Program(), lcCommand
+
+Return _VFP.DoCmd(lcCommand)
+ENDPROC
+PROCEDURE execscript
+* Execute script on worker
+Lparameters lcScript, loParameters
+Local tPar1, tPar2, tPar3, tPar4, tPar5, tPar6, ;
+	tPar7, tPar8, tPar9, tPar10, tPar11, tPar12, tPar13, ;
+	tPar14, tPar15, tPar16, tPar17, tPar18, tPar19, tPar20, ;
+	tPar21, tPar22, tPar23, tPar24, tPar25
+Local lcParameterClause
+	
+If loParameters.nPCount > 0
+	lcParameterClause = This.CreateParameterClause(loParameters, @tPar1, @tPar2, @tPar3, @tPar4, ;
+		@tPar5, @tPar6, @tPar7, @tPar8, @tPar9, @tPar10, @tPar11, ;
+		@tPar12, @tPar13, @tPar14, @tPar15, @tPar16, @tPar17, @tPar18, ;
+		@tPar19, @tPar20, @tPar21, @tPar22, @tPar23, @tPar24, @tPar25)
+	Debugout Time(0), Program(), "(Script)", lcParameterClause 
+	Return ExecScript(lcScript, &lcParameterClause)
+Else
+	Debugout Time(0), Program(), "(Script)"
+	Return ExecScript(lcScript)
+EndIf 
+
+
+ENDPROC
+PROCEDURE processcommand
+* Process Command
+Local loCommand as Command of ParallelFox.vcx, lcCommandType, lvReturn
+loCommand = This.oCommand	&& for Intellisense
+
+Assert !IsNull(loCommand) Message Program() + " Command object is NULL"
+
+Debugout Time(0), Program(), loCommand.cCommandType, loCommand.cCommand, ;
+	loCommand.cClass, loCommand.cModule
+
+lcCommandType = Upper(Alltrim(loCommand.cCommandType))
+Do Case
+Case lcCommandType == "DOCMD"
+	lvReturn = This.DoCmd(loCommand.cCommand)
+Case lcCommandType == "DO"
+	lvReturn = This.Do(loCommand.cCommand, loCommand.cClass, loCommand.oParameters)
+Case lcCommandType == "CALL"
+	lvReturn = This.Call(loCommand.cCommand, loCommand.oParameters)
+Case lcCommandType == "CALLMETHOD"
+	lvReturn = This.CallMethod(loCommand.cCommand, loCommand.cClass, loCommand.cModule, loCommand.cInApplication, loCommand.oParameters)
+Case lcCommandType == "EXECSCRIPT"
+	lvReturn = This.ExecScript(loCommand.cCommand, loCommand.oParameters)
+Otherwise
+
+EndCase
+
+* Fire Complete event
+If _Screen.oMainProcess.IsRunning() and Type("_Screen.oWorkerEvents.Name") = "C"
+	_Screen.oWorkerEvents.Complete(lvReturn)
+EndIf 
+
+ENDPROC
+PROCEDURE sendcommand
+* Send command to worker
+Lparameters loCommand as Command of ParallelFox.vcx
+
+Debugout Time(0), Program(), loCommand.cCommandType, loCommand.cCommand, ;
+	loCommand.cClass, loCommand.cModule
+
+This.oCommand = loCommand
+
+* Timer is used to start command without blocking main process
+This.oCmdTimer.ProcessCommand(This)
+ENDPROC
+PROCEDURE setmainprocess
+* Set reference to main process.
+Lparameters loMainVFP, lcWorkerApp
+Local loMainProcess as MainProcess of ParallelFox.vcx
+
+If VarType(_Screen.oMainProcess) = "U"
+	_Screen.AddProperty("oMainProcess", NULL)
+EndIf 
+
+loMainProcess = NewObject("MainProcess", "ParallelFox.vcx", lcWorkerApp)
+loMainProcess.oMainVFP = loMainVFP
+loMainProcess.StartTimer()
+_Screen.oMainProcess = loMainProcess
+
+ENDPROC
+PROCEDURE setworkerevents
+* Set reference to worker events object.
+Lparameters loWorkerEvents
+
+If VarType(_Screen.oWorkerEvents) = "U"
+	_Screen.AddProperty("oWorkerEvents", NULL)
+EndIf 
+
+_Screen.oWorkerEvents = loWorkerEvents
+ENDPROC
+[END METHODS]
+[START RESERVED1]
+Class[END RESERVED1]
+[START RESERVED2]
+1[END RESERVED2]
+[START RESERVED3]
+*call Execute/call function on worker.
+*callmethod Execute/call class method on worker.
+*do Execute program on worker.
+*docmd Execute single command on worker.
+*execscript Execute script on worker.
+*processcommand Process command.
+*sendcommand Send command to worker process.
+*setmainprocess Set reference to main process.
+*setworkerevents Set reference to worker events object.
+ocmdtimer Timer used to start command asynchronously.
+ocommand Command object.
+[END RESERVED3]
+[START RESERVED6]
+Pixels[END RESERVED6]
+
+[ RECORD]
+[PLATFORM] COMMENT 
+[UNIQUEID] RESERVED  
+[OBJNAME] workermgr
+
+[ RECORD]
+[PLATFORM] WINDOWS 
 [UNIQUEID] _2XO1BA4B4
 [CLASS] custom
 [BASECLASS] custom
 [OBJNAME] workerproxy
 [START PROPERTIES]
 Name = "workerproxy"
-_memberdata =      459<VFPData><memberdata name="lbusy" display="lBusy"/><memberdata name="oworker" display="oWorker"/><memberdata name="sendcommand" display="SendCommand"/><memberdata name="complete" display="Complete"/><memberdata name="llocked" display="lLocked"/><memberdata name="ldebugmode" display="lDebugMode"/><memberdata name="stopworker" display="StopWorker"/><memberdata name="handleerror" display="HandleError"/><memberdata name="oevents" display="oEvents"/></VFPData>
+_memberdata =      515<VFPData><memberdata name="lbusy" display="lBusy"/><memberdata name="oworker" display="oWorker"/><memberdata name="sendcommand" display="SendCommand"/><memberdata name="complete" display="Complete"/><memberdata name="llocked" display="lLocked"/><memberdata name="ldebugmode" display="lDebugMode"/><memberdata name="stopworker" display="StopWorker"/><memberdata name="handleerror" display="HandleError"/><memberdata name="oevents" display="oEvents"/><memberdata name="oapplication" display="oApplication"/></VFPData>
 lbusy = .F.
 ldebugmode = .F.
 llocked = .F.
+oapplication = .NULL.
 oevents = .NULL.
 oworker = .NULL.
 [END PROPERTIES]
@@ -1375,6 +1718,7 @@ PROCEDURE Init
 * Create worker process
 Lparameters lcProcedureFile, lcDirectory, llDebugMode
 Local lhWndForeground
+Local loVFP as VisualFoxPro.Application, lcWorkerVCX, lcWorkerAPP, lcWorkerCmd
 
 Debugout Time(0), Program(), lcProcedureFile, lcDirectory, llDebugMode
 
@@ -1384,17 +1728,27 @@ DECLARE INTEGER GetForegroundWindow IN user32
 lhWndForeground = GetForegroundWindow()
 
 * Debug mode starts workers in full VFP.
+lcWorkerApp = ""
 If llDebugMode and _VFP.StartMode = 0
-	Local loVFP as VisualFoxPro.Application, lcWorkerVCX
 	loVFP = CreateObject("VisualFoxPro.Application." + SUBSTR(VERSION(4),2,1))
 	loVFP.Visible = .t.
-	lcWorkerVCX = FullPath(_Screen.ParPoolMgr.cWorkerLibrary)
- 	loVFP.DoCmd([CD "] + JustPath(lcWorkerVCX) + ["])
-	This.oWorker = loVFP.Eval([NewObject("] + _Screen.ParPoolMgr.cWorkerClass + [","] + lcWorkerVCX + [")])
 	This.lDebugMode = .t.
+	lcWorkerVCX = FullPath(_Screen.ParPoolMgr.cWorkerLibrary)
+	loVFP.DoCmd([CD "] + JustPath(lcWorkerVCX) + ["])
 Else 
-	This.oWorker = CreateObject(_Screen.ParPoolMgr.cWorkerCOMProgID)
+	* Must maintain reference to Application object, or COM instance will close even though we also 
+	*	have reference to Worker object.
+	This.oApplication = CreateObject("ParallelFox.Application")
+	loVFP = This.oApplication.VFP
+	lcWorkerVCX = _Screen.ParPoolMgr.cWorkerLibrary
+	* ParallelFox.vcx is compiled into APP/EXE
+	If InList(Upper(JustExt(lcProcedureFile)), "APP", "EXE")
+		lcWorkerApp = FullPath(lcProcedureFile)
+	EndIf 
+*JAL*		This.oWorker = CreateObject(_Screen.ParPoolMgr.cWorkerCOMProgID)
 EndIf 
+lcWorkerCmd = Textmerge([NewObject("<<_Screen.ParPoolMgr.cWorkerClass>>", "<<lcWorkerVCX>>", "<<lcWorkerApp>>")])
+This.oWorker = loVFP.Eval(lcWorkerCmd)
 
 * In Windows XP and earlier, main process can lose focus when 
 *	instantiating COM EXE. Make sure we keep it.
@@ -1406,7 +1760,7 @@ If _VFP.StartMode = 0 and Os(3) < "6" and GetForegroundWindow() <> lhWndForegrou
 	SetForegroundWindow(lhWndForeground)
 EndIf
 
-This.oWorker.SetMainProcess(_VFP)
+This.oWorker.SetMainProcess(_VFP, lcWorkerApp)
 lcDirectory = ["] + Evl(lcDirectory, FullPath("")) + ["]
 This.oWorker.DoCmd("CD " + lcDirectory)
 If !Empty(lcProcedureFile)
@@ -1469,6 +1823,7 @@ PROCEDURE stopworker
 Debugout Time(0), Program()
 
 This.oWorker = NULL
+This.oApplication = NULL
 ENDPROC
 [END METHODS]
 [START RESERVED1]
@@ -1484,6 +1839,7 @@ _memberdata XML Metadata for customizable properties
 lbusy Worker is busy processing command.
 ldebugmode Start workers in Debug mode.
 llocked Is .T. when worker is locked to a specific command and was busy when command queue was processed.
+oapplication
 oevents Reference to worker events object.
 oworker Reference to Worker process.
 [END RESERVED3]
