@@ -305,7 +305,6 @@ Debugout Time(0), Program(), lnError, lcMethod, lnLine, lcMessage, lcCode
 
 This.nCommands = This.nCommands - 1 
 
-
 ENDPROC
 PROCEDURE setdatasession
 * Set data session so events occur in same session as Parallel object.
@@ -1648,7 +1647,7 @@ If VarType(_Screen.oMainProcess) = "U"
 	_Screen.AddProperty("oMainProcess", NULL)
 EndIf 
 
-loMainProcess = NewObject("MainProcess", "ParallelFox.vcx", lcWorkerApp)
+loMainProcess = NewObject("MainProcess", This.ClassLibrary, lcWorkerApp)
 loMainProcess.oMainVFP = loMainVFP
 loMainProcess.StartTimer()
 _Screen.oMainProcess = loMainProcess
@@ -1728,24 +1727,27 @@ DECLARE INTEGER GetForegroundWindow IN user32
 lhWndForeground = GetForegroundWindow()
 
 * Debug mode starts workers in full VFP.
-lcWorkerApp = ""
 If llDebugMode and _VFP.StartMode = 0
 	loVFP = CreateObject("VisualFoxPro.Application." + SUBSTR(VERSION(4),2,1))
 	loVFP.Visible = .t.
 	This.lDebugMode = .t.
 	lcWorkerVCX = FullPath(_Screen.ParPoolMgr.cWorkerLibrary)
-	loVFP.DoCmd([CD "] + JustPath(lcWorkerVCX) + ["])
+	If Directory(JustPath(lcWorkerVCX))
+		loVFP.DoCmd([CD "] + JustPath(lcWorkerVCX) + ["])
+	EndIf 
 Else 
 	* Must maintain reference to Application object, or COM instance will close even though we also 
 	*	have reference to Worker object.
 	This.oApplication = CreateObject("ParallelFox.Application")
 	loVFP = This.oApplication.VFP
 	lcWorkerVCX = _Screen.ParPoolMgr.cWorkerLibrary
-	* ParallelFox.vcx is compiled into APP/EXE
-	If InList(Upper(JustExt(lcProcedureFile)), "APP", "EXE")
-		lcWorkerApp = FullPath(lcProcedureFile)
-	EndIf 
 *JAL*		This.oWorker = CreateObject(_Screen.ParPoolMgr.cWorkerCOMProgID)
+EndIf 
+* ParallelFox.vcx is compiled into APP/EXE
+If InList(Upper(JustExt(lcProcedureFile)), "APP", "EXE")
+	lcWorkerApp = FullPath(lcProcedureFile)
+Else 
+	lcWorkerApp = ""
 EndIf 
 lcWorkerCmd = Textmerge([NewObject("<<_Screen.ParPoolMgr.cWorkerClass>>", "<<lcWorkerVCX>>", "<<lcWorkerApp>>")])
 This.oWorker = loVFP.Eval(lcWorkerCmd)
