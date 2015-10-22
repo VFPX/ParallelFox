@@ -458,6 +458,11 @@ This.oTimer.Enabled = .f.
 
 Debugout Time(0), Program()
 
+* No need to test main process when in MTDLL
+If _VFP.StartMode = 5
+	Return .t.
+EndIf 
+
 Try 
 	This.oMainVFP.Eval(1)
 Catch
@@ -934,6 +939,12 @@ If Iif(This.nProcessing > 0, ;
 	Return
 EndIf 
 
+* Prevent error if run in the middle of CLEAR ALL
+If Type("This.Workers.Count") = "U" or Type("This.CommandQueue.Count") = "U"
+	? "Exiting ProcessQueue"
+	Return 
+EndIf 
+
 * Release completed workers for more work
 * Previously, this was done directly by WorkerProxy, 
 *	but that allowed commands to be sent out of order
@@ -1098,7 +1109,8 @@ EndIf
 This.lDebugMode = llDebugMode
 
 For lnWorker = 1 to This.nWorkerCount
-	loWorkerProxy = NewObject("WorkerProxy", "ParallelFox.vcx", "", lcProcedureFile, lcDirectory, llDebugMode, lnWorker)
+	* .T. llMTDLL for testing. Replace with property set by user.
+	loWorkerProxy = NewObject("WorkerProxy", "ParallelFox.vcx", "", lcProcedureFile, lcDirectory, llDebugMode, lnWorker, .t.)
 	ComArray(loWorkerProxy, 11)
 	This.Workers.Add(loWorkerProxy)
 EndFor 
@@ -1476,7 +1488,7 @@ Pixels[END RESERVED6]
 [OBJNAME] workermgr
 [START PROPERTIES]
 Name = "workermgr"
-_memberdata =     1009<VFPData><memberdata name="deserializeparameters" display="DeserializeParameters"/><memberdata name="instantiateipc" display="InstantiateIPC"/><memberdata name="instantiatejson" display="InstantiateJSON"/><memberdata name="processmessage" display="ProcessMessage"/><memberdata name="registerworker" display="RegisterWorker"/><memberdata name="hwndmain" display="hWndMain"/><memberdata name="ocmdtimer" display="oCmdTimer"/><memberdata name="processcommand" display="ProcessCommand"/><memberdata name="ocommand" display="oCommand"/><memberdata name="createcommandobject" display="CreateCommandObject"/><memberdata name="execscript" display="ExecScript"/><memberdata name="call" display="Call"/><memberdata name="sendcommand" display="SendCommand"/><memberdata name="docmd" display="DoCmd"/><memberdata name="callmethod" display="CallMethod"/><memberdata name="do" display="Do"/><memberdata name="setmainprocess" display="SetMainProcess"/><memberdata name="setworkerevents" display="SetWorkerEvents"/></VFPData>
+_memberdata =     1077<VFPData><memberdata name="deserializeparameters" display="DeserializeParameters"/><memberdata name="instantiateipc" display="InstantiateIPC"/><memberdata name="instantiatejson" display="InstantiateJSON"/><memberdata name="processmessage" display="ProcessMessage"/><memberdata name="registerworker" display="RegisterWorker"/><memberdata name="hwndmain" display="hWndMain"/><memberdata name="ocmdtimer" display="oCmdTimer"/><memberdata name="processcommand" display="ProcessCommand"/><memberdata name="ocommand" display="oCommand"/><memberdata name="createcommandobject" display="CreateCommandObject"/><memberdata name="execscript" display="ExecScript"/><memberdata name="call" display="Call"/><memberdata name="sendcommand" display="SendCommand"/><memberdata name="docmd" display="DoCmd"/><memberdata name="callmethod" display="CallMethod"/><memberdata name="do" display="Do"/><memberdata name="setmainprocess" display="SetMainProcess"/><memberdata name="setworkerevents" display="SetWorkerEvents"/><memberdata name="startmtcommandloop" display="StartMTCommandLoop"/></VFPData>
 ocmdtimer = .NULL.
 ocommand = .NULL.
 [END PROPERTIES]
@@ -1491,7 +1503,9 @@ PROCEDURE Destroy
 * Make sure worker is closed
 Debugout Time(0), Program()
 
-Quit
+If _VFP.StartMode <> 5
+	Quit
+EndIf 
 
 ENDPROC
 PROCEDURE Init
@@ -1505,7 +1519,11 @@ If _VFP.StartMode > 1
 	_Screen.NewObject("oErrorHandler", "ErrorHandler", "ParallelFox.vcx")
 EndIf 
 Set TablePrompt Off
-This.oCmdTimer = NewObject("tmrCommand", "ParallelFox.vcx")
+If _VFP.StartMode <> 5
+	This.oCmdTimer = NewObject("tmrCommand", "ParallelFox.vcx")
+EndIf 
+
+StrToFile(Transform(Datetime()) + ": " + Program() + Chr(13), "MTLog.txt", 1)
 
 Return DoDefault()
 ENDPROC
@@ -1656,10 +1674,13 @@ PROCEDURE setmainprocess
 Lparameters loMainVFP, lcWorkerApp
 Local loMainProcess as MainProcess of ParallelFox.vcx
 
+StrToFile(Transform(Datetime()) + ": " + Program() + " - " + Transform(lcWorkerApp) + Chr(13), "MTLog.txt", 1)
+
 If VarType(_Screen.oMainProcess) = "U"
 	_Screen.AddProperty("oMainProcess", NULL)
 EndIf 
 
+StrToFile(Transform(Datetime()) + ": lcWorkerApp " + lcWorkerApp + Chr(13), "MTLog.txt", 1)
 loMainProcess = NewObject("MainProcess", This.ClassLibrary, lcWorkerApp)
 loMainProcess.oMainVFP = loMainVFP
 loMainProcess.StartTimer()
@@ -1676,6 +1697,83 @@ EndIf
 
 _Screen.oWorkerEvents = loWorkerEvents
 ENDPROC
+PROCEDURE startmtcommandloop
+* Start command loop for MTDLL
+* When using MTDLL workers, the thread will shutdown as soon as program is complete
+* So, we have to use a loop to keep program alive and fetch commands from main thread.
+Lparameters loWorkerProxy as WorkerProxy of ParallelFox.vcx
+Local lnEventHandle, lcScript, llExit, lnWaitStatus
+
+#DEFINE INFINITE 0xFFFFFFFF
+#DEFINE WAIT_TIMEOUT 0x00000102
+
+DECLARE INTEGER WaitForSingleObject IN kernel32;
+    INTEGER hHandle,;
+    INTEGER dwMilliseconds
+
+lnEventHandle = loWorkerProxy.nMTEventHandle
+
+This.SetWorkerEvents(loWorkerProxy.oEvents)
+
+StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": " + Program() + Chr(13), "MTLog.txt", 1)
+
+llExit = .f.
+Do while .t.
+	
+	* Wait until main thread sends event that a command is ready to process
+	StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": Waiting for Event" + Chr(13), "MTLog.txt", 1)
+	lnWaitStatus = WaitForSingleObject(lnEventHandle, 10000)
+	If lnWaitStatus <> 0
+		* Zero means event fired
+		* If timeout, check and see if proxy still good
+		If lnWaitStatus = WAIT_TIMEOUT and Type("loWorkerProxy.Name") = "C"
+			StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": Wait Timeout " + Chr(13), "MTLog.txt", 1)
+			Loop 
+		Else 
+			* Otherwise, something went wrong, so exit
+			StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": Wait Status Problem " + Transform(lnWaitStatus) + Chr(13), "MTLog.txt", 1)
+			Exit 
+		EndIf 
+	EndIf 
+
+	StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": Event Received" + Chr(13), "MTLog.txt", 1)
+
+	Try
+		lcScript = loWorkerProxy.cMTScript
+		This.oCommand = loWorkerProxy.oMTCommand
+	Catch 
+		* If can't access worker proxy object or commands, exit	
+		llExit = .t.
+	EndTry 	
+	If llExit
+		Exit
+	EndIf 
+	
+	* Exit if stop workers command sent
+	If Upper(lcScript) = "STOPWORKER"
+		StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": STOPWORKER Command" + Chr(13), "MTLog.txt", 1)
+		Exit 
+	EndIf 
+	
+	* Process command
+	StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": Processing Command" + Chr(13), "MTLog.txt", 1)
+	This.ProcessCommand()
+	StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": Processing Complete" + Chr(13), "MTLog.txt", 1)
+
+EndDo 
+
+StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": Exited Loop" + Chr(13), "MTLog.txt", 1)
+
+This.oCommand = NULL
+
+StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": This.oCommand Released" + Chr(13), "MTLog.txt", 1)
+
+This.SetWorkerEvents(NULL)
+
+StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": SetWorkerEvents(NULL)" + Chr(13), "MTLog.txt", 1)
+
+
+ENDPROC
 [END METHODS]
 [START RESERVED1]
 Class[END RESERVED1]
@@ -1691,6 +1789,7 @@ Class[END RESERVED1]
 *sendcommand Send command to worker process.
 *setmainprocess Set reference to main process.
 *setworkerevents Set reference to worker events object.
+*startmtcommandloop Start command loop for MTDLL
 ocmdtimer Timer used to start command asynchronously.
 ocommand Command object.
 [END RESERVED3]
@@ -1710,31 +1809,87 @@ Pixels[END RESERVED6]
 [OBJNAME] workerproxy
 [START PROPERTIES]
 Name = "workerproxy"
-_memberdata =      617<VFPData><memberdata name="lbusy" display="lBusy"/><memberdata name="oworker" display="oWorker"/><memberdata name="sendcommand" display="SendCommand"/><memberdata name="complete" display="Complete"/><memberdata name="llocked" display="lLocked"/><memberdata name="ldebugmode" display="lDebugMode"/><memberdata name="stopworker" display="StopWorker"/><memberdata name="handleerror" display="HandleError"/><memberdata name="oevents" display="oEvents"/><memberdata name="oapplication" display="oApplication"/><memberdata name="lcomplete" display="lComplete"/><memberdata name="nworkernum" display="nWorkerNum"/></VFPData>
+_memberdata =      983<VFPData><memberdata name="lbusy" display="lBusy"/><memberdata name="oworker" display="oWorker"/><memberdata name="sendcommand" display="SendCommand"/><memberdata name="complete" display="Complete"/><memberdata name="llocked" display="lLocked"/><memberdata name="ldebugmode" display="lDebugMode"/><memberdata name="stopworker" display="StopWorker"/><memberdata name="handleerror" display="HandleError"/><memberdata name="oevents" display="oEvents"/><memberdata name="oapplication" display="oApplication"/><memberdata name="lcomplete" display="lComplete"/><memberdata name="nworkernum" display="nWorkerNum"/><memberdata name="createthread" display="CreateThread"/><memberdata name="cmtscript" display="cMTScript"/><memberdata name="lmtdll" display="lMTDLL"/><memberdata name="nmteventhandle" display="nMTEventHandle"/><memberdata name="nmthandle" display="nMTHandle"/><memberdata name="nmtthreadid" display="nMTThreadID"/><memberdata name="omtcommand" display="oMTCommand"/></VFPData>
+cmtscript = 
 lbusy = .F.
 lcomplete = .F.
 ldebugmode = .F.
 llocked = .F.
+lmtdll = .F.
+nmteventhandle = 0
+nmthandle = 0
+nmtthreadid = 0
 nworkernum = 0
 oapplication = .NULL.
 oevents = .NULL.
+omtcommand = .NULL.
 oworker = .NULL.
 [END PROPERTIES]
 [START PROTECTED]
 ldebugmode
+lmtdll
+nmthandle
+nmtthreadid
+oapplication
 oworker
 [END PROTECTED]
 [START METHODS]
 PROCEDURE Destroy
+Local lnThreadExitCode, lnThreadCheck
 Debugout Time(0), "(" + Transform(This.nWorkerNum) + ")", Program()
+
+#DEFINE STILL_ALIVE 259
+
+If This.lMTDLL
+	
+	DECLARE INTEGER GetExitCodeThread IN kernel32;
+	    INTEGER hThread,;
+	    LONG @lpExitCode
+
+    This.StopWorker()
+	
+	* If thread is still alive, give it a chance to stop normally before terminating
+	For lnThreadCheck = 1 to 10
+		lnThreadExitCode = 0
+		GetExitCodeThread(This.nMTHandle, @lnThreadExitCode)
+		If lnThreadExitCode <> STILL_ALIVE
+			? "Thread exited normally", lnThreadCheck
+			Exit
+		EndIf 
+		
+		? "Thread still alive", lnThreadCheck
+
+		* Give DMULT a chance to unload worker normally
+		Inkey(.1, "H")
+	EndFor 
+		
+	* Kill thread if it is still running
+	* Heavy handed, but otherwise VFP will crash, especially after CLEAR ALL
+	If lnThreadExitCode = STILL_ALIVE
+		Declare Long TerminateThread IN kernel32 ;
+			Long hThread, Long dwExitCode
+			
+	 	? "TerminateThread:", This.nMTHandle, TerminateThread(This.nMTHandle, 0)
+	EndIf 
+
+	Declare CloseHandle in Win32API LONG
+		
+	CloseHandle(This.nMTEventHandle)
+	CloseHandle(This.nMTHandle)
+
+EndIf 
+
+
 ENDPROC
 PROCEDURE Init
 * Create worker process
-Lparameters lcProcedureFile, lcDirectory, llDebugMode, lnWorkerNum
+Lparameters lcProcedureFile, lcDirectory, llDebugMode, lnWorkerNum, llMTDLL
 Local lhWndForeground
 Local loVFP as VisualFoxPro.Application, lcWorkerVCX, lcWorkerAPP, lcWorkerCmd
 
-Debugout Time(0), "(" + Transform(lnWorkerNum) + ")", Program(), lcProcedureFile, lcDirectory, llDebugMode
+Debugout Time(0), "(" + Transform(lnWorkerNum) + ")", Program(), lcProcedureFile, lcDirectory, llDebugMode, llMTDLL
+
+This.lMTDLL = llMTDLL
 
 * In Windows XP and earlier, main process can lose focus when 
 *	instantiating COM EXE. Make sure we keep it.
@@ -1747,16 +1902,15 @@ If llDebugMode and _VFP.StartMode = 0
 	loVFP = CreateObject("VisualFoxPro.Application." + SUBSTR(VERSION(4),2,1))
 	loVFP.Visible = .t.
 	This.lDebugMode = .t.
-	lcWorkerVCX = FullPath(_Screen.ParPoolMgr.cWorkerLibrary)
-	If Directory(JustPath(lcWorkerVCX))
-		loVFP.DoCmd([CD "] + JustPath(lcWorkerVCX) + ["])
-	EndIf 
+	This.lMTDLL = .f.
 Else 
 	* Must maintain reference to Application object, or COM instance will close even though we also 
 	*	have reference to Worker object.
-	This.oApplication = CreateObject("ParallelFox.Application")
-	loVFP = This.oApplication.VFP
-	lcWorkerVCX = _Screen.ParPoolMgr.cWorkerLibrary
+	If !This.lMTDLL
+		This.oApplication = CreateObject("ParallelFox.Application")
+		loVFP = This.oApplication.VFP
+	EndIf 
+ 	lcWorkerVCX = FullPath(_Screen.ParPoolMgr.cWorkerLibrary)
 *JAL*		This.oWorker = CreateObject(_Screen.ParPoolMgr.cWorkerCOMProgID)
 EndIf 
 * ParallelFox.vcx is compiled into APP/EXE
@@ -1765,34 +1919,68 @@ If InList(Upper(JustExt(lcProcedureFile)), "APP", "EXE")
 Else 
 	lcWorkerApp = ""
 EndIf 
-lcWorkerCmd = Textmerge([NewObject("<<_Screen.ParPoolMgr.cWorkerClass>>", "<<lcWorkerVCX>>", "<<lcWorkerApp>>")])
-This.oWorker = loVFP.Eval(lcWorkerCmd)
-
-* In Windows XP and earlier, main process can lose focus when 
-*	instantiating COM EXE. Make sure we keep it.
-* This issue apparently only affects IDE, and can cause wrong window 
-*	to get focus at runtime if workers started when main VFP window is not visible.
-*	So, only applying to IDE.  May revisit if issue presents itself at runtime or other scenarios.
-If _VFP.StartMode = 0 and Os(3) < "6" and GetForegroundWindow() <> lhWndForeground
-	DECLARE INTEGER SetForegroundWindow IN user32 INTEGER hwnd
-	SetForegroundWindow(lhWndForeground)
-EndIf
-
-This.oWorker.SetMainProcess(_VFP, lcWorkerApp)
-lcDirectory = ["] + Evl(lcDirectory, FullPath("")) + ["]
-This.oWorker.DoCmd("CD " + lcDirectory)
-If !Empty(lcProcedureFile)
-	lcProcedureFile = ["] + lcProcedureFile + ["]
-	This.oWorker.DoCmd("Set Procedure To " + lcProcedureFile + " Additive")
-EndIf 
 
 * Set up worker events
 This.oEvents = NewObject("Events", "ParallelFox.vcx")
 This.oEvents.Name = "WorkerProxyEvents"	&& to distinguish object from other events objects during debugging
-This.oWorker.SetWorkerEvents(This.oEvents)
 BindEvent(This.oEvents, "Complete", This, "Complete", 1)
 BindEvent(This.oEvents, "ReturnError", This, "HandleError", 1)
 
+lcDirectory = ["] + Evl(lcDirectory, FullPath("")) + ["]
+lcProcedureFile = Evl(lcProcedureFile, "")
+If This.lMTDLL
+	* Multi-threaded DLL
+	Text to This.cMTScript TEXTMERGE NOSHOW 
+		Lparameters loWorkerProxy as WorkerProxy of ParallelFox.vcx
+		Local loWorkerMgr as WorkerMgr of ParallelFox.vcx, loException as Exception, lcException
+		Try 
+			CD <<lcDirectory>>
+			StrToFile(Transform(Datetime()) + ": Creating WorkerMgr Object" + Chr(13), "MTLog.txt", 1)
+			loWorkerMgr = NewObject("<<_Screen.ParPoolMgr.cWorkerClass>>", "<<lcWorkerVCX>>", "<<lcWorkerApp>>")
+			StrToFile(Transform(Datetime()) + ": Setting Main Process" + Chr(13), "MTLog.txt", 1)
+			StrToFile(Transform(Datetime()) + ": ThreadID " + Transform(loWorkerProxy.Application.ThreadID) + Chr(13), "MTLog.txt", 1)
+			loWorkerMgr.SetMainProcess(loWorkerProxy.Application, "<<lcWorkerApp>>")
+			StrToFile(Transform(Datetime()) + ": Setting Procedure File" + Chr(13), "MTLog.txt", 1)
+			If !Empty("<<lcProcedureFile>>")
+				Set Procedure To "<<lcProcedureFile>>" Additive
+			EndIf 
+		Catch to loException
+			lcException = "Error: " + Transform(loException.ErrorNo) + Chr(13) ;
+				+ "Message: " + Transform(loException.Message) + Chr(13) ;
+				+ "Program: " + Transform(loException.Procedure) + Chr(13) ;
+				+ "LineNo: " + Transform(loException.LineNo) + Chr(13) ;
+				+ "Code: " + Transform(loException.LineContents) + Chr(13)
+			StrToFile(lcException, "MTLog.txt", 1)
+		EndTry 
+		loWorkerMgr.StartMTCommandLoop(loWorkerProxy)
+	EndText 
+	This.CreateThread("ParallelFoxMT.Application")
+Else 
+	lcWorkerVCX = FullPath(_Screen.ParPoolMgr.cWorkerLibrary)
+	If Directory(JustPath(lcWorkerVCX))
+		loVFP.DoCmd([CD "] + JustPath(lcWorkerVCX) + ["])
+	EndIf 
+	lcWorkerCmd = Textmerge([NewObject("<<_Screen.ParPoolMgr.cWorkerClass>>", "<<lcWorkerVCX>>", "<<lcWorkerApp>>")])
+	This.oWorker = loVFP.Eval(lcWorkerCmd)
+
+	* In Windows XP and earlier, main process can lose focus when 
+	*	instantiating COM EXE. Make sure we keep it.
+	* This issue apparently only affects IDE, and can cause wrong window 
+	*	to get focus at runtime if workers started when main VFP window is not visible.
+	*	So, only applying to IDE.  May revisit if issue presents itself at runtime or other scenarios.
+	If _VFP.StartMode = 0 and Os(3) < "6" and GetForegroundWindow() <> lhWndForeground
+		DECLARE INTEGER SetForegroundWindow IN user32 INTEGER hwnd
+		SetForegroundWindow(lhWndForeground)
+	EndIf
+
+	This.oWorker.SetMainProcess(_VFP, lcWorkerApp)
+	This.oWorker.DoCmd("CD " + lcDirectory)
+	If !Empty(lcProcedureFile)
+		lcProcedureFile = ["] + lcProcedureFile + ["]
+		This.oWorker.DoCmd("Set Procedure To " + lcProcedureFile + " Additive")
+	EndIf 
+	This.oWorker.SetWorkerEvents(This.oEvents)
+EndIf 
 
 ENDPROC
 PROCEDURE complete
@@ -1809,6 +1997,43 @@ This.lComplete = .t.
 *JAL*	This.lBusy = .f.
 *JAL*	_Screen.ParPoolMgr.nBusyWorkers = _Screen.ParPoolMgr.nBusyWorkers - 1 
 _Screen.ParPoolMgr.ProcessQueue()
+
+ENDPROC
+PROCEDURE createthread
+* Create thread for MTDLL using Christof's DMULT
+Lparameters lcWorkerCOMProgID
+Local lnThreadID
+
+Declare Long CreateThreadWithObject in DMult.DLL ;
+	String lpszClass, ;
+	String lpszMethod, ;
+	Object oRef,  ;
+	Long @lpdwThreadId 
+
+* Create event 
+* Win32 event is sent to MTDLL when main thread is ready to process another command
+DECLARE INTEGER CreateEvent IN kernel32;
+    INTEGER lpEventAttributes, INTEGER bManualReset,;
+    INTEGER bInitialState, STRING lpName
+ 
+DECLARE INTEGER SetEvent IN kernel32 INTEGER hEvent
+
+This.nMTEventHandle = CreateEvent (0, 0, 0, 0)
+
+* Create thread 
+lnThreadID = 0
+This.nMTHandle = CreateThreadWithObject( ;
+	Strconv(lcWorkerCOMProgID + Chr(0),5), ;
+	Strconv("StartMTWorker" + Chr(0),5), ;
+	_VFP.Eval("This"), ;
+	@lnThreadID)
+
+This.nMTThreadID = lnThreadID
+
+? "Event Handle", This.nMTEventHandle
+? "Thread Handle", This.nMTHandle
+? "Thread ID", This.nMTThreadID
+
 
 ENDPROC
 PROCEDURE handleerror
@@ -1835,7 +2060,13 @@ BindEvent(This.oEvents, "ReturnData", loCommand.oEvents, "ReturnData")
 BindEvent(This.oEvents, "UpdateProgress", loCommand.oEvents, "UpdateProgress")
 BindEvent(This.oEvents, "ReturnCursor", loCommand.oEvents, "ReturnCursor")
 
-This.oWorker.SendCommand(loCommand)
+If This.lMTDLL
+	* Set command, then send event so MTDLL worker will grab command from main process
+	This.oMTCommand = loCommand
+	SetEvent(This.nMTEventHandle)
+Else 
+	This.oWorker.SendCommand(loCommand)
+EndIf 
 
 ENDPROC
 PROCEDURE stopworker
@@ -1843,6 +2074,21 @@ Debugout Time(0), "(" + Transform(This.nWorkerNum) + ")", Program()
 
 This.oWorker = NULL
 This.oApplication = NULL
+
+If This.lMTDLL
+
+*JAL*		Declare Long CreateThreadWithObject in DMult.DLL ;
+*JAL*			String lpszClass, ;
+*JAL*			String lpszMethod, ;
+*JAL*			Object oRef,  ;
+*JAL*			Long @lpdwThreadId 
+
+? Program()
+
+	This.cMTScript = "STOPWORKER"
+	SetEvent(This.nMTEventHandle)
+EndIf 
+
 ENDPROC
 [END METHODS]
 [START RESERVED1]
@@ -1851,17 +2097,24 @@ Class[END RESERVED1]
 1[END RESERVED2]
 [START RESERVED3]
 *complete Fires when worker has finished executing command.
+*createthread Create thread for MTDLL.
 *handleerror Fires when error returned from worker.
 *sendcommand Send command to worker process.
 *stopworker Stop worker process.
 _memberdata XML Metadata for customizable properties
+cmtscript Startup/Stop script for MTDLL worker.
 lbusy Worker is busy processing command.
 lcomplete Is .T. when current command is complete, but lBusy is still .T. Worker will be released for another command when queue is processed.
 ldebugmode Start workers in Debug mode.
 llocked Is .T. when worker is locked to a specific command and was busy when command queue was processed.
+lmtdll Is .T. when using MTDLL workers.
+nmteventhandle Handle for Win32 events sent to MTDLL to process a command.
+nmthandle Thread Handle
+nmtthreadid Thread ID
 nworkernum Worker number.
-oapplication
+oapplication Reference to ParallelFox Application COM object.
 oevents Reference to worker events object.
+omtcommand Command object for MTDLL worker.
 oworker Reference to Worker process.
 [END RESERVED3]
 [START RESERVED6]
