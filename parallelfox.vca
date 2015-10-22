@@ -934,6 +934,19 @@ If Iif(This.nProcessing > 0, ;
 	Return
 EndIf 
 
+* Release completed workers for more work
+* Previously, this was done directly by WorkerProxy, 
+*	but that allowed commands to be sent out of order
+If This.nBusyWorkers > 0 
+	For each loWorkerProxy in This.Workers FoxObject
+		If loWorkerProxy.lBusy and loWorkerProxy.lComplete
+			loWorkerProxy.lBusy = .f.
+			loWorkerProxy.lComplete = .f.
+			This.nBusyWorkers = This.nBusyWorkers - 1 
+		EndIf 
+	EndFor 
+EndIf 
+
 * Stop workers
 If This.nBusyWorkers = 0 and This.CommandQueue.Count = 1 ;
 		and Upper(This.CommandQueue(1).cCommandType) = "STOPWORKERS"
@@ -1085,7 +1098,7 @@ EndIf
 This.lDebugMode = llDebugMode
 
 For lnWorker = 1 to This.nWorkerCount
-	loWorkerProxy = NewObject("WorkerProxy", "ParallelFox.vcx", "", lcProcedureFile, lcDirectory, llDebugMode)
+	loWorkerProxy = NewObject("WorkerProxy", "ParallelFox.vcx", "", lcProcedureFile, lcDirectory, llDebugMode, lnWorker)
 	ComArray(loWorkerProxy, 11)
 	This.Workers.Add(loWorkerProxy)
 EndFor 
@@ -1697,10 +1710,12 @@ Pixels[END RESERVED6]
 [OBJNAME] workerproxy
 [START PROPERTIES]
 Name = "workerproxy"
-_memberdata =      515<VFPData><memberdata name="lbusy" display="lBusy"/><memberdata name="oworker" display="oWorker"/><memberdata name="sendcommand" display="SendCommand"/><memberdata name="complete" display="Complete"/><memberdata name="llocked" display="lLocked"/><memberdata name="ldebugmode" display="lDebugMode"/><memberdata name="stopworker" display="StopWorker"/><memberdata name="handleerror" display="HandleError"/><memberdata name="oevents" display="oEvents"/><memberdata name="oapplication" display="oApplication"/></VFPData>
+_memberdata =      617<VFPData><memberdata name="lbusy" display="lBusy"/><memberdata name="oworker" display="oWorker"/><memberdata name="sendcommand" display="SendCommand"/><memberdata name="complete" display="Complete"/><memberdata name="llocked" display="lLocked"/><memberdata name="ldebugmode" display="lDebugMode"/><memberdata name="stopworker" display="StopWorker"/><memberdata name="handleerror" display="HandleError"/><memberdata name="oevents" display="oEvents"/><memberdata name="oapplication" display="oApplication"/><memberdata name="lcomplete" display="lComplete"/><memberdata name="nworkernum" display="nWorkerNum"/></VFPData>
 lbusy = .F.
+lcomplete = .F.
 ldebugmode = .F.
 llocked = .F.
+nworkernum = 0
 oapplication = .NULL.
 oevents = .NULL.
 oworker = .NULL.
@@ -1711,21 +1726,22 @@ oworker
 [END PROTECTED]
 [START METHODS]
 PROCEDURE Destroy
-Debugout Time(0), Program()
+Debugout Time(0), "(" + Transform(This.nWorkerNum) + ")", Program()
 ENDPROC
 PROCEDURE Init
 * Create worker process
-Lparameters lcProcedureFile, lcDirectory, llDebugMode
+Lparameters lcProcedureFile, lcDirectory, llDebugMode, lnWorkerNum
 Local lhWndForeground
 Local loVFP as VisualFoxPro.Application, lcWorkerVCX, lcWorkerAPP, lcWorkerCmd
 
-Debugout Time(0), Program(), lcProcedureFile, lcDirectory, llDebugMode
+Debugout Time(0), "(" + Transform(lnWorkerNum) + ")", Program(), lcProcedureFile, lcDirectory, llDebugMode
 
 * In Windows XP and earlier, main process can lose focus when 
 *	instantiating COM EXE. Make sure we keep it.
 DECLARE INTEGER GetForegroundWindow IN user32
 lhWndForeground = GetForegroundWindow()
 
+This.nWorkerNum = lnWorkerNum
 * Debug mode starts workers in full VFP.
 If llDebugMode and _VFP.StartMode = 0
 	loVFP = CreateObject("VisualFoxPro.Application." + SUBSTR(VERSION(4),2,1))
@@ -1782,22 +1798,23 @@ ENDPROC
 PROCEDURE complete
 Lparameters lvReturn
 
-Debugout Time(0), Program(), lvReturn
+Debugout Time(0), "(" + Transform(This.nWorkerNum) + ")", Program(), lvReturn
 
 * Unbind command events and rebind events to this object
 UnBindEvents(This.oEvents)
 BindEvent(This.oEvents, "Complete", This, "Complete", 1)
 BindEvent(This.oEvents, "ReturnError", This, "HandleError", 1)
 
-This.lBusy = .f.
-_Screen.ParPoolMgr.nBusyWorkers = _Screen.ParPoolMgr.nBusyWorkers - 1 
+This.lComplete = .t.
+*JAL*	This.lBusy = .f.
+*JAL*	_Screen.ParPoolMgr.nBusyWorkers = _Screen.ParPoolMgr.nBusyWorkers - 1 
 _Screen.ParPoolMgr.ProcessQueue()
 
 ENDPROC
 PROCEDURE handleerror
 Lparameters lnError, lcMethod, lnLine, lcMessage, lcCode
 
-Debugout Time(0), Program(), lnError, lcMethod, lnLine, lcMessage, lcCode
+Debugout Time(0), "(" + Transform(This.nWorkerNum) + ")", Program(), lnError, lcMethod, lnLine, lcMessage, lcCode
 
 This.Complete()
 ENDPROC
@@ -1805,7 +1822,7 @@ PROCEDURE sendcommand
 * Send command to worker process.
 Lparameters loCommand as Command of ParallelFox.vcx
 
-Debugout Time(0), Program(), loCommand.cCommandType, loCommand.cCommand, ;
+Debugout Time(0), "(" + Transform(This.nWorkerNum) + ")", Program(), loCommand.cCommandType, loCommand.cCommand, ;
 	loCommand.cClass, loCommand.cModule
 
 * Make sure events objects are in same data session
@@ -1822,7 +1839,7 @@ This.oWorker.SendCommand(loCommand)
 
 ENDPROC
 PROCEDURE stopworker
-Debugout Time(0), Program()
+Debugout Time(0), "(" + Transform(This.nWorkerNum) + ")", Program()
 
 This.oWorker = NULL
 This.oApplication = NULL
@@ -1839,8 +1856,10 @@ Class[END RESERVED1]
 *stopworker Stop worker process.
 _memberdata XML Metadata for customizable properties
 lbusy Worker is busy processing command.
+lcomplete Is .T. when current command is complete, but lBusy is still .T. Worker will be released for another command when queue is processed.
 ldebugmode Start workers in Debug mode.
 llocked Is .T. when worker is locked to a specific command and was busy when command queue was processed.
+nworkernum Worker number.
 oapplication
 oevents Reference to worker events object.
 oworker Reference to Worker process.
