@@ -1,0 +1,94 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head> 
+	<topictype value="CLASSHEADER" />
+	<title>Class Worker</title>
+	<link rel="stylesheet" type="text/css" href="templates/wwhelp.css">
+</head>
+<body>
+<div class="banner">
+  <div>
+	<span class="projectname">ParallelFox</span>
+ </div>
+ <div class="topicname">
+	<img src="bmp/CLASSHEADER.gif">&nbsp;Class Worker
+ </div>
+</div>
+
+<div class="contentpane">
+
+<div class="contentbody">This class provides features for use inside of workers, such as raising events and communicating with the main process.<p>
+</div>
+
+
+<h3 class="outdentmargin">Class Members</h3><table class='detailtable' align="center" width='95%'><tr><th style="width: 185px" colspan="2">Member</th><th style="width:350px">Description</th></tr><tr>
+<td style="width:32px;"><img src="bmp/classmethod.gif" /></td>
+<td><a href="_36c0wc033.htm" >EndCriticalSection</a></td>
+<td>End Critical Section of code.<div class="syntaxoverloads">Worker.EndCriticalSection(cCriticalSectionName)</div>
+</td>
+</tr>
+<tr class="alternaterow">
+<td style="width:32px;"><img src="bmp/classmethod.gif" /></td>
+<td><a href="_36c0wc036.htm" >IsWorker</a></td>
+<td>Returns .T. if currently running in Worker process.<div class="syntaxoverloads">Worker.IsWorker()</div>
+</td>
+</tr>
+<tr>
+<td style="width:32px;"><img src="bmp/classmethod.gif" /></td>
+<td><a href="_36c0wc037.htm" >ReturnCursor</a></td>
+<td>Return cursor to main process.<div class="syntaxoverloads">Worker.ReturnCursor([cAlias])</div>
+</td>
+</tr>
+<tr class="alternaterow">
+<td style="width:32px;"><img src="bmp/classmethod.gif" /></td>
+<td><a href="_36c0wc031.htm" >ReturnData</a></td>
+<td>Return data to main process. <div class="syntaxoverloads">Worker.ReturnData(Parameter1, [Parameter2...])</div>
+</td>
+</tr>
+<tr>
+<td style="width:32px;"><img src="bmp/classmethod.gif" /></td>
+<td><a href="_36c0wc035.htm" >ReturnError</a></td>
+<td>Return error to main process.<div class="syntaxoverloads">Worker.ReturnError(nError, cMethod, nLine, cMessage, cCode)</div>
+</td>
+</tr>
+<tr class="alternaterow">
+<td style="width:32px;"><img src="bmp/classmethod.gif" /></td>
+<td><a href="_36c0wc034.htm" >Sleep</a></td>
+<td>Pause execution if machine contains the specified number CPUs or fewer.<div class="syntaxoverloads">Worker.Sleep(nMilliseconds, [nCPUCount])</div>
+</td>
+</tr>
+<tr>
+<td style="width:32px;"><img src="bmp/classmethod.gif" /></td>
+<td><a href="_36c0wc032.htm" >StartCriticalSection</a></td>
+<td>Start Critical Section of code.<div class="syntaxoverloads">Worker.StartCriticalSection(cCriticalSectionName)</div>
+</td>
+</tr>
+<tr class="alternaterow">
+<td style="width:32px;"><img src="bmp/classmethod.gif" /></td>
+<td><a href="_36c0wc030.htm" >UpdateProgress</a></td>
+<td>Send progress update to main process.<div class="syntaxoverloads">Worker.UpdateProgress(nProgress, cMessage, [lForceUpdate])</div>
+</td>
+</tr>
+<tr>
+<td style="width:32px;"><img src="bmp/classproperty.gif" /></td>
+<td><a href="_36c0wc03a.htm" >CPUCount</a></td>
+<td>Number of logical processors/cores on machine.</td>
+</tr>
+<tr class="alternaterow">
+<td style="width:32px;"><img src="bmp/classproperty.gif" /></td>
+<td><a href="_36c0wc039.htm" >ProgressInterval</a></td>
+<td>Minimum number of seconds between progress updates (default is 1 second).</td>
+</tr>
+</table><p>
+
+<h3 class="outdent">Requirements</h3>
+
+
+</div>
+<hr />
+<small>&nbsp;&nbsp;Last Updated: 03/26/11 | 
+&copy Joel Leach, 2012</small>
+<br clear="all" />
+<br/>
+</body>
+</html>

@@ -1,0 +1,34 @@
+﻿<%= ExecuteTemplate("Header_template.wcs") %>
+
+<div class="contentpane">
+<br>
+<%= oHelp.FormatHTML(oHelp.oTopic.Body) %>
+<br>
+
+<% if !EMPTY(oHelp.oTopic.Syntax) %>
+<br>
+<table border="0" cellpadding="3" width="96%">
+<pre class="syntaxbox">
+<%= oHelp.FormatHtml(oHelp.oTopic.Syntax) %>
+</pre>
+</table>
+<% endif %>
+
+<% IF !EMPTY(oHelp.oTopic.Exceptions) %>
+<h3 class="outdent">Exceptions</h3>
+<%= strtran( InsertExceptions(oHelp),"b>","i>") %>	
+<% ENDIF %> 
+
+<% IF !EMPTY(oHelp.oTopic.Remarks) %>
+<h3 class="outdent">Remarks</h3>
+    <%= oHelp.FormatHTML(oHelp.oTopic.Remarks) %>
+<% ENDIF %>  
+
+<% IF !EMPTY(oHelp.oTopic.Example) %>
+<h3 class="outdent">Example</h3>
+<pre><%= oHelp.FormatHTML(oHelp.oTopic.Example)%></pre>
+<% ENDIF %>  
+
+<p>
+</div>
+<%= ExecuteTemplate("Footer_Template.wcs") %>

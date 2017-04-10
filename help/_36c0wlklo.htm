@@ -1,0 +1,39 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head> 
+	<topictype value="TOPIC" />
+	<title>Debugging</title>
+	<link rel="stylesheet" type="text/css" href="templates/wwhelp.css">
+</head>
+<body>
+<div class="banner">
+  <div>
+	<span class="projectname">ParallelFox</span>
+ </div>
+ <div class="topicname">
+	<img src="bmp/TOPIC.gif">&nbsp;Debugging
+ </div>
+</div>
+
+<div class="contentpane">
+
+<div class="contentbody">FoxPro does not allow you to debug into COM servers.  To spell that out, suppose you created a COM server in VFP, and then instantiated that object in VFP as well.  The code would look something like this:<p><pre><div class="vfpcode"><span class="programcontrol">Local</span> loMyCOMObject as MyCOMServer.MyObject
+loMyCOMObject = <span class="functions">CreateObject</span>(<span class="codestring">"MyCOMServer.MyObject"</span>)
+
+<span class="functions">Set</span> <span class="commands">Step</span> <span class="functions">On</span>
+
+loMyCOMObject.DoSomething()</div></pre><p>In the code above, Set Step On would open the debugger, but if you tried to step into the DoSomething() method, you would not be able to see the code inside the COM object.  VFP would execute the method then return to the calling program.  Calling Set Step On (or setting a breakpoint) inside the COM object doesn't work either.  To work around this, you have to instantiate your objects as regular FoxPro objects and fully debug them before building them into a separate COM server.<p>This limitation could pose some problems for ParallelFox, because code is run in parallel by means of COM servers.  It is not convenient to simply instantiate an object in the main process, and the code you are running in parallel may not be inside a class anyway.  Even if it were convenient, the code would be not be running in parallel, only in the main process, so it's not exactly an ideal situation.<p>Fortunately, ParallelFox makes it easy to debug your code by providing a debug mode.  To turn on debug mode, simply pass .T. as the third parameter to the StartWorkers() method:<p><pre><div class="vfpcode"><span class="programcontrol">Local</span> Parallel as Parallel <span class="commands">of</span> ParallelFox.vcx
+Parallel = <span class="functions">NewObject</span>(<span class="codestring">"Parallel"</span>, <span class="codestring">"ParallelFox.vcx"</span>)
+
+Parallel.StartWorkers(<span class="codestring">"MyProc.prg"</span>,,.t.)</div></pre><br>This tells ParallelFox to start the workers in full instances of VFP, rather than as standard COM objects.  Simply SET STEP ON in your worker code (breakpoints may not transfer to worker instances), and the debugger will open in the worker instance.<p>To use debug mode, the main process needs to know where ParallelFox.vcx and WorkerMgr.vcx are, so make sure they are in your path.  If you're going to use the Worker object, the worker processes need to know where ParallelFox.vcx is as well, so make sure your workers can find it before you instantiate the Worker object.
+</div>
+
+<h3 class="outdent">Remarks</h3>Aside: Years ago, Robert Green and Calvin Hsia demonstrated <a href="http://web.archive.org/web/20000621213148/msdn.microsoft.com/vstudio/nextgen/technology/VFPIntegration.asp" target="top">debugging FoxPro COM objects from Visual Studio</a>. This was around the time Microsoft introduced .NET, and even though they had already decided there would be no VFP.NET, VFP still needed a good integration "story" if it were to remain part of Visual Studio.  You know the rest of the story.  The Fox was taken "out of the box" before the release of VFP 7.0, so it no longer needed that story, and the feature was dropped.<p>
+
+</div><hr />
+<small>&nbsp;&nbsp;Last Updated: 03/22/11 | 
+&copy Joel Leach, 2012</small>
+<br clear="all" />
+<br/>
+</body>
+</html>

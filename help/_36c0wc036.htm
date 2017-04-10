@@ -1,0 +1,54 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head> 
+	<topictype value="CLASSMETHOD" />
+	<title>worker::IsWorker</title>
+	<link rel="stylesheet" type="text/css" href="templates/wwhelp.css">
+	<script src="templates/wwhelp.js" type="text/javascript"></script>
+</head>
+<body>
+<div class="banner">
+  <div>
+		  <img src="bmp/seealso.gif" border=0  alt="Related Topics" style="cursor:hand" onmouseover="SeeAlsoButton();" />
+	<div id="See" class="hotlinkbox" style="display:none" onmouseleave="SeeAlsoButton();">
+	  <b>See also</b><br>
+	  <div class="seealsotopics"><a href="_36c0wc02z.htm" >Class worker</a></div>
+	</div>
+	<span class="projectname">ParallelFox</span>
+ </div>
+ <div class="topicname">
+	<img src="bmp/CLASSMETHOD.gif">&nbsp;worker::IsWorker
+ </div>
+</div>
+
+<div class="contentpane">
+
+<div class="contentbody">Returns .T. if currently running in Worker process.
+</div>
+
+<pre class="syntaxbox">Worker.IsWorker()
+</pre>
+<br>
+<h3 class="outdent">Remarks</h3>
+Use for programs that can run in either the main process or a worker, and when the behavior needs to vary depending on where it is running.  For example, if a user previews a report, it will run in the main process.  If the user prints the report, you could run it in the background.
+<br>
+<h3 class="outdent">Example</h3>
+<pre><pre><div class="vfpcode"><span class="programcontrol">Local</span> Worker as Worker
+Worker = <span class="functions">NewObject</span>(<span class="codestring">"Worker"</span>, <span class="codestring">"ParallelFox.vcx"</span>)
+
+<span class="programcontrol">If</span> Worker.IsWorker()
+   <span class="codecomment">* Code specific to worker process</span>
+<span class="programcontrol">Else</span>
+   <span class="codecomment">* Code specific to main process</span>
+<span class="programcontrol">EndIf</span></div></pre></pre>
+<br>
+<h3 class="outdent">See also:</h3><a href="_36c0wc02z.htm" >Class worker</a>
+<p>
+</div>
+<hr />
+<small>&nbsp;&nbsp;Last Updated: 03/26/11 | 
+&copy Joel Leach, 2012</small>
+<br clear="all" />
+<br/>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head> 
+	<topictype value="CLASSMETHOD" />
+	<title>worker::UpdateProgress</title>
+	<link rel="stylesheet" type="text/css" href="templates/wwhelp.css">
+	<script src="templates/wwhelp.js" type="text/javascript"></script>
+</head>
+<body>
+<div class="banner">
+  <div>
+		  <img src="bmp/seealso.gif" border=0  alt="Related Topics" style="cursor:hand" onmouseover="SeeAlsoButton();" />
+	<div id="See" class="hotlinkbox" style="display:none" onmouseleave="SeeAlsoButton();">
+	  <b>See also</b><br>
+	  <div class="seealsotopics"><a href="_36c0wc02z.htm" >Class worker</a> <br/> 
+<a href="_36c0wc039.htm" >worker::ProgressInterval</a> <br/> 
+<a href="_36c0wgcqa.htm" >Training Videos</a> <br/> 
+<a href="_36c0wkqqw.htm" >Worker Events</a> <br/> 
+<a href="_36c0waljk.htm" >parallel::BindEvent</a></div>
+	</div>
+	<span class="projectname">ParallelFox</span>
+ </div>
+ <div class="topicname">
+	<img src="bmp/CLASSMETHOD.gif">&nbsp;worker::UpdateProgress
+ </div>
+</div>
+
+<div class="contentpane">
+
+<div class="contentbody">Send progress update to main process.
+</div>
+
+<pre class="syntaxbox">Worker.UpdateProgress(nProgress, cMessage, [lForceUpdate])
+</pre>
+<h3 class="outdent">Parameters</h3><i>nProgress</i><br>Progress number/percentage complete.<p><i>cMessage</i><br>Progress message.<p><i>lForceUpdate</i> (optional)<br>By default, update will not be sent to main process until <a href="_36c0wc039.htm" >Worker.ProgressInterval</a> seconds have elapsed since last update.<br>Pass .T. to force immediate update and disregard Worker.ProgressInterval.
+<br>
+<h3 class="outdent">Remarks</h3>
+Pass .T. as <i>lForceUpdate</i> when progress is complete to make sure main process is notified.
+<br>
+<h3 class="outdent">Example</h3>
+<pre>See Training Videos and ProgressEvent.prg.</pre>
+<br>
+<h3 class="outdent">See also:</h3><a href="_36c0wc02z.htm" >Class worker</a> | 
+<a href="_36c0wc039.htm" >worker::ProgressInterval</a> | 
+<a href="_36c0wgcqa.htm" >Training Videos</a> | 
+<a href="_36c0wkqqw.htm" >Worker Events</a> | 
+<a href="_36c0waljk.htm" >parallel::BindEvent</a>
+<p>
+</div>
+<hr />
+<small>&nbsp;&nbsp;Last Updated: 03/27/11 | 
+&copy Joel Leach, 2012</small>
+<br clear="all" />
+<br/>
+</body>
+</html>

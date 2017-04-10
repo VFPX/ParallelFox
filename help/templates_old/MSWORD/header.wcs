@@ -1,0 +1,31 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head> 
+<title><%= TRIM(oHelp.oTopic.Topic) %></title>
+<link rel="stylesheet" type="text/css" href="templates/wwhelp.css">
+</head>
+<body>
+<h1><%= oHelp.FormatHtml( TRIM(oHelp.oTopic.Topic) ) %></h1>
+
+<div style="margin-left:10pt;margin-right:10pt">
+<br>
+<%= oHelp.FormatHTML(oHelp.oTopic.Body) %>
+<br>
+<table border="0" cellpadding="3" width="99%">
+<% IF !EMPTY(oHelp.oTopic.Example) %>
+  <tr>
+    <td width="122" valign="top" align="right" class="labels">Example:</td>
+    <td><pre><b><%= oHelp.FormatHTML(oHelp.oTopic.Example)%></b></pre>
+</td>
+  </tr>
+<% ENDIF %>  
+<% IF !EMPTY(oHelp.oTopic.Remarks) %>
+  <tr>
+    <td width="122" valign="top" align="right" class="labels">Remarks:</td>
+    <td><%= oHelp.FormatHTML(oHelp.oTopic.Remarks)%>
+    </td>
+  </tr>
+<% ENDIF %>  
+</table>
+</div>
+<%= ExecuteTemplate("Footer_Template.wcs") %>

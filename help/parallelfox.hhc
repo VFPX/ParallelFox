@@ -1,0 +1,213 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+</HEAD><BODY>
+<UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="ParallelFox">
+		<param name="Local" value="indexpage.htm">
+		<param name="ImageNumber" value="3">
+		</OBJECT>
+<UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Installation">
+		<param name="Local" value="_36c0wvokk.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Version History">
+		<param name="Local" value="_36p10kzwy.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Training Videos">
+		<param name="Local" value="_36c0wgcqa.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Getting Started">
+		<param name="Local" value="_36c11399w.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Running Code in Parallel">
+		<param name="Local" value="_36c0wgr22.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Worker Events">
+		<param name="Local" value="_36c0wkqqw.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Debugging">
+		<param name="Local" value="_36c0wlklo.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Error Handling">
+		<param name="Local" value="_36c0wltfw.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Scalability and Performance">
+		<param name="Local" value="_36c0wmtk2.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Concurrency">
+		<param name="Local" value="_36c0wnaqp.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="HyperThreading">
+		<param name="Local" value="_36p0yqx4z.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Deployment">
+		<param name="Local" value="_36c0wueec.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Class Parallel">
+		<param name="Local" value="_36c0waljd.htm">
+		<param name="ImageNumber" value="1">
+		</OBJECT>
+<UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="BindEvent">
+		<param name="Local" value="_36c0waljk.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Call">
+		<param name="Local" value="_36c0waljj.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="CallMethod">
+		<param name="Local" value="_36c0waljm.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="ClearQueue">
+		<param name="Local" value="_36c0waljp.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Do">
+		<param name="Local" value="_36c0walje.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="DoCmd">
+		<param name="Local" value="_36c0waljh.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="ExecScript">
+		<param name="Local" value="_36c0walji.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="DetectHyperThreading">
+		<param name="Local" value="_36p0xcjon.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="OnError">
+		<param name="Local" value="_36c0waljo.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="SetWorkerClass">
+		<param name="Local" value="_36c0waljq.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="SetWorkerCount">
+		<param name="Local" value="_36c0waljg.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="StartWorkers">
+		<param name="Local" value="_36c0waljf.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="StopWorkers">
+		<param name="Local" value="_36c0waljn.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Wait">
+		<param name="Local" value="_36c0waljl.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="CPUCount">
+		<param name="Local" value="_36c0waljr.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Class Worker">
+		<param name="Local" value="_36c0wc02z.htm">
+		<param name="ImageNumber" value="1">
+		</OBJECT>
+<UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="EndCriticalSection">
+		<param name="Local" value="_36c0wc033.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="IsWorker">
+		<param name="Local" value="_36c0wc036.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="ReturnCursor">
+		<param name="Local" value="_36c0wc037.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="ReturnData">
+		<param name="Local" value="_36c0wc031.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="ReturnError">
+		<param name="Local" value="_36c0wc035.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Sleep">
+		<param name="Local" value="_36c0wc034.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="StartCriticalSection">
+		<param name="Local" value="_36c0wc032.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="UpdateProgress">
+		<param name="Local" value="_36c0wc030.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="CPUCount">
+		<param name="Local" value="_36c0wc03a.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="ProgressInterval">
+		<param name="Local" value="_36c0wc039.htm">
+		<param name="ImageNumber" value="11">
+		</OBJECT>
+</UL>
+</UL>
+</BODY></HTML>

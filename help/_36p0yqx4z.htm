@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head> 
+	<topictype value="TOPIC" />
+	<title>HyperThreading</title>
+	<link rel="stylesheet" type="text/css" href="templates/wwhelp.css">
+	<script src="templates/wwhelp.js" type="text/javascript"></script>
+</head>
+<body>
+<div class="banner">
+  <div>
+		  <img src="bmp/seealso.gif" border=0  alt="Related Topics" style="cursor:hand" onmouseover="SeeAlsoButton();" />
+	<div id="See" class="hotlinkbox" style="display:none" onmouseleave="SeeAlsoButton();">
+	  <b>See also</b><br>
+	  <div class="seealsotopics"><a href="_36p0xcjon.htm" >parallel::DetectHyperThreading</a></div>
+	</div>
+	<span class="projectname">ParallelFox</span>
+ </div>
+ <div class="topicname">
+	<img src="bmp/TOPIC.gif">&nbsp;HyperThreading
+ </div>
+</div>
+
+<div class="contentpane">
+
+<div class="contentbody">Years ago, Intel added a HyperThreading feature to their CPUs before dual-core processors were available.  More recently, Intel reintroduced the technology into their "Core i" series of processors.  What is HyperThreading and how does it affect ParallelFox? Let's start with the <a href="http://en.wikipedia.org/wiki/Hyperthreading" target="top">Wikipedia</a> description:<p><i>Hyper-threading works by duplicating certain sections of the processor—those that store the architectural state—but not duplicating the main execution resources. This allows a hyper-threading processor to appear as two "logical" processors to the host operating system, allowing the operating system to schedule two threads or processes simultaneously. When execution resources would not be used by the current task in a processor without hyper-threading, and especially when the processor is stalled, a hyper-threading equipped processor can use those execution resources to execute another scheduled task. (The processor may stall due to a cache miss, branch misprediction, or data dependency.)</i><p>What this boils down to is that a single thread/process will not utilize all of the execution "slots" or "units" in a CPU core.  This is especially true when the processor is "stalled", meaning that the processor is waiting on something before it can continue.  This may be due to the inherent design of the CPU, or because it is waiting for data to be accessed from main memory.  HyperThreading allows a second thread/process to utilize the unused execution slots.  Generally, this is a good thing and can provide a 15-30% performance boost to parallel processing.<p>However, in cases where there is heavy competition among threads for the same execution slots and other resources, HyperThreading can be slower than running a single thread on each core.  The examples that ship with ParallelFox exploit this weakness.  On a single-core HyperThreading CPU, the "after" examples are actually slower than the "before" examples.  Of course, this was not intentional.  The reason is that the examples simulate work rather than resemble real-world code.  Here is the SimulateWork() function:<p><pre><div class="vfpcode"><span class="programcontrol">Procedure</span> SimulateWork
+   <span class="programcontrol">Local</span> i
+   <span class="programcontrol">For</span> i = 1 <span class="commands">to</span> 1000000
+      <span class="codecomment">* Peg CPU</span>
+   <span class="programcontrol">EndFor</span>
+<span class="programcontrol">EndProc</span></div></pre><p>While this code does a good job of pegging a CPU core at 100%, it also causes the same few instructions to be executed millions of times.  With HyperThreading enabled, competition between the two threads for the same CPU resources is extreme.  In a real-world scenario, there would likely not be this much competition for resources and HyperThreading would be beneficial.  <p>As with most things, your mileage may vary. If you find that your code runs slower with HyperThreading, you can tell ParallelFox to use only half of the "logical" processors and start only one worker per physical core.  Here is example code for that:<p><pre><div class="vfpcode"><span class="codecomment">* Use only physical cores </span>
+<span class="programcontrol">If</span> Parallel.DetectHyperThreading()
+   Parallel.SetWorkerCount(Parallel.CPUCount / 2)
+<span class="programcontrol">EndIf</span> 
+Parallel.StartWorkers(<span class="codestring">"MyApp.EXE"</span>)</div></pre>
+</div>
+
+<h3 class="outdent">See also</h3><a href="_36p0xcjon.htm" >parallel::DetectHyperThreading</a>
+
+</div><hr />
+<small>&nbsp;&nbsp;Last Updated: 04/02/11 | 
+&copy Joel Leach, 2012</small>
+<br clear="all" />
+<br/>
+</body>
+</html>

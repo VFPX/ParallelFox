@@ -1,0 +1,385 @@
+/* 
+dark background: #956A35
+light background: #FDEA9B
+*/
+
+body
+{
+	font-family: Century Gothic,Arial,sans serif;
+	font-weight: normal;
+	font-size: 10pt;
+	margin:0px;
+}
+table, th, td
+{
+	font-weight: normal;
+	font-size: 100%;
+}
+pre
+{
+	font-family: monospace,courier new;
+	font-weight: normal;
+	font-size: 100%;
+	background: whitesmoke;
+	color: black;
+}
+h1
+{
+	margin-top: 0pt;
+	font-weight: bold;
+	font-size: 130%;
+	margin-bottom: 0pt;
+	padding-bottom: 0px;
+	color: #804000;
+	padding-top: 0pt;
+	text-align: center;
+}
+h2
+{
+	margin-top: 0pt;
+	font-weight: bold;
+	font-size: 115%;
+	margin-bottom: 0pt;
+	padding-bottom: 0pt;
+	color: #800040;
+	padding-top: 0pt;
+}
+h3
+{
+	margin-top: 7pt;
+	font-weight: bold;
+	font-size: 100%;
+	margin-bottom: 2pt;
+	padding-bottom: 0pt;
+	color: #804000;
+	padding-top: 0pt;
+}
+h4
+{
+	margin-top: 0pt;
+	font-weight: 800;
+	font-size: 100%;
+	margin-bottom: 0pt;
+	padding-bottom: 0pt;
+	color: black;
+	padding-top: 0pt;
+}
+ul, ol
+{
+	margin-bottom: 0pt;
+	margin-top: 0pt;
+	padding-bottom: 0pt;
+	padding-top: 0pt;
+}
+hr
+{
+	color: #956A35;
+	background: #956A35;
+	border: 0;
+	height: 1px;
+}
+table
+{
+	border-collapse: collapse;
+}
+td
+{
+}
+th
+{
+	background: #584122;
+	color: white;
+	font-weight: bold;
+	height: 23px;
+}
+small
+{
+	font-size: 8pt;
+}
+.alternaterow
+{
+	background-color: cornsilk;
+}
+.banner
+{
+	font-size: 100%;
+	border: 0px;
+	border-bottom: inset 1px silver;
+	padding:10px;
+	background: #E1AD64;
+	background-image: url(headerimage.jpg);
+	background-repeat: no-repeat;
+}
+.projectname
+{
+	color: #956A35;
+	font-size: 10pt;
+	font-weight: bold;
+	font-style: italic;
+}
+.topicname
+{
+	color: #FFFF99;
+	font-size: 160%;
+	font-weight: bold;
+}
+.hotlinkbox 
+{
+	position: absolute;
+	right: 10px;
+	top: 25px;
+	margin-left: 10pt;
+	background: #FDEA9B;
+	border: solid 1px darkblue;
+	width: auto;
+	padding: 10px;
+	padding-right: 35px;
+	font-size: 8pt;
+}
+.seealsotopics
+{
+	margin-left:10px;
+	margin-top: 3px;
+	line-height: 11pt;
+}
+.contentpane
+{		
+	margin: 20px;
+	margin-bottom: 10px;
+	min-width: 575px;
+}
+.contentbody
+{
+	margin-bottom: 15px;
+}
+.syntaxbox
+{
+	border: solid 1px black;
+	padding: 7px;
+	margin-right: 10px;
+	font-weight: bold;
+	background: #FDEA9B;
+	overflow: hidden;
+	letter-spacing: .1em; /* opens kerning */
+
+}
+.notebox
+{
+	background: lightblue;
+	padding: 10px;
+	border: solid 1px navy;
+	margin: 5px 40px 15px 30px;
+	font-size: 8pt;
+}
+.updatenotice
+{
+	border: solid 1px darkred;
+	background: cornsilk;
+	font-size: 8pt;
+	color: darkred;
+	margin: 10px 40px 10px 30px;
+	padding: 10px;
+}
+.syntaxoverloads
+{
+	font-family: arial;
+	font-weight: bold;
+	font-size: 8pt;
+	margin-top: 6px;
+	color: black;	
+}
+.outdent, .outdentmargin
+{
+	margin-left: -10px;
+}
+.outdentmargin
+{
+	margin-bottom: 8px;
+}
+table.detailtable
+{
+	border-style: solid;
+	border-width: 1px;
+	border-color: #584122;       
+}
+.detailtable
+{
+	font-size: 8pt;
+}
+.tocbody
+{
+	font-size: 8pt;
+}
+/* general code parsing */
+.codec1
+{
+	color: blue;
+}
+.codec2
+{
+	color: blue;
+	font-weight: bold;
+}
+.codec3
+{
+	color: blue;
+}
+.codec4
+{
+	color: blue;
+}
+.codec5  / * literal */
+{color: yellow;}
+.codec6
+{
+	color: blue;
+}
+.codec7
+{
+	color: blue;
+}
+.codec8
+{
+	color: blue;
+}
+.codec9
+{
+	color: blue;
+}
+.codec10
+{
+	color: blue;
+}
+.codecomment
+{
+	color: green;
+}
+.codestring
+{
+	color: teal;
+}
+.codestrong
+{
+	border: black solid 1px;
+	background-color: #ffd700;
+	padding-left: 1px;
+	padding-right: 1px;
+}
+.codestrike
+{
+	text-decoration: line-through;
+}
+/* custom language styles that are attached to the wordfile.txt languages */
+.vfpcode .programcontrol
+{
+	color: blue;
+}
+.vfpcode .functions
+{
+	color: blue;
+}
+.vfpcode .commands
+{
+	color: blue;
+}
+.vfpcode .methods
+{
+	color: blue;
+}
+.vfpcode .properties
+{
+	color: blue;
+}
+.vfpcode .classes
+{
+	color: red;
+	font-size: 120%;
+	font-variant: small-caps;
+}
+.vfpcode .events
+{
+	color: #483d8b;
+}
+.vfpcode .systemvars
+{
+	color: blue;
+}
+.vbcode .constants
+{
+	color: blue;
+	font-face: bold;
+}
+.vbcode .datatypes
+{
+	color: darkblue;
+	font-face: bold;
+}
+.vbcode .keywords
+{
+	color: blue;
+}
+.vbcode .statements
+{
+	color: blue;
+}
+.vbcode .functions
+{
+	color: blue;
+}
+.vbcode .depracated
+{
+	color: grey;
+	font-size: 120%;
+	font-variant: small-caps;
+}
+.csharpcode .programcontrol
+{
+	color: blue;
+}
+.csharpcode .datatypes
+{
+	color: blue;
+}
+.csharpcode .literals
+{
+	color: darkblue;
+}
+.csharpcode .operators
+{
+	color: blue;
+}
+.csharpcode .preprocessor
+{
+	color: lightblue;
+}
+.htmlcode .elements
+{
+	color: darkred;
+}
+.htmlcode .attributes
+{
+	color: red;
+}
+.htmlcode .codestring
+{
+	color: teal;
+	background: ;
+}
+.xmlcode .elements
+{
+	color: darkred;
+}
+.xmlcode .attributes
+{
+	color: red;
+}
+.xmlcode .commands
+{
+	color: darkred;
+	font-weight: bold;
+}
+.xmlcode .codestring
+{
+	color: teal;
+	background: ;
+}

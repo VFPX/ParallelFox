@@ -1,0 +1,35 @@
+<%= ExecuteTemplate("Header_Template.wcs") %>
+
+<div class="contentpane">
+<br>
+<%= oHelp.FormatHTML(oHelp.oTopic.Body) %>
+<br>
+
+
+<% *** Parameters are overloaded to hold Data Type Info
+IF !EMPTY(oHelp.oTopic.Parameters) %>    
+<br>
+<h3 class='outdent'>Data Type</h3>
+<%= oHelp.FormatHTML(oHelp.oTopic.Parameters)%>
+<% ENDIF %>  
+
+<% IF !EMPTY(oHelp.oTopic.Returns) %>    
+<br>
+<h3 class='outdent'>Attributes</h3>
+<%= oHelp.FormatHTML(oHelp.oTopic.Returns)%></td>
+<% ENDIF %>
+
+<% IF !EMPTY(oHelp.oTopic.Remarks) %>
+<br>
+<h3 class="outdent">Remarks</h3>
+    <%= oHelp.FormatHTML(oHelp.oTopic.Remarks) %>
+<% ENDIF %>  
+
+<% IF !EMPTY(oHelp.oTopic.Example) %>
+<br>
+<h3 class="Outdent">Example</h3>
+<pre><%= oHelp.FormatHTML(oHelp.oTopic.Example)%></pre>
+<% ENDIF %>  
+<p>
+</div>
+<%= ExecuteTemplate("Footer_Template.wcs") %>

@@ -1,0 +1,48 @@
+﻿<%= ExecuteTemplate("Header_template.wcs") %>
+
+<div class="contentpane">
+<br>
+<%= oHelp.FormatHTML(oHelp.oTopic.Body) %>
+<br>
+
+<br>
+<% IF !EMPTY(oHelp.oTopic.Syntax) %>
+<pre class="syntaxbox">
+<%= oHelp.FormatHtml( oHelp.oTopic.Syntax ) %>
+</pre>
+<% ENDIF %>
+
+<% IF !EMPTY(oHelp.oTopic.Returns) %>   
+<h3 class="outdent">Return Value</h3>
+<%= oHelp.FormatHTML(oHelp.oTopic.Returns)%>
+<br>
+<% ENDIF %>
+
+<% IF !EMPTY(oHelp.oTopic.Parameters) %>    
+<h3 class="outdent">Parameters</h3>
+<%= oHelp.FormatHTML(strtran(oHelp.oTopic.Parameters,"b>","i>"))%>
+<% ENDIF %>  
+
+<% IF !EMPTY(oHelp.oTopic.Exceptions) %>
+<h3 class="outdent">Exceptions</h3>
+<%= strtran( InsertExceptions(oHelp),"b>","i>") %>	
+<% ENDIF %> 
+
+<% IF !EMPTY(oHelp.oTopic.Remarks) %>
+<br>
+<h3 class="outdent">Remarks</h3>
+    <%= oHelp.FormatHTML(oHelp.oTopic.Remarks) %>
+<% ENDIF %>  
+
+<% IF !EMPTY(oHelp.oTopic.Example) %>
+<br>
+<h3 class="outdent">Example</h3>
+<pre><%= oHelp.FormatHTML(oHelp.oTopic.Example)%></pre>
+<% ENDIF %> 
+
+<%= InsertMethodOverloads(oHelp) %>
+
+<p>
+</div>
+
+<%= ExecuteTemplate("Footer_Template.wcs") %>

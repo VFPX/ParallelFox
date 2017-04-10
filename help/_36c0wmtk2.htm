@@ -1,0 +1,45 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head> 
+	<topictype value="TOPIC" />
+	<title>Scalability and Performance</title>
+	<link rel="stylesheet" type="text/css" href="templates/wwhelp.css">
+	<script src="templates/wwhelp.js" type="text/javascript"></script>
+</head>
+<body>
+<div class="banner">
+  <div>
+		  <img src="bmp/seealso.gif" border=0  alt="Related Topics" style="cursor:hand" onmouseover="SeeAlsoButton();" />
+	<div id="See" class="hotlinkbox" style="display:none" onmouseleave="SeeAlsoButton();">
+	  <b>See also</b><br>
+	  <div class="seealsotopics"><a href="_36c0waljg.htm" >parallel::SetWorkerCount</a> <br/> 
+<a href="_36c0waljr.htm" >parallel::CPUCount</a> <br/> 
+<a href="_36c0wc034.htm" >worker::Sleep</a></div>
+	</div>
+	<span class="projectname">ParallelFox</span>
+ </div>
+ <div class="topicname">
+	<img src="bmp/TOPIC.gif">&nbsp;Scalability and Performance
+ </div>
+</div>
+
+<div class="contentpane">
+
+<div class="contentbody">ParallelFox allows you to control how many workers are started.  The default is one worker per logical CPU core.  On a quad-core machine, that is four workers plus the main process.  Wait... that is five processes.  Isn't that going to overload the CPU?  The reasoning is that while a heavy duty process is running on all your workers, the main process is probably not going to be doing that much itself.  The main process serves as a manager of sorts, making sure the workers stay busy and giving status reports to the higher-ups (you), but otherwise does not need a lot of CPU cycles.  The goal is to squeeze as much performance as possible out of the CPU.<p>You, however, may disagree with that position.  You may need to reserve one core for the main process, or you may choose to leave one core unused for other apps the user may have open (Office, etc.).  Vice versa, perhaps your workers are downloading data from the internet.  In that case, the bottleneck is not your machine. It's the delay waiting for other servers to process your request and respond, so you may want more than one worker per CPU.  <a href="_36c0waljg.htm" >Parallel.SetWorkerCount()</a> gives you control over the number of workers.  <a href="_36c0waljr.htm" >Parallel.CPUCount</a> contains the number of logical CPU cores on the current machine (when HyperThreading is turned on, there are two logical cores per physical core).  Parallel.SetWorkerCount() should be called before <a href="_36c0waljf.htm" >Parallel.StartWorkers()</a>.<p><pre><div class="vfpcode"><span class="codecomment">* Reserve one core for main process or other apps</span>
+Parallel.SetWorkerCount(Parallel.CPUCount - 1)
+Parallel.StartWorkers(<span class="codestring">"MyApp.Exe"</span>)</div></pre><p>Parallel.SetWorkerCount() accepts a second parameter that controls the number of workers started on a Terminal Server.  While a Terminal Server may have a large number of CPU cores, those cores have to be shared across multiple users.  You don't want a single user to use up all of the CPU resources, so the default of one CPU per core doesn't work in this environment.  The default on Terminal Server is 1 worker, but you control that separately with this parameter.<p><u><b>Background Processes</b></u><br>Windows does a pretty good job of sharing CPU resources with multiple processes.  However, you could find that a long-running background process is taking more than its fair share of the CPU, especially on a single-core machine.  The prescription is to sprinkle a few Sleep() calls into your worker code.  "Sprinkle" is a key term here, because if you call it too often, you will bring your background process to a crawl.  ParallelFox makes this easy with the <a href="_36c0wc034.htm" >Worker.Sleep()</a> method.  <p>The first parameter is the number of milliseconds to pause execution, and depending on how often you call it, you'll usually want to keep this number low.  In fact, you can even pass zero, which tells the CPU to switch to another thread/process, in effect telling the worker to "give someone else a chance" without lowering the overall CPU usage.  If your goal is to lower CPU usage (run your program as low priority), then pass in a few milliseconds.  The number of milliseconds depends on how tight your loop is.  This of course may significantly slow down your code, so you may only want to sleep if there is one CPU on the machine. Otherwise, you may prefer to let the worker run full speed. The second parameter controls that:<p><pre><div class="vfpcode"><span class="codecomment">* Sleep for 5 milliseconds, but only if there is one CPU. 
+* Specifying 2 for nCPUCount would cause it to sleep if there were 2 or fewer CPUs on the machine.</span>
+Worker.Sleep(5,1)</div></pre><p><br>
+</div>
+
+<h3 class="outdent">See also</h3><a href="_36c0waljg.htm" >parallel::SetWorkerCount</a> | 
+<a href="_36c0waljr.htm" >parallel::CPUCount</a> | 
+<a href="_36c0wc034.htm" >worker::Sleep</a>
+
+</div><hr />
+<small>&nbsp;&nbsp;Last Updated: 03/27/11 | 
+&copy Joel Leach, 2012</small>
+<br clear="all" />
+<br/>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head> 
+	<topictype value="CLASSMETHOD" />
+	<title>parallel::Wait</title>
+	<link rel="stylesheet" type="text/css" href="templates/wwhelp.css">
+	<script src="templates/wwhelp.js" type="text/javascript"></script>
+</head>
+<body>
+<div class="banner">
+  <div>
+		  <img src="bmp/seealso.gif" border=0  alt="Related Topics" style="cursor:hand" onmouseover="SeeAlsoButton();" />
+	<div id="See" class="hotlinkbox" style="display:none" onmouseleave="SeeAlsoButton();">
+	  <b>See also</b><br>
+	  <div class="seealsotopics"><a href="_36c0waljd.htm" >Class parallel</a> <br/> 
+<a href="_36c0wgcqa.htm" >Training Videos</a> <br/> 
+<a href="_36c0wgr22.htm" >Running Code in Parallel</a></div>
+	</div>
+	<span class="projectname">ParallelFox</span>
+ </div>
+ <div class="topicname">
+	<img src="bmp/CLASSMETHOD.gif">&nbsp;parallel::Wait
+ </div>
+</div>
+
+<div class="contentpane">
+
+<div class="contentbody">Wait until workers have finished processing queued commands.
+</div>
+
+<pre class="syntaxbox">Parallel.Wait([lAllWorkers])
+</pre>
+<h3 class="outdent">Parameters</h3><i>lAllWorkers</i> (optional)<br>By default, wait only for commands sent from the current instance of the Parallel object.<br>Pass .T. to wait for commands from ALL instances of the Parallel object.<br>
+<br>
+<h3 class="outdent">Remarks</h3>
+It is possible for commands to be sent to workers from multiple instances of the Parallel object.  For example, a long-running background process started with one instance of Parallel may be running on one worker.  While that is running, the user may start another program (with a separate instance of Parallel) that does parallel processing on the remaining workers.  Parallel.Wait() is scoped to the current instance of the Parallel object, and that is usually what you want.  If for some reason, you want to wait until all commands from all instances are complete, pass .T. to the method.
+<br>
+<h3 class="outdent">Example</h3>
+<pre><pre><div class="vfpcode"><span class="programcontrol">For</span> i = 1 <span class="commands">to</span> 100
+   Parallel.<span class="programcontrol">Do</span>(<span class="codestring">"MyProgram"</span>,,,i)
+<span class="programcontrol">EndFor</span> 
+<span class="codecomment">* Wait until commands are complete</span>
+Parallel.<span class="commands">Wait</span>()
+<span class="codecomment">* Continue rest of program in main process</span></div></pre></pre>
+<br>
+<h3 class="outdent">See also:</h3><a href="_36c0waljd.htm" >Class parallel</a> | 
+<a href="_36c0wgcqa.htm" >Training Videos</a> | 
+<a href="_36c0wgr22.htm" >Running Code in Parallel</a>
+<p>
+</div>
+<hr />
+<small>&nbsp;&nbsp;Last Updated: 03/27/11 | 
+&copy Joel Leach, 2012</small>
+<br clear="all" />
+<br/>
+</body>
+</html>

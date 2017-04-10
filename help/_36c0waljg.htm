@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head> 
+	<topictype value="CLASSMETHOD" />
+	<title>parallel::SetWorkerCount</title>
+	<link rel="stylesheet" type="text/css" href="templates/wwhelp.css">
+	<script src="templates/wwhelp.js" type="text/javascript"></script>
+</head>
+<body>
+<div class="banner">
+  <div>
+		  <img src="bmp/seealso.gif" border=0  alt="Related Topics" style="cursor:hand" onmouseover="SeeAlsoButton();" />
+	<div id="See" class="hotlinkbox" style="display:none" onmouseleave="SeeAlsoButton();">
+	  <b>See also</b><br>
+	  <div class="seealsotopics"><a href="_36c0waljd.htm" >Class parallel</a> <br/> 
+<a href="_36c11399w.htm" >Getting Started</a> <br/> 
+<a href="_36c0wmtk2.htm" >Scalability and Performance</a></div>
+	</div>
+	<span class="projectname">ParallelFox</span>
+ </div>
+ <div class="topicname">
+	<img src="bmp/CLASSMETHOD.gif">&nbsp;parallel::SetWorkerCount
+ </div>
+</div>
+
+<div class="contentpane">
+
+<div class="contentbody">Set number of workers.
+</div>
+
+<pre class="syntaxbox">Parallel.SetWorkerCount(nWorkerCount, [nTerminalServerCount])
+</pre>
+<h3 class="outdent">Parameters</h3><i>nWorkerCount</i><br>Number of worker processes to start.<br>Defaults to <a href="_36c0waljr.htm" >Parallel.CPUCount</a>.<p><i>nTerminalServerCount</i> (optional)<br>Number of worker processes to start on Terminal Server.<br>Default is 1.<p>
+<br>
+<h3 class="outdent">Remarks</h3>
+This method needs to be called before <a href="_36c0waljf.htm" >Parallel.StartWorkers()</a>.  ParallelFox will always start a minimum of one worker.<p><i>nTerminalServerCount</i> has been tested only with Terminal Server and may not function with other remote access servers, such as Citrix.  On other servers, write your own function to detect if your app is running on a remote server, then set the worker count like so:<p><pre><div class="vfpcode"><span class="programcontrol">If</span> IsCitrixServer()   <span class="codecomment">&amp;&amp; your function</span>
+   Parallel.SetWorkerCount(1)
+<span class="programcontrol">EndIf</span></div></pre>
+<br>
+<h3 class="outdent">Example</h3>
+<pre><pre><div class="vfpcode"><span class="codecomment">* Reserve one core for main process or other apps</span>
+Parallel.SetWorkerCount(Parallel.CPUCount - 1)
+Parallel.StartWorkers(<span class="codestring">"MyApp.Exe"</span>)</div></pre>
+</pre>
+<br>
+<h3 class="outdent">See also:</h3><a href="_36c0waljd.htm" >Class parallel</a> | 
+<a href="_36c11399w.htm" >Getting Started</a> | 
+<a href="_36c0wmtk2.htm" >Scalability and Performance</a>
+<p>
+</div>
+<hr />
+<small>&nbsp;&nbsp;Last Updated: 03/26/11 | 
+&copy Joel Leach, 2012</small>
+<br clear="all" />
+<br/>
+</body>
+</html>

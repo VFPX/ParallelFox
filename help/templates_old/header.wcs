@@ -1,0 +1,32 @@
+<% lcSeeAlsoTopics = oHelp.InsertSeeAlsoTopics() %>	
+<%= ExecuteTemplate("Header_Template.wcs") %>
+
+<div style="margin-left:10pt;margin-right=10pt">
+<br>
+<%= oHelp.FormatHTML(oHelp.oTopic.Body) %>
+<br>
+<table border="0" cellpadding="3" width="99%">
+<% IF !EMPTY(oHelp.oTopic.Example) %>
+  <tr>
+    <td width="122" valign="top" align="right" class="labels">Example:</td>
+    <td><pre><b><%= oHelp.FormatHTML(oHelp.oTopic.Example)%></b></pre>
+</td>
+  </tr>
+<% ENDIF %>  
+<% IF !EMPTY(oHelp.oTopic.Remarks) %>
+  <tr>
+    <td width="122" valign="top" align="right" class="labels">Remarks:</td>
+    <td><%= oHelp.FormatHTML(oHelp.oTopic.Remarks)%>
+    </td>
+  </tr>
+<% ENDIF %>  
+</table>
+
+<% if !EMPTY(oHelp.oTopic.SeeAlso) %>
+<b>See also:</b>
+<div style="margin-left:10pt">
+<%= STRTRAN(lcSeeAlsoTopics,"<BR>" + CHR(13) + CHR(10)," | ") %>
+</div>
+<%  endif %>
+</div>
+<%= ExecuteTemplate("Footer_Template.wcs") %>

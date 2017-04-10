@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head> 
+	<topictype value="CLASSMETHOD" />
+	<title>parallel::CallMethod</title>
+	<link rel="stylesheet" type="text/css" href="templates/wwhelp.css">
+	<script src="templates/wwhelp.js" type="text/javascript"></script>
+</head>
+<body>
+<div class="banner">
+  <div>
+		  <img src="bmp/seealso.gif" border=0  alt="Related Topics" style="cursor:hand" onmouseover="SeeAlsoButton();" />
+	<div id="See" class="hotlinkbox" style="display:none" onmouseleave="SeeAlsoButton();">
+	  <b>See also</b><br>
+	  <div class="seealsotopics"><a href="_36c0waljd.htm" >Class parallel</a> <br/> 
+<a href="_36c0wgcqa.htm" >Training Videos</a> <br/> 
+<a href="_36c0wgr22.htm" >Running Code in Parallel</a></div>
+	</div>
+	<span class="projectname">ParallelFox</span>
+ </div>
+ <div class="topicname">
+	<img src="bmp/CLASSMETHOD.gif">&nbsp;parallel::CallMethod
+ </div>
+</div>
+
+<div class="contentpane">
+
+<div class="contentbody">Execute/call class method on worker.
+</div>
+
+<pre class="syntaxbox">Parallel.CallMethod(cMethod, cClassName, cModule, [cInApplication], [lAllWorkers], [Parameter1], [Parameter2...])
+</pre>
+<h3 class="outdent">Parameters</h3><i>cMethod</i><br>Name of method to call on worker.<p><i>cClassName</i><br>Name of class containing method specified with <i>cMethod</i>.<p><i>cModule</i><br>Name of .VCX or .PRG containing class specified with <i>cClassName</i>.<p><i>cInApplication</i> (optional for .PRG)<br>Name of .EXE or .APP containing class library specified with <i>cModule</i>.<br><i>NOTE:</i> This parameter is required if <i>cModule</i> is a .VCX compiled into the main APP/EXE. Otherwise, ParallelFox will not be able to find the class.<p><i>lAllWorkers</i> (optional)<br>Pass .T. to call method on all workers.<p><i>Parameters</i> (optional)<br>Pass up to 21 parameters to <i>cMethod</i>.
+<br>
+<h3 class="outdent">Remarks</h3>
+ParallelFox will instantiate <i>cClassName</i> on the worker, call <i>cMethod</i>, then release the object.<p>The return value of <i>cMethod</i> is passed as the first parameter of the <i>Complete</i> event.
+<br>
+<h3 class="outdent">Example</h3>
+<pre>See Training Videos, CallMethod_Before.prg, and CallMethod_After.prg</pre>
+<br>
+<h3 class="outdent">See also:</h3><a href="_36c0waljd.htm" >Class parallel</a> | 
+<a href="_36c0wgcqa.htm" >Training Videos</a> | 
+<a href="_36c0wgr22.htm" >Running Code in Parallel</a>
+<p>
+</div>
+<hr />
+<small>&nbsp;&nbsp;Last Updated: 08/13/11 | 
+&copy Joel Leach, 2012</small>
+<br clear="all" />
+<br/>
+</body>
+</html>

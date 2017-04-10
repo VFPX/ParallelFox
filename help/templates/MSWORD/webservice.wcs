@@ -1,0 +1,27 @@
+<%= ExecuteTemplate("Header_template.wcs") %>
+
+<div class="contentpane">
+<br>
+<%= oHelp.FormatHTML(oHelp.oTopic.Body) %>
+<br>
+
+<% IF !EMPTY(oHelp.oTopic.Remarks) %>
+<br>
+<h3 class="outdent">Remarks</h3>
+    <%= oHelp.FormatHTML(oHelp.oTopic.Remarks) %>
+<% ENDIF %>  
+
+<% IF !EMPTY(oHelp.oTopic.Example) %>
+<br>
+<h3 class="Outdent">Example</h3><%= ExecuteTemplate("Header_template.wcs") %>
+<pre><%= oHelp.FormatHTML(oHelp.oTopic.Example)%></pre>
+<% ENDIF %>  
+
+<h3 class="outdentclass">Web Service Methods</h3>
+
+<%= ClassMemberTableHtml(oHelp,.t.,"width='95%'") %>
+
+<br>
+<p>
+</div>
+<%= ExecuteTemplate("Footer_Template.wcs") %>

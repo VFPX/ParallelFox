@@ -1,0 +1,83 @@
+<?xml version="1.0"?>
+<wwhelptopics>
+	<topic text="ParallelFox" filename="indexpage" image="images/INDEX.gif" keywords="ParallelFox;">
+		<topic text="Installation" filename="_36c0wvokk" image="images/TOPIC.gif" keywords="Installation;">
+		</topic>
+		<topic text="Version History" filename="_36p10kzwy" image="images/TOPIC.gif" keywords="Version History;">
+		</topic>
+		<topic text="Training Videos" filename="_36c0wgcqa" image="images/TOPIC.gif" keywords="Training Videos;">
+		</topic>
+		<topic text="Getting Started" filename="_36c11399w" image="images/TOPIC.gif" keywords="Getting Started;">
+		</topic>
+		<topic text="Running Code in Parallel" filename="_36c0wgr22" image="images/TOPIC.gif" keywords="Running Code in Parallel;">
+		</topic>
+		<topic text="Worker Events" filename="_36c0wkqqw" image="images/TOPIC.gif" keywords="Worker Events;">
+		</topic>
+		<topic text="Debugging" filename="_36c0wlklo" image="images/TOPIC.gif" keywords="Debugging;">
+		</topic>
+		<topic text="Error Handling" filename="_36c0wltfw" image="images/TOPIC.gif" keywords="Error Handling;">
+		</topic>
+		<topic text="Scalability and Performance" filename="_36c0wmtk2" image="images/TOPIC.gif" keywords="Scalability and Performance;">
+		</topic>
+		<topic text="Concurrency" filename="_36c0wnaqp" image="images/TOPIC.gif" keywords="Concurrency;">
+		</topic>
+		<topic text="HyperThreading" filename="_36p0yqx4z" image="images/TOPIC.gif" keywords="HyperThreading;">
+		</topic>
+		<topic text="Deployment" filename="_36c0wueec" image="images/TOPIC.gif" keywords="Deployment;">
+		</topic>
+	</topic>
+	<topic text="Class Parallel" filename="_36c0waljd" image="images/CLASSHEADER.gif" keywords="Class Parallel;">
+		<topic text="parallel::BindEvent" filename="_36c0waljk" image="images/CLASSMETHOD.gif" keywords="parallel::BindEvent;">
+		</topic>
+		<topic text="parallel::Call" filename="_36c0waljj" image="images/CLASSMETHOD.gif" keywords="parallel::Call;">
+		</topic>
+		<topic text="parallel::CallMethod" filename="_36c0waljm" image="images/CLASSMETHOD.gif" keywords="parallel::CallMethod;">
+		</topic>
+		<topic text="parallel::ClearQueue" filename="_36c0waljp" image="images/CLASSMETHOD.gif" keywords="parallel::ClearQueue;">
+		</topic>
+		<topic text="parallel::Do" filename="_36c0walje" image="images/CLASSMETHOD.gif" keywords="parallel::Do;">
+		</topic>
+		<topic text="parallel::DoCmd" filename="_36c0waljh" image="images/CLASSMETHOD.gif" keywords="parallel::DoCmd;">
+		</topic>
+		<topic text="parallel::ExecScript" filename="_36c0walji" image="images/CLASSMETHOD.gif" keywords="parallel::ExecScript;">
+		</topic>
+		<topic text="parallel::DetectHyperThreading" filename="_36p0xcjon" image="images/CLASSMETHOD.gif" keywords="parallel::DetectHyperThreading;">
+		</topic>
+		<topic text="parallel::OnError" filename="_36c0waljo" image="images/CLASSMETHOD.gif" keywords="parallel::OnError;">
+		</topic>
+		<topic text="parallel::SetWorkerClass" filename="_36c0waljq" image="images/CLASSMETHOD.gif" keywords="parallel::SetWorkerClass;">
+		</topic>
+		<topic text="parallel::SetWorkerCount" filename="_36c0waljg" image="images/CLASSMETHOD.gif" keywords="parallel::SetWorkerCount;">
+		</topic>
+		<topic text="parallel::StartWorkers" filename="_36c0waljf" image="images/CLASSMETHOD.gif" keywords="parallel::StartWorkers;">
+		</topic>
+		<topic text="parallel::StopWorkers" filename="_36c0waljn" image="images/CLASSMETHOD.gif" keywords="parallel::StopWorkers;">
+		</topic>
+		<topic text="parallel::Wait" filename="_36c0waljl" image="images/CLASSMETHOD.gif" keywords="parallel::Wait;">
+		</topic>
+		<topic text="parallel::CPUCount" filename="_36c0waljr" image="images/CLASSPROPERTY.gif" keywords="parallel::CPUCount;">
+		</topic>
+	</topic>
+	<topic text="Class Worker" filename="_36c0wc02z" image="images/CLASSHEADER.gif" keywords="Class Worker;">
+		<topic text="worker::EndCriticalSection" filename="_36c0wc033" image="images/CLASSMETHOD.gif" keywords="worker::EndCriticalSection;">
+		</topic>
+		<topic text="worker::IsWorker" filename="_36c0wc036" image="images/CLASSMETHOD.gif" keywords="worker::IsWorker;">
+		</topic>
+		<topic text="worker::ReturnCursor" filename="_36c0wc037" image="images/CLASSMETHOD.gif" keywords="worker::ReturnCursor;">
+		</topic>
+		<topic text="worker::ReturnData" filename="_36c0wc031" image="images/CLASSMETHOD.gif" keywords="worker::ReturnData;">
+		</topic>
+		<topic text="worker::ReturnError" filename="_36c0wc035" image="images/CLASSMETHOD.gif" keywords="worker::ReturnError;">
+		</topic>
+		<topic text="worker::Sleep" filename="_36c0wc034" image="images/CLASSMETHOD.gif" keywords="worker::Sleep;">
+		</topic>
+		<topic text="worker::StartCriticalSection" filename="_36c0wc032" image="images/CLASSMETHOD.gif" keywords="worker::StartCriticalSection;">
+		</topic>
+		<topic text="worker::UpdateProgress" filename="_36c0wc030" image="images/CLASSMETHOD.gif" keywords="worker::UpdateProgress;">
+		</topic>
+		<topic text="worker::CPUCount" filename="_36c0wc03a" image="images/CLASSPROPERTY.gif" keywords="worker::CPUCount;">
+		</topic>
+		<topic text="worker::ProgressInterval" filename="_36c0wc039" image="images/CLASSPROPERTY.gif" keywords="worker::ProgressInterval;">
+		</topic>
+	</topic>
+</wwhelptopics>

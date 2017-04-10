@@ -1,0 +1,49 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head> 
+	<topictype value="CLASSMETHOD" />
+	<title>worker::Sleep</title>
+	<link rel="stylesheet" type="text/css" href="templates/wwhelp.css">
+	<script src="templates/wwhelp.js" type="text/javascript"></script>
+</head>
+<body>
+<div class="banner">
+  <div>
+		  <img src="bmp/seealso.gif" border=0  alt="Related Topics" style="cursor:hand" onmouseover="SeeAlsoButton();" />
+	<div id="See" class="hotlinkbox" style="display:none" onmouseleave="SeeAlsoButton();">
+	  <b>See also</b><br>
+	  <div class="seealsotopics"><a href="_36c0wc02z.htm" >Class worker</a> <br/> 
+<a href="_36c0wmtk2.htm" >Scalability and Performance</a></div>
+	</div>
+	<span class="projectname">ParallelFox</span>
+ </div>
+ <div class="topicname">
+	<img src="bmp/CLASSMETHOD.gif">&nbsp;worker::Sleep
+ </div>
+</div>
+
+<div class="contentpane">
+
+<div class="contentbody">Pause execution if machine contains the specified number CPUs or fewer.
+</div>
+
+<pre class="syntaxbox">Worker.Sleep(nMilliseconds, [nCPUCount])
+</pre>
+<h3 class="outdent">Parameters</h3><i>nMilliseconds</i><br>Number of milliseconds to pause execution.<br>Pass 0 to force process/thread switch without delay.<p><i>nCPUCount</i> (optional)<br>Pause only if machine contains the specified number CPUs or fewer.<br>Omit (or pass 0) to pause regardless of CPUs.<br>
+<br>
+<h3 class="outdent">Example</h3>
+<pre><pre><div class="vfpcode"><span class="codecomment">* Sleep for 5 milliseconds, but only if there is one CPU. 
+* Specifying 2 for nCPUCount would cause it to sleep if there were 2 or fewer CPUs on the machine.</span>
+Worker.Sleep(5,1)</div></pre></pre>
+<br>
+<h3 class="outdent">See also:</h3><a href="_36c0wc02z.htm" >Class worker</a> | 
+<a href="_36c0wmtk2.htm" >Scalability and Performance</a>
+<p>
+</div>
+<hr />
+<small>&nbsp;&nbsp;Last Updated: 03/27/11 | 
+&copy Joel Leach, 2012</small>
+<br clear="all" />
+<br/>
+</body>
+</html>

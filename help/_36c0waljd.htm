@@ -1,0 +1,125 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head> 
+	<topictype value="CLASSHEADER" />
+	<title>Class Parallel</title>
+	<link rel="stylesheet" type="text/css" href="templates/wwhelp.css">
+</head>
+<body>
+<div class="banner">
+  <div>
+	<span class="projectname">ParallelFox</span>
+ </div>
+ <div class="topicname">
+	<img src="bmp/CLASSHEADER.gif">&nbsp;Class Parallel
+ </div>
+</div>
+
+<div class="contentpane">
+
+<div class="contentbody">Used in the main process, this class provides functionality for sending commands to workers and managing parallel processing.<br>
+</div>
+
+
+<h3 class="outdentmargin">Class Members</h3><table class='detailtable' align="center" width='95%'><tr><th style="width: 185px" colspan="2">Member</th><th style="width:350px">Description</th></tr><tr>
+<td style="width:32px;"><img src="bmp/classmethod.gif" /></td>
+<td><a href="_36c0waljk.htm" >BindEvent</a></td>
+<td>Bind to worker event.<div class="syntaxoverloads">Parallel.BindEvent(cEvent, oEventHandler, cDelegate, [nFlags])</div>
+</td>
+</tr>
+<tr class="alternaterow">
+<td style="width:32px;"><img src="bmp/classmethod.gif" /></td>
+<td><a href="_36c0waljj.htm" >Call</a></td>
+<td>Execute/call function on worker.<div class="syntaxoverloads">Parallel.Call(cFunction, [lAllWorkers], [Parameter1], [Parameter2...])</div>
+</td>
+</tr>
+<tr>
+<td style="width:32px;"><img src="bmp/classmethod.gif" /></td>
+<td><a href="_36c0waljm.htm" >CallMethod</a></td>
+<td>Execute/call class method on worker.<div class="syntaxoverloads">Parallel.CallMethod(cMethod, cClassName, cModule, [cInApplication], [lAllWorkers], [Parameter1], [Parameter2...])</div>
+</td>
+</tr>
+<tr class="alternaterow">
+<td style="width:32px;"><img src="bmp/classmethod.gif" /></td>
+<td><a href="_36c0waljp.htm" >ClearQueue</a></td>
+<td>Remove all pending commands from queue.<div class="syntaxoverloads">Parallel.ClearQueue()</div>
+</td>
+</tr>
+<tr>
+<td style="width:32px;"><img src="bmp/classmethod.gif" /></td>
+<td><a href="_36p0xcjon.htm" >DetectHyperThreading</a></td>
+<td>Detect if HyperThreading is enabled.<div class="syntaxoverloads">Parallel.DetectHyperThreading()                                              </div>
+</td>
+</tr>
+<tr class="alternaterow">
+<td style="width:32px;"><img src="bmp/classmethod.gif" /></td>
+<td><a href="_36c0walje.htm" >Do</a></td>
+<td>Execute program on worker.<div class="syntaxoverloads">Parallel.Do(cPRG, [cInProgram], [lAllWorkers], [Parameter1], [Parameter2...])</div>
+</td>
+</tr>
+<tr>
+<td style="width:32px;"><img src="bmp/classmethod.gif" /></td>
+<td><a href="_36c0waljh.htm" >DoCmd</a></td>
+<td>Execute single command on worker.<div class="syntaxoverloads">Parallel.DoCmd(cCommand, [lAllWorkers])</div>
+</td>
+</tr>
+<tr class="alternaterow">
+<td style="width:32px;"><img src="bmp/classmethod.gif" /></td>
+<td><a href="_36c0walji.htm" >ExecScript</a></td>
+<td>Execute script on worker.<div class="syntaxoverloads">Parallel.ExecScript(cScript, [lAllWorkers], [Parameter1], [Parameter2...]</div>
+</td>
+</tr>
+<tr>
+<td style="width:32px;"><img src="bmp/classmethod.gif" /></td>
+<td><a href="_36c0waljo.htm" >OnError</a></td>
+<td>Set up global handler for worker errors.<div class="syntaxoverloads">Parallel.OnError(cOnErrorCommand)</div>
+</td>
+</tr>
+<tr class="alternaterow">
+<td style="width:32px;"><img src="bmp/classmethod.gif" /></td>
+<td><a href="_36c0waljq.htm" >SetWorkerClass</a></td>
+<td>Change worker class from default.<div class="syntaxoverloads">Parallel.SetWorkerClass(cCOMProgID, cClass, cLibrary)</div>
+</td>
+</tr>
+<tr>
+<td style="width:32px;"><img src="bmp/classmethod.gif" /></td>
+<td><a href="_36c0waljg.htm" >SetWorkerCount</a></td>
+<td>Set number of workers.<div class="syntaxoverloads">Parallel.SetWorkerCount(nWorkerCount, [nTerminalServerCount])</div>
+</td>
+</tr>
+<tr class="alternaterow">
+<td style="width:32px;"><img src="bmp/classmethod.gif" /></td>
+<td><a href="_36c0waljf.htm" >StartWorkers</a></td>
+<td>Start worker processes.<div class="syntaxoverloads">Parallel.StartWorkers(cProcedureFile, [cDirectory], [lDebugMode])</div>
+</td>
+</tr>
+<tr>
+<td style="width:32px;"><img src="bmp/classmethod.gif" /></td>
+<td><a href="_36c0waljn.htm" >StopWorkers</a></td>
+<td>Stop worker processes.<div class="syntaxoverloads">Parallel.StopWorkers([lStopImmediately])</div>
+</td>
+</tr>
+<tr class="alternaterow">
+<td style="width:32px;"><img src="bmp/classmethod.gif" /></td>
+<td><a href="_36c0waljl.htm" >Wait</a></td>
+<td>Wait until workers have finished processing queued commands.<div class="syntaxoverloads">Parallel.Wait([lAllWorkers])</div>
+</td>
+</tr>
+<tr>
+<td style="width:32px;"><img src="bmp/classproperty.gif" /></td>
+<td><a href="_36c0waljr.htm" >CPUCount</a></td>
+<td>Number of logical processors/cores on machine.</td>
+</tr>
+</table><p>
+
+<h3 class="outdent">Requirements</h3>
+
+
+</div>
+<hr />
+<small>&nbsp;&nbsp;Last Updated: 03/26/11 | 
+&copy Joel Leach, 2012</small>
+<br clear="all" />
+<br/>
+</body>
+</html>

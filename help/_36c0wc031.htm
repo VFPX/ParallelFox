@@ -1,0 +1,54 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head> 
+	<topictype value="CLASSMETHOD" />
+	<title>worker::ReturnData</title>
+	<link rel="stylesheet" type="text/css" href="templates/wwhelp.css">
+	<script src="templates/wwhelp.js" type="text/javascript"></script>
+</head>
+<body>
+<div class="banner">
+  <div>
+		  <img src="bmp/seealso.gif" border=0  alt="Related Topics" style="cursor:hand" onmouseover="SeeAlsoButton();" />
+	<div id="See" class="hotlinkbox" style="display:none" onmouseleave="SeeAlsoButton();">
+	  <b>See also</b><br>
+	  <div class="seealsotopics"><a href="_36c0wc02z.htm" >Class worker</a> <br/> 
+<a href="_36c0wgcqa.htm" >Training Videos</a> <br/> 
+<a href="_36c0wkqqw.htm" >Worker Events</a> <br/> 
+<a href="_36c0waljk.htm" >parallel::BindEvent</a></div>
+	</div>
+	<span class="projectname">ParallelFox</span>
+ </div>
+ <div class="topicname">
+	<img src="bmp/CLASSMETHOD.gif">&nbsp;worker::ReturnData
+ </div>
+</div>
+
+<div class="contentpane">
+
+<div class="contentbody">Return data to main process. 
+</div>
+
+<pre class="syntaxbox">Worker.ReturnData(Parameter1, [Parameter2...])
+</pre>
+<h3 class="outdent">Parameters</h3><i>Parameters</i> (optional)<br>Return up to 26 parameters to main process.
+<br>
+<h3 class="outdent">Remarks</h3>
+Due to limitations with VFP's BindEvent() function, variables cannot be returned by reference, which means arrays are not supported.  However, objects and collections can be returned.
+<br>
+<h3 class="outdent">Example</h3>
+<pre>See Training Videos, ReturnData_Before.prg, and ReturnData_After.prg.</pre>
+<br>
+<h3 class="outdent">See also:</h3><a href="_36c0wc02z.htm" >Class worker</a> | 
+<a href="_36c0wgcqa.htm" >Training Videos</a> | 
+<a href="_36c0wkqqw.htm" >Worker Events</a> | 
+<a href="_36c0waljk.htm" >parallel::BindEvent</a>
+<p>
+</div>
+<hr />
+<small>&nbsp;&nbsp;Last Updated: 03/27/11 | 
+&copy Joel Leach, 2012</small>
+<br clear="all" />
+<br/>
+</body>
+</html>

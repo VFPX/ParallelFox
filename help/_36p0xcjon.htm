@@ -1,0 +1,55 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head> 
+	<topictype value="CLASSMETHOD" />
+	<title>parallel::DetectHyperThreading</title>
+	<link rel="stylesheet" type="text/css" href="templates/wwhelp.css">
+	<script src="templates/wwhelp.js" type="text/javascript"></script>
+</head>
+<body>
+<div class="banner">
+  <div>
+		  <img src="bmp/seealso.gif" border=0  alt="Related Topics" style="cursor:hand" onmouseover="SeeAlsoButton();" />
+	<div id="See" class="hotlinkbox" style="display:none" onmouseleave="SeeAlsoButton();">
+	  <b>See also</b><br>
+	  <div class="seealsotopics"><a href="_36c0waljd.htm" >Class Parallel</a> <br/> 
+<a href="_36p0yqx4z.htm" >HyperThreading</a></div>
+	</div>
+	<span class="projectname">ParallelFox</span>
+ </div>
+ <div class="topicname">
+	<img src="bmp/CLASSMETHOD.gif">&nbsp;parallel::DetectHyperThreading
+ </div>
+</div>
+
+<div class="contentpane">
+
+<div class="contentbody">Detect if HyperThreading is enabled.
+</div>
+
+<pre class="syntaxbox">Parallel.DetectHyperThreading()                                              
+</pre>
+<h3 class="outdent">Return Value</h3>Returns .T. when HyperThreading is enabled.
+<br>
+<br>
+<h3 class="outdent">Remarks</h3>
+WMI (Windows Management Instrumentation) is used to detect if HyperThreading is enabled.  WMI has shipped with Windows since Windows 2000.  However, this method can only detect HyperThreading on Windows XP SP3, Windows Server 2003, and later versions, because that is when Microsoft introduced the required APIs.  On previous versions of Windows, this method will always return .F. even if HyperThreading is enabled.
+<br>
+<h3 class="outdent">Example</h3>
+<pre><pre><div class="vfpcode"><span class="codecomment">* Use only physical cores </span>
+<span class="programcontrol">If</span> Parallel.DetectHyperThreading()
+   Parallel.SetWorkerCount(Parallel.CPUCount / 2)
+<span class="programcontrol">EndIf</span> 
+Parallel.StartWorkers(<span class="codestring">"MyApp.EXE"</span>)</div></pre></pre>
+<br>
+<h3 class="outdent">See also:</h3><a href="_36c0waljd.htm" >Class Parallel</a> | 
+<a href="_36p0yqx4z.htm" >HyperThreading</a>
+<p>
+</div>
+<hr />
+<small>&nbsp;&nbsp;Last Updated: 04/02/11 | 
+&copy Joel Leach, 2012</small>
+<br clear="all" />
+<br/>
+</body>
+</html>

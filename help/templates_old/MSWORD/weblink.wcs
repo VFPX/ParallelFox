@@ -1,0 +1,12 @@
+<html>
+<head>
+<title><%= TRIM(oHelp.oTopic.Topic) %></title>
+<LINK rel="stylesheet" type="text/css" href="templates/wwhelp.css">
+</head>
+<body>
+<h2><%= TRIM(oHelp.oTopic.Topic) %></h2>
+<p>
+<a href="<%= oHelp.FormatHTML(oHelp.oTopic.Body) %>"><%= oHelp.FormatHTML(oHelp.oTopic.Body) %></a>
+<p>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<% lcSeeAlsoTopics = oHelp.InsertSeeAlsoTopics() %>	
+<%= ExecuteTemplate("Header_Template.wcs") %>
+
+<div class="contentpane">
+
+<div class="contentbody">
+<%= oHelp.FormatHTML(oHelp.oTopic.Body) %>
+</div>
+
+<% IF !EMPTY(oHelp.oTopic.Remarks) %>
+<h3 class="outdent">Remarks</h3>
+    <%= oHelp.FormatHTML(oHelp.oTopic.Remarks) %>
+<% ENDIF %>  
+
+<% IF !EMPTY(oHelp.oTopic.Example) %>
+<h3 class="Outdent">Example</h3>
+<pre><%= oHelp.FormatHTML(oHelp.oTopic.Example)%></pre>
+<% ENDIF %>  
+
+
+<%= ChildTopicsTableHtml(oHelp,"DATATABLE","Tables","oHelp.FormatHtml(oHelp.oTopic.Body)",,.f.,"Width='95%'") %>
+<p></p>
+<%= ChildTopicsTableHtml(oHelp,"DATASTOREDPROC","Stored Procedures","oHelp.FormatHtml(oHelp.oTopic.Body)",,.f.,"Width='95%'") %>
+
+<% if !EMPTY(oHelp.oTopic.SeeAlso) %>
+<h3 class="outdent">See also</h3>
+<%= lcSeeAlsoTopics %>
+<%  endif %>
+
+</div>
+
+<%= ExecuteTemplate("Footer_Template.wcs") %>

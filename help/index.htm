@@ -1,0 +1,27 @@
+<HTML><HEAD><TITLE>ParallelFox</TITLE>
+<script language="javascript">
+function SetPage() {
+   var lcQuery = window.location.search;
+   var lnMatch = lcQuery.search("page=");
+   if (lnMatch > -1) {
+      lcPage = lcQuery.substr(lnMatch + 5);
+      window.frames[1].location.href = lcPage
+      window.frames[0].location.href = "index2.htm?id=" + lcPage.replace(".htm","");
+   }
+   else {
+      window.frames[1].location.href = "indexpage.htm";
+      window.frames[0].location.href = "index2.htm";
+   }
+}
+</script>
+</HEAD>
+
+<frameset cols="35%,*" onload="SetPage();">
+  <frame name="wwhelp_left" target="wwhelp_right">
+  <frame name="wwhelp_right">
+  <noframes>
+  <body>
+  <p>This page uses frames, but your browser doesn't support them.<br>View <a href="index2.htm"> the non-frames version</a>.</p>
+  </body>
+  </noframes>
+</frameset></html>

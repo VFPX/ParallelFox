@@ -1,0 +1,70 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head> 
+	<topictype value="CLASSMETHOD" />
+	<title>parallel::StopWorkers</title>
+	<link rel="stylesheet" type="text/css" href="templates/wwhelp.css">
+	<script src="templates/wwhelp.js" type="text/javascript"></script>
+</head>
+<body>
+<div class="banner">
+  <div>
+		  <img src="bmp/seealso.gif" border=0  alt="Related Topics" style="cursor:hand" onmouseover="SeeAlsoButton();" />
+	<div id="See" class="hotlinkbox" style="display:none" onmouseleave="SeeAlsoButton();">
+	  <b>See also</b><br>
+	  <div class="seealsotopics"><a href="_36c0waljd.htm" >Class parallel</a> <br/> 
+<a href="_36c11399w.htm" >Getting Started</a> <br/> 
+<a href="_36c0wltfw.htm" >Error Handling</a></div>
+	</div>
+	<span class="projectname">ParallelFox</span>
+ </div>
+ <div class="topicname">
+	<img src="bmp/CLASSMETHOD.gif">&nbsp;parallel::StopWorkers
+ </div>
+</div>
+
+<div class="contentpane">
+
+<div class="contentbody">Stop worker processes.
+</div>
+
+<pre class="syntaxbox">Parallel.StopWorkers([lStopImmediately])
+</pre>
+<h3 class="outdent">Parameters</h3><i>lStopImmediately</i> (optional)<br>By default, ParallelFox waits until all pending commands are complete before stopping workers. Pass .T. to clear the command queue and stop workers immediately.
+<br>
+<h3 class="outdent">Remarks</h3>
+This method should be called during your shutdown process.  Any pending commands will finish running before workers are stopped, so you may want to notify users that the workers are shutting down.<p>When <i>lStopImmediately</i> is .T., pending commands are cancelled and there is no wait.  However, commands currently running on the worker(s) may still complete.
+<br>
+<h3 class="outdent">Example</h3>
+<pre><pre><div class="vfpcode"><span class="functions">On</span> <span class="commands">Shutdown</span> <span class="programcontrol">Do</span> MyShutdown
+
+<span class="programcontrol">Procedure</span> MyShutdown
+<span class="programcontrol">Local</span> Parallel as Parallel
+Parallel = <span class="functions">NewObject</span>(<span class="codestring">"Parallel"</span>, <span class="codestring">"ParallelFox.vcx"</span>)
+
+Parallel.StopWorkers()
+
+<span class="codecomment">* Perform more shutdown tasks</span>
+...
+
+<span class="codecomment">* Wait until worker shutdown is complete </span>
+<span class="commands">Wait</span> <span class="codestring">"Shutting Down Workers..."</span> <span class="commands">Window</span> Nowait
+Parallel.<span class="commands">Wait</span>()
+
+<span class="codecomment">* Exit app</span>
+<span class="commands">Clear</span> <span class="commands">Events</span>
+
+<span class="programcontrol">EndProc</span></div></pre></pre>
+<br>
+<h3 class="outdent">See also:</h3><a href="_36c0waljd.htm" >Class parallel</a> | 
+<a href="_36c11399w.htm" >Getting Started</a> | 
+<a href="_36c0wltfw.htm" >Error Handling</a>
+<p>
+</div>
+<hr />
+<small>&nbsp;&nbsp;Last Updated: 03/27/11 | 
+&copy Joel Leach, 2012</small>
+<br clear="all" />
+<br/>
+</body>
+</html>

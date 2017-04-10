@@ -1,0 +1,26 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head> 
+	<topictype value="<%= TRIM(oHelp.oTopic.Type) %>" />
+	<title><%= TRIM(oHelp.oTopic.Topic) %></title>
+	<link rel="stylesheet" type="text/css" href="templates/wwhelp.css">
+<% if !EMPTY(lcSeeAlsoTopics) %>
+	<script src="templates/wwhelp.js" type="text/javascript"></script>
+<% endif %>
+</head>
+<body>
+<div class="banner">
+  <div>
+<% if !EMPTY(lcSeeAlsoTopics) %>
+        <img src="bmp/seealso.gif" border=0  alt="Related Topics" style="cursor:hand" onmouseover="SeeAlsoButton();" />
+	<div id="See" class="hotlinkbox" style="display:none" onmouseleave="SeeAlsoButton();">
+	  <b>See also</b><br>
+	  <div class="seealsotopics"><%= STRTRAN(lcSeeAlsoTopics,"|","<br/>") %></div>
+	</div>
+<% endif %>
+	<span class="projectname"><%= oHelp.cProjectname %></span>
+ </div>
+ <div class="topicname">
+	<img src="bmp/<%= TRIM(oHelp.oTopic.Type)%>.gif"><%= iif(oHelp.oTopic.Static,[<img src="bmp/static.gif" />],[]) %>&nbsp;<%= TRIM(oHelp.oTopic.Topic) %>
+ </div>
+</div>

@@ -1,0 +1,47 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head> 
+	<topictype value="TOPIC" />
+	<title>Getting Started</title>
+	<link rel="stylesheet" type="text/css" href="templates/wwhelp.css">
+	<script src="templates/wwhelp.js" type="text/javascript"></script>
+</head>
+<body>
+<div class="banner">
+  <div>
+		  <img src="bmp/seealso.gif" border=0  alt="Related Topics" style="cursor:hand" onmouseover="SeeAlsoButton();" />
+	<div id="See" class="hotlinkbox" style="display:none" onmouseleave="SeeAlsoButton();">
+	  <b>See also</b><br>
+	  <div class="seealsotopics"><a href="_36c0wgcqa.htm" >Training Videos</a> <br/> 
+<a href="_36c0waljf.htm" >parallel::StartWorkers</a> <br/> 
+<a href="_36c0waljn.htm" >parallel::StopWorkers</a> <br/> 
+<a href="_36c0waljg.htm" >parallel::SetWorkerCount</a> <br/> 
+<a href="_36c0waljq.htm" >parallel::SetWorkerClass</a></div>
+	</div>
+	<span class="projectname">ParallelFox</span>
+ </div>
+ <div class="topicname">
+	<img src="bmp/TOPIC.gif">&nbsp;Getting Started
+ </div>
+</div>
+
+<div class="contentpane">
+
+<div class="contentbody">ParallelFox enables parallel and background processing by running your programs in "worker" processes.  Before you can run any code with ParallelFox, you have to start those workers.  That's often as simple as adding the following code to your startup program:<p><pre><div class="vfpcode"><span class="programcontrol">Local</span> Parallel as Parallel
+Parallel = <span class="functions">NewObject</span>(<span class="codestring">"Parallel"</span>, <span class="codestring">"ParallelFox.vcx"</span>)
+Parallel.StartWorkers(<span class="codestring">"MyApp.exe"</span>)</div></pre><p>Notice that Parallel is a local object.  Although it will function as a global object, it is usually best to instantiate it as a local object in each program that will be using it.  It is possible to have multiple instances of the Parallel object, and certain functions are scoped to the current instance.  There are global objects that ParallelFox manages behind the scenes, but the Parallel object should usually be local.<p>There may be a couple of things you want to set before you start the workers.  <br><ul><li> <a href="_36c0waljg.htm" >Parallel.SetWorkerCount()</a> controls how many worker processes will be started (the default is 1 worker per logical CPU core).  <br><li> If for some reason you want to override or rename the WorkerMgr class that controls the worker processes, call <a href="_36c0waljq.htm" >Parallel.SetWorkerClass()</a> to tell ParallelFox the name of your class.<br></ul><br>If you are going to use either of these methods, they need to be called before Parallel.StartWorkers().<p>Workers will remain open for the duration of your application.  Call <a href="_36c0waljn.htm" >Parallel.StopWorkers()</a> to end worker processes, which you'll want to do in your shutdown program.<br>
+</div>
+
+<h3 class="outdent">See also</h3><a href="_36c0wgcqa.htm" >Training Videos</a> | 
+<a href="_36c0waljf.htm" >parallel::StartWorkers</a> | 
+<a href="_36c0waljn.htm" >parallel::StopWorkers</a> | 
+<a href="_36c0waljg.htm" >parallel::SetWorkerCount</a> | 
+<a href="_36c0waljq.htm" >parallel::SetWorkerClass</a>
+
+</div><hr />
+<small>&nbsp;&nbsp;Last Updated: 03/20/11 | 
+&copy Joel Leach, 2012</small>
+<br clear="all" />
+<br/>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<html>
+<head>
+<base target="wwhelp_right">
+<title><%= pcProjectName %></title>
+<LINK rel="stylesheet" type="text/css" href="templates/wwhelp.css">
+<script>
+// *** Set this value for a Home Link
+//var HomeLink = "http://www.west-wind.com/wwhelp/";
+var HomeLink = "/";
+
+var AllowSearch = <%= IIF(plAllowServerSearch,"true","false") %>;
+
+function AlwaysExpand(lcID) {
+   var loNode = document.getElementById(lcID);
+   if (loNode==null)
+    return;
+    
+   loNode.style.display="";
+   
+   loNode = document.getElementById("IMG" + lcID);
+   if (loNode != null)
+      loNode.src = "bmp/minus.gif";
+}
+function Expand(lcID) {
+   var loNode = document.getElementById(lcID);
+   if (loNode != null) {
+      if (loNode.style.display=="none")
+         loNode.style.display="";
+      else
+         loNode.style.display="none";
+   }
+
+   loNode = document.getElementById("IMG" + lcID);
+   if (loNode != null) {
+      if (loNode.src.indexOf("plus.gif") > -1)
+         loNode.src = "bmp/minus.gif";
+      else
+          loNode.src = "bmp/plus.gif";
+      }
+}
+function ExpandParents(lcId) 
+{
+   var loNode = document.getElementById(lcId);
+   if (loNode == null)
+      return;
+   
+   AlwaysExpand(lcId);
+
+   var loOriginal = loNode
+
+   while( loNode!=null) 
+   {
+      loNode = loNode.parentNode;
+
+      if (loNode == null)
+         break;
+      
+      lcId = loNode.id;
+      
+      if (lcId == null || lcId == "")
+         break;
+
+      if ( lcId.substr(0,1) == "_") 
+         ExpandParents(lcId);
+   }
+   
+   loOriginal.scrollIntoView(true);
+   window.scroll(-200,0);
+}
+function PageLoad() {
+   Expand('INDEXPAGE');
+   
+   // *** Expand all parent topics if an ID was passed
+   var lcQuery = window.location.search;
+   var lnMatch = lcQuery.search("id=");
+   if (lnMatch > -1) 
+   {
+   lcPage = lcQuery.substr(lnMatch + 3);
+   ExpandParents(lcPage);
+   }
+}
+</script>
+<style>
+.plussign 
+{
+cursor:hand;
+marginBottom:3px;
+}
+</style>
+</head>
+<body topmargin="0" leftmargin="0" style="background:white" onload="PageLoad();">
+
+<div  class="toccontents banner ">&nbsp;<b style="font-size:10pt"><%= pcProjectName %></b>
+<div style='font-size:8pt;margin-top:5px;margin-bottom:5px'>
+<script>
+if (HomeLink)
+{
+	document.write("&nbsp;<a href='" + HomeLink + "' target='_top'>Home</a> |");
+}
+if (AllowSearch && window.location.href.toLowerCase().substr(0,5) == "http:")
+{
+	document.write("&nbsp;<a href='search.aspx?title=<%= UrlEncode(pcProjectName) %>' target='wwhelp_left'>Search</a> | <a href='keywords.htm' target='wwhelp_left'>Keywords</a>");
+}
+</script>
+</div>
+</div>
+<%= pcToc %>
+
+<script>
+// *** Expand all parent topics if an ID was passed
+var lcQuery = window.location.search;
+var lnMatch = lcQuery.search("id=");
+if (lnMatch > -1) 
+{
+   lcPage = lcQuery.substr(lnMatch + 3);
+   ExpandParents(lcPage);
+}
+if (HomeLink)
+{
+}
+</script>
+
+</body>
+</html>

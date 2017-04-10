@@ -1,0 +1,30 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head> 
+	<topictype value="TOPIC" />
+	<title>Version History</title>
+	<link rel="stylesheet" type="text/css" href="templates/wwhelp.css">
+</head>
+<body>
+<div class="banner">
+  <div>
+	<span class="projectname">ParallelFox</span>
+ </div>
+ <div class="topicname">
+	<img src="bmp/TOPIC.gif">&nbsp;Version History
+ </div>
+</div>
+
+<div class="contentpane">
+
+<div class="contentbody"><b><u>ParallelFox 1.2</u></b><br><i>Released January 12, 2012</i><br><ul><li>Finally found a work-around for this issue (Thanks Stefano!): <a href="http://vfpx.codeplex.com/workitem/31639" target="top">Parallelfox and Inkey()</a><br><li>Updated issue: <a href="http://vfpx.codeplex.com/workitem/30460" target="top">ParallelFox: Main process can lose foreground focus.</a><br><li>Distribution now includes session materials from Jody Meyer's presentation on ParallelFox -<b>Wanted: More Processing Speed!</b> - delivered at Southwest Fox 2011.  (Thank you, Jody!)<br></ul><p><b><u>ParallelFox 1.1</u></b><br><i>Released November 10, 2011</i><br><ul><li>When not in debug mode, unhandled errors can cause workers to crash or cause instability in main process. ParallelFox now includes a default <a href="_36c0wltfw.htm" >error handler</a> that will display a list of worker error messages in the main process. This is only in effect when not in debug mode. When in debug mode, error messages pop up in workers as before, so that they can be debugged.<br><li>Default error handler also addresses this issue: <a href="http://vfpx.codeplex.com/workitem/31639" target="top">Parallelfox and Inkey()</a><br><li>Command processing is now slightly faster for better throughput.<br><li>Worker.ReturnCursor() now adds the worker ThreadID to the temporary filename to ensure it is unique. The critical section added in version 1.0 is no longer required.<br><li>Worker.ReturnCursor() now restores the previous DBC properly when the DBC is compiled into APP/EXE.<br><li>Worker.EndCriticalSection() now makes sure a named critical section has been started before trying to end it.<br><li>Updated issue: <a href="http://vfpx.codeplex.com/workitem/30460" target="top">ParallelFox: Main process can lose foreground focus.</a><br><li>Fixed issue: <a href="http://vfpx.codeplex.com/workitem/31373" target="top">Small bug while installing ParallelFox Intelliscript</a><br></ul><p><b><u>ParallelFox 1.0</u></b><br><i>Released August 13, 2011</i><br>This is the first production release of ParallelFox.<br><ul><li> Fixed issue - <a href="http://vfpx.codeplex.com/workitem/30627" target="top">ParallelFox - Invalid VFP version used to start the Worker</a><br><li> Added a critical section to <a href="_36c0wc037.htm" >Worker.ReturnCursor()</a> to make sure multiple workers don't try to use the same temp filename.<br><li> Added a note to <a href="_36c0waljm.htm" >Parallel.CallMethod()</a> and Intellisense that the <i>cInApplication</i> parameter is required if <i>cModule</i> is a .VCX compiled into the main APP/EXE. Otherwise, ParallelFox will not be able to find the class.<br></ul><br><b><u>ParallelFox 1.0 Release Candidate 1</u></b><br><i>Released April 2, 2011</i><p><ul><li> Added detection of HyperThreading. See <a href="_36p0yqx4z.htm" >Hyperthreading</a> topic.<br><li> Fixed issue - <a href="http://vfpx.codeplex.com/workitem/30460" target="top">ParallelFox: Main process can lose foreground focus.</a><br></ul><br><b><u>ParallelFox 0.7 Beta</u></b><br><i>Released March 27, 2011</i><p>This release features:<p><ul><li> Documentation! ParallelFox.chm is part of this release. The Help file is designed to be used in conjunction with the training videos. Use the Help file as a quick reference or short overview of topics. Watch the training videos for more in-depth discussions, examples, and techniques.<br><li> Improved IntelliSense: ParallelFox takes advantage of Doug Hennig's Favorites for IntelliSense, which Doug also used in the MY project for Sedna. This greatly simplifies the ParallelFox interfaces and provides extra details while you are coding. DO INSTALL to install the IntelliSense scripts. See the <a href="_36c0wvokk.htm" >Installation</a> topic for details.<br><li> Minor tweaks/improvements to the ParallelFox code.<br></ul><br><b><u>ParallelFox 0.6 Beta</u></b><br><i>Released October 1, 2010</i><p>The source code in this version is the same as version 0.5. The following changes were made to supporting files:<p><ul><li> Registering ParallelFox requires elevation on Windows Vista/7. Without elevation, ParallelFox.exe /regserver fails but does not notify the user of the failure. To address this issue, DO INSTALL to register ParallelFox on your development machine. DO UNINSTALL to unregister it. Both programs will verify the operation succeeded. These programs are intended for installing on developer machines only. It is still recommended to use setup packages to deploy to your users.<br><li> Path problems have been fixed in all examples. See _readme.txt for instructions on running examples.<br></ul><br><b><u>ParallelFox 0.5 Beta</u></b><br><i>Released August 8, 2010</i><p>Initial Beta release of ParallelFox.<br>
+</div>
+
+
+</div><hr />
+<small>&nbsp;&nbsp;Last Updated: 01/12/12 | 
+&copy Joel Leach, 2012</small>
+<br clear="all" />
+<br/>
+</body>
+</html>

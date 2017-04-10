@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head> 
+	<topictype value="TOPIC" />
+	<title>Concurrency</title>
+	<link rel="stylesheet" type="text/css" href="templates/wwhelp.css">
+	<script src="templates/wwhelp.js" type="text/javascript"></script>
+</head>
+<body>
+<div class="banner">
+  <div>
+		  <img src="bmp/seealso.gif" border=0  alt="Related Topics" style="cursor:hand" onmouseover="SeeAlsoButton();" />
+	<div id="See" class="hotlinkbox" style="display:none" onmouseleave="SeeAlsoButton();">
+	  <b>See also</b><br>
+	  <div class="seealsotopics"><a href="_36c0wc032.htm" >worker::StartCriticalSection</a> <br/> 
+<a href="_36c0wc033.htm" >worker::EndCriticalSection</a></div>
+	</div>
+	<span class="projectname">ParallelFox</span>
+ </div>
+ <div class="topicname">
+	<img src="bmp/TOPIC.gif">&nbsp;Concurrency
+ </div>
+</div>
+
+<div class="contentpane">
+
+<div class="contentbody">Parallel processing brings concurrency issues with it, especially when multiple workers are competing for a shared resource.  Sound familiar?  That's because Fox developers have been dealing with data concurrency issues for years.  The shared resource could be anything, and rather than locking tables or records, you are locking code.  Take this example of a temporary table being created on a network drive:<p><pre><div class="vfpcode"><span class="programcontrol">If</span> !<span class="functions">File</span>(<span class="codestring">"MyTable.dbf"</span>)
+   <span class="codecomment">* Concurrency issue here</span>
+   <span class="commands">Create</span> <span class="commands">Table</span> MyTable ...
+<span class="programcontrol">EndIf</span></div></pre><p>What are the chances that two users on different machines will run this code at exactly the same time, both think that MyTable.dbf doesn't exist, and both try to create the temporary table at the same time?  Almost nil.  So low that you probably wouldn't even worry about it.  Now, run this same code in parallel on a quad-core machine, and what are the chances you'll run into a problem?  Almost a certainty!  By definition, the code is running in parallel and (almost) simultaneously.  So, when multiple workers try to create MyTable.dbf at the same time... boom!  MyTable.dbf is the shared resource, and only one worker can create it.  What we need is for one worker to create the table, and the other workers should wait for the table to be created before moving on.  That makes this piece of code a "critical section".  ParallelFox supports critical sections with the <a href="_36c0wc032.htm" >Worker.StartCriticalSection()</a> and <a href="_36c0wc033.htm" >Worker.EndCriticalSection()</a> methods.<p><pre><div class="vfpcode">Worker.StartCriticalSection(<span class="codestring">"CreateMyTable"</span>)
+<span class="programcontrol">If</span> !<span class="functions">File</span>(<span class="codestring">"MyTable.dbf"</span>)
+   <span class="commands">Create</span> <span class="commands">Table</span> MyTable ...
+<span class="programcontrol">EndIf</span>
+Worker.EndCriticalSection(<span class="codestring">"CreateMyTable"</span>)</div></pre><p>Here is the sequence of events that occur in this example:<p><ol><li> The first worker that encounters this section of code will place a lock on it.<br><li> Other workers will see that this code is already locked and will not proceed.<br><li> The first worker will see that MyTable.dbf does not exist, so it will create it.<br><li> Worker.EndCriticalSection() will release the lock.<br><li> A second worker will now lock the section.<br><li> The second worker will see that MyTable.dbf already exists, so it does not try to create it.<br><li> The second worker will then release the lock.<br><li> Steps 5-7 repeat for each remaining worker, one at a time, until all workers have run this section of code<br></ol><p>The name of the critical section should be unique for each section of code, as it is possible for multiple critical sections to run at the same time.  However, the critical section name should NOT be random, because all workers need to use the same name for the section of code.  Also, critical sections should be kept as short as possible, since they cause each worker to wait their turn before running the code.<p><u><b>Data Concurrency</b></u><br>While critical sections are a new concept, you should still be mindful of data concurrency issues.  Running programs in parallel may hit VFP's locking mechanisms harder than usual. Make sure SET REPROCESS is set appropriately on the workers, test performance, and make adjustments to locking when necessary.<p>Another issue is that VFP locks a DBC while opening local/remote views. The common workaround for this is to put views in a separate DBC and install the DBC on the workstation. With ParallelFox, multiple worker processes will be hitting the DBC on the workstation, so the issue may resurface. Try compiling the DBC into your app/exe, in effect giving each worker its own copy of the DBC, to avoid the locking issue.
+</div>
+
+<h3 class="outdent">See also</h3><a href="_36c0wc032.htm" >worker::StartCriticalSection</a> | 
+<a href="_36c0wc033.htm" >worker::EndCriticalSection</a>
+
+</div><hr />
+<small>&nbsp;&nbsp;Last Updated: 03/26/11 | 
+&copy Joel Leach, 2012</small>
+<br clear="all" />
+<br/>
+</body>
+</html>

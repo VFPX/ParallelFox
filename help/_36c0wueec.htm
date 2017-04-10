@@ -1,0 +1,30 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head> 
+	<topictype value="TOPIC" />
+	<title>Deployment</title>
+	<link rel="stylesheet" type="text/css" href="templates/wwhelp.css">
+</head>
+<body>
+<div class="banner">
+  <div>
+	<span class="projectname">ParallelFox</span>
+ </div>
+ <div class="topicname">
+	<img src="bmp/TOPIC.gif">&nbsp;Deployment
+ </div>
+</div>
+
+<div class="contentpane">
+
+<div class="contentbody">Follow these instructions to deploy ParallelFox with your application:<p><ul><li>     Include ParallelFox.vcx in your project.<br><li>     Typically, your worker code will be compiled into your main app/exe.  However, if you choose to create a separate app/exe for your worker code, include ParallelFox.vcx in that project as well.<br><li>     ParallelFox.exe should be installed and registered. This is an EXE, so RegSvr32 does not work with it. If your install program doesn't handle it, register by executing ParallelFox.exe /regserver.  <b>NOTE:</b> Registering ParallelFox requires elevation on Windows Vista/7. Without elevation, ParallelFox.exe /regserver will fail, but it will not notify the user of the failure! Your installation package will likely have already requested elevation, so this shouldn't be a problem.  If you will be using FoxPro code to register ParallelFox, see INSTALL.PRG for an example of how to handle this.<br></ul>
+</div>
+
+
+</div><hr />
+<small>&nbsp;&nbsp;Last Updated: 03/26/11 | 
+&copy Joel Leach, 2012</small>
+<br clear="all" />
+<br/>
+</body>
+</html>

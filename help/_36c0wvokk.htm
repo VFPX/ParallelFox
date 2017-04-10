@@ -1,0 +1,32 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head> 
+	<topictype value="TOPIC" />
+	<title>Installation</title>
+	<link rel="stylesheet" type="text/css" href="templates/wwhelp.css">
+</head>
+<body>
+<div class="banner">
+  <div>
+	<span class="projectname">ParallelFox</span>
+ </div>
+ <div class="topicname">
+	<img src="bmp/TOPIC.gif">&nbsp;Installation
+ </div>
+</div>
+
+<div class="contentpane">
+
+<div class="contentbody">Installation of ParallelFox is simple:<p><ol><li> <a href="http://vfpx.codeplex.com/wikipage?title=ParallelFox">Download ParallelFox</a> from VFPx.<br><li> Unzip the file to a directory of your choice, such as C:\VFPX\ParallelFox.<br><li> Open VFP, change that directory and enter DO INSTALL in the Command Window.<br></ol><p>The install program registers ParallelFox.exe on your machine.  On Windows Vista/7, administrator elevation will be requested to perform the registration.<p>You are also given the option to install Intellisense scripts for ParallelFox.  This is recommended as it will improve your development experience.  Two scripts are installed so you can quickly instantiate the ParallelFox classes when needed:<p>Entering "parallel" in a program expands to:<br><pre><div class="vfpcode"><span class="programcontrol">Local</span> Parallel as Parallel
+Parallel = <span class="functions">NewObject</span>(<span class="codestring">"Parallel"</span>, <span class="codestring">"ParallelFox.vcx"</span>)</div></pre><p>Entering "worker" in a program expands to:<br><pre><div class="vfpcode"><span class="programcontrol">Local</span> Worker as Worker
+Worker = <span class="functions">NewObject</span>(<span class="codestring">"Worker"</span>, <span class="codestring">"ParallelFox.vcx"</span>)</div></pre><p>ParallelFox also makes use of Doug Hennig's <a href="http://www.stonefield.com/techpap.aspx">Favorites for IntelliSense</a>, which Doug also used in the <a href="http://vfpx.codeplex.com/wikipage?title=Sedna&referringTitle=Home#MY">MY project for Sedna</a>.  This greatly simplifies the ParallelFox interfaces and provides extra details while you are coding.
+</div>
+
+
+</div><hr />
+<small>&nbsp;&nbsp;Last Updated: 03/27/11 | 
+&copy Joel Leach, 2012</small>
+<br clear="all" />
+<br/>
+</body>
+</html>

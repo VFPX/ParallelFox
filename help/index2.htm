@@ -1,0 +1,171 @@
+<html>
+<head>
+<base target="wwhelp_right">
+<title>ParallelFox</title>
+<LINK rel="stylesheet" type="text/css" href="templates/wwhelp.css">
+<script>
+// *** Set this value for a Home Link
+//var HomeLink = "http://www.west-wind.com/wwhelp/";
+var HomeLink = "/";
+
+var AllowSearch = false;
+
+function AlwaysExpand(lcID) {
+   var loNode = document.getElementById(lcID);
+   if (loNode==null)
+    return;
+    
+   loNode.style.display="";
+   
+   loNode = document.getElementById("IMG" + lcID);
+   if (loNode != null)
+      loNode.src = "bmp/minus.gif";
+}
+function Expand(lcID) {
+   var loNode = document.getElementById(lcID);
+   if (loNode != null) {
+      if (loNode.style.display=="none")
+         loNode.style.display="";
+      else
+         loNode.style.display="none";
+   }
+
+   loNode = document.getElementById("IMG" + lcID);
+   if (loNode != null) {
+      if (loNode.src.indexOf("plus.gif") > -1)
+         loNode.src = "bmp/minus.gif";
+      else
+          loNode.src = "bmp/plus.gif";
+      }
+}
+function ExpandParents(lcId) 
+{
+   var loNode = document.getElementById(lcId);
+   if (loNode == null)
+      return;
+   
+   AlwaysExpand(lcId);
+
+   var loOriginal = loNode
+
+   while( loNode!=null) 
+   {
+      loNode = loNode.parentNode;
+
+      if (loNode == null)
+         break;
+      
+      lcId = loNode.id;
+      
+      if (lcId == null || lcId == "")
+         break;
+
+      if ( lcId.substr(0,1) == "_") 
+         ExpandParents(lcId);
+   }
+   
+   loOriginal.scrollIntoView(true);
+   window.scrollBy(-200,0);
+}
+function PageLoad() {
+   Expand('INDEXPAGE');
+   
+   // *** Expand all parent topics if an ID was passed
+   var lcQuery = window.location.search;
+   var lnMatch = lcQuery.search("id=");
+   if (lnMatch > -1) 
+   {
+      lcPage = lcQuery.substr(lnMatch + 3);
+      ExpandParents(lcPage);
+   }
+}
+</script>
+<style>
+.plussign 
+{
+cursor:hand;
+marginBottom:3px;
+}
+</style>
+</head>
+<body topmargin="0" leftmargin="0" style="background:white" onload="PageLoad();">
+
+<div  class="toccontents banner">&nbsp;<b style="font-size:10pt">ParallelFox</b>
+<div style='font-size:8pt;margin-top:5px;margin-bottom:5px'>
+<script>
+if (HomeLink)
+{
+	document.write("&nbsp;<a href='" + HomeLink + "' target='_top'>Home</a> |");
+}
+if (AllowSearch && window.location.href.toLowerCase().substr(0,5) == "http:")
+{
+	document.write("&nbsp;<a href='search.aspx?title=ParallelFox' target='wwhelp_left'>Search</a> | <a href='keywords.htm' target='wwhelp_left'>Keywords</a>");
+}
+</script>
+</div>
+</div>
+<table width="800" class="tocbody">
+<tr><td><span class="tocbody"><img src="bmp/plus.gif" ID="IMGindexpage" class="plussign" onclick="Expand('indexpage');"> <img src="bmp/index.gif"> <a href="indexpage.htm" onclick="AlwaysExpand('indexpage');">ParallelFox</a> <br>
+<span id="indexpage" style="display:none">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/topic.gif"> <a href="_36c0wvokk.htm" id="_36c0wvokk">Installation</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/topic.gif"> <a href="_36p10kzwy.htm" id="_36p10kzwy">Version History</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/topic.gif"> <a href="_36c0wgcqa.htm" id="_36c0wgcqa">Training Videos</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/topic.gif"> <a href="_36c11399w.htm" id="_36c11399w">Getting Started</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/topic.gif"> <a href="_36c0wgr22.htm" id="_36c0wgr22">Running Code in Parallel</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/topic.gif"> <a href="_36c0wkqqw.htm" id="_36c0wkqqw">Worker Events</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/topic.gif"> <a href="_36c0wlklo.htm" id="_36c0wlklo">Debugging</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/topic.gif"> <a href="_36c0wltfw.htm" id="_36c0wltfw">Error Handling</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/topic.gif"> <a href="_36c0wmtk2.htm" id="_36c0wmtk2">Scalability and Performance</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/topic.gif"> <a href="_36c0wnaqp.htm" id="_36c0wnaqp">Concurrency</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/topic.gif"> <a href="_36p0yqx4z.htm" id="_36p0yqx4z">HyperThreading</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/topic.gif"> <a href="_36c0wueec.htm" id="_36c0wueec">Deployment</a> <br>
+</span>
+<img src="bmp/plus.gif" ID="IMG_36c0waljd" class="plussign" onclick="Expand('_36c0waljd');"> <img src="bmp/classheader.gif"> <a href="_36c0waljd.htm" onclick="AlwaysExpand('_36c0waljd');">Class Parallel</a> <br>
+<span id="_36c0waljd" style="display:none">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/classmethod.gif"> <a href="_36c0waljk.htm" id="_36c0waljk">BindEvent</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/classmethod.gif"> <a href="_36c0waljj.htm" id="_36c0waljj">Call</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/classmethod.gif"> <a href="_36c0waljm.htm" id="_36c0waljm">CallMethod</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/classmethod.gif"> <a href="_36c0waljp.htm" id="_36c0waljp">ClearQueue</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/classmethod.gif"> <a href="_36c0walje.htm" id="_36c0walje">Do</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/classmethod.gif"> <a href="_36c0waljh.htm" id="_36c0waljh">DoCmd</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/classmethod.gif"> <a href="_36c0walji.htm" id="_36c0walji">ExecScript</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/classmethod.gif"> <a href="_36p0xcjon.htm" id="_36p0xcjon">DetectHyperThreading</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/classmethod.gif"> <a href="_36c0waljo.htm" id="_36c0waljo">OnError</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/classmethod.gif"> <a href="_36c0waljq.htm" id="_36c0waljq">SetWorkerClass</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/classmethod.gif"> <a href="_36c0waljg.htm" id="_36c0waljg">SetWorkerCount</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/classmethod.gif"> <a href="_36c0waljf.htm" id="_36c0waljf">StartWorkers</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/classmethod.gif"> <a href="_36c0waljn.htm" id="_36c0waljn">StopWorkers</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/classmethod.gif"> <a href="_36c0waljl.htm" id="_36c0waljl">Wait</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/classproperty.gif"> <a href="_36c0waljr.htm" id="_36c0waljr">CPUCount</a> <br>
+</span>
+<img src="bmp/plus.gif" ID="IMG_36c0wc02z" class="plussign" onclick="Expand('_36c0wc02z');"> <img src="bmp/classheader.gif"> <a href="_36c0wc02z.htm" onclick="AlwaysExpand('_36c0wc02z');">Class Worker</a> <br>
+<span id="_36c0wc02z" style="display:none">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/classmethod.gif"> <a href="_36c0wc033.htm" id="_36c0wc033">EndCriticalSection</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/classmethod.gif"> <a href="_36c0wc036.htm" id="_36c0wc036">IsWorker</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/classmethod.gif"> <a href="_36c0wc037.htm" id="_36c0wc037">ReturnCursor</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/classmethod.gif"> <a href="_36c0wc031.htm" id="_36c0wc031">ReturnData</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/classmethod.gif"> <a href="_36c0wc035.htm" id="_36c0wc035">ReturnError</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/classmethod.gif"> <a href="_36c0wc034.htm" id="_36c0wc034">Sleep</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/classmethod.gif"> <a href="_36c0wc032.htm" id="_36c0wc032">StartCriticalSection</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/classmethod.gif"> <a href="_36c0wc030.htm" id="_36c0wc030">UpdateProgress</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/classproperty.gif"> <a href="_36c0wc03a.htm" id="_36c0wc03a">CPUCount</a> <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="bmp/classproperty.gif"> <a href="_36c0wc039.htm" id="_36c0wc039">ProgressInterval</a> <br>
+</span>
+</span></td></tr></table>
+
+<script>
+// *** Expand all parent topics if an ID was passed
+var lcQuery = window.location.search;
+var lnMatch = lcQuery.search("id=");
+if (lnMatch > -1) 
+{
+   lcPage = lcQuery.substr(lnMatch + 3);
+   ExpandParents(lcPage);
+}
+if (HomeLink)
+{
+}
+</script>
+
+</body>
+</html>

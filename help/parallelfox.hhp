@@ -1,0 +1,101 @@
+[OPTIONS]
+Compatibility=1.1
+Compiled file=parallelfox.chm
+Contents file=parallelfox.hhc
+Default topic=indexpage.htm
+Display compile progress=No
+Full-text search=Yes
+Index file=parallelfox.hhk
+Language=0x409 English (United States)
+Title=ParallelFox
+Default Window=wwHelpWindow
+
+[WINDOWS]
+wwHelpWindow=,"parallelfox.hhc","parallelfox.hhk","indexpage.htm","indexpage.htm",,,,,0x63520,,0x387e,[0,0,700,480],,,,,,,0
+
+[FILES]
+_36c0waljk.htm
+_36c0waljj.htm
+_36c0waljm.htm
+_36c0waljp.htm
+_36c0wvokk.htm
+_36c0walje.htm
+_36p10kzwy.htm
+_36c0waljh.htm
+_36c0wgcqa.htm
+_36c0walji.htm
+_36c11399w.htm
+_36p0xcjon.htm
+_36c0wgr22.htm
+_36c0waljo.htm
+_36c0wkqqw.htm
+_36c0waljq.htm
+_36c0wlklo.htm
+_36c0waljg.htm
+_36c0wltfw.htm
+_36c0waljf.htm
+_36c0wmtk2.htm
+_36c0waljn.htm
+_36c0wnaqp.htm
+_36c0waljl.htm
+_36p0yqx4z.htm
+_36c0waljr.htm
+_36c0wueec.htm
+_36c0waljd.htm
+_36c0wc02z.htm
+_36c0wc033.htm
+_36c0wc036.htm
+_36c0wc037.htm
+_36c0wc031.htm
+_36c0wc035.htm
+_36c0wc034.htm
+_36c0wc032.htm
+_36c0wc030.htm
+_36c0wc03a.htm
+_36c0wc039.htm
+
+
+[ALIAS]
+IDH_PARALLEL::BINDEVENT=_36c0waljk.htm
+IDH_PARALLEL::CALL=_36c0waljj.htm
+IDH_PARALLEL::CALLMETHOD=_36c0waljm.htm
+IDH_PARALLEL::CLEARQUEUE=_36c0waljp.htm
+IDH_INSTALLATION=_36c0wvokk.htm
+IDH_PARALLEL::DO=_36c0walje.htm
+IDH_VERSION_HISTORY=_36p10kzwy.htm
+IDH_PARALLEL::DOCMD=_36c0waljh.htm
+IDH_TRAINING_VIDEOS=_36c0wgcqa.htm
+IDH_PARALLEL::EXECSCRIPT=_36c0walji.htm
+IDH_GETTING_STARTED=_36c11399w.htm
+IDH_PARALLEL::DETECTHYPERTHREADING=_36p0xcjon.htm
+IDH_RUNNING_CODE_IN_PARALLEL=_36c0wgr22.htm
+IDH_PARALLEL::ONERROR=_36c0waljo.htm
+IDH_WORKER_EVENTS=_36c0wkqqw.htm
+IDH_PARALLEL::SETWORKERCLASS=_36c0waljq.htm
+IDH_DEBUGGING=_36c0wlklo.htm
+IDH_PARALLEL::SETWORKERCOUNT=_36c0waljg.htm
+IDH_ERROR_HANDLING=_36c0wltfw.htm
+IDH_PARALLEL::STARTWORKERS=_36c0waljf.htm
+IDH_SCALABILITY_AND_PERFORMANCE=_36c0wmtk2.htm
+IDH_PARALLEL::STOPWORKERS=_36c0waljn.htm
+IDH_CONCURRENCY=_36c0wnaqp.htm
+IDH_PARALLEL::WAIT=_36c0waljl.htm
+IDH_HYPERTHREADING=_36p0yqx4z.htm
+IDH_PARALLEL::CPUCOUNT=_36c0waljr.htm
+IDH_DEPLOYMENT=_36c0wueec.htm
+IDH_CLASS_PARALLEL=_36c0waljd.htm
+IDH_CLASS_WORKER=_36c0wc02z.htm
+IDH_WORKER::ENDCRITICALSECTION=_36c0wc033.htm
+IDH_WORKER::ISWORKER=_36c0wc036.htm
+IDH_WORKER::RETURNCURSOR=_36c0wc037.htm
+IDH_WORKER::RETURNDATA=_36c0wc031.htm
+IDH_WORKER::RETURNERROR=_36c0wc035.htm
+IDH_WORKER::SLEEP=_36c0wc034.htm
+IDH_WORKER::STARTCRITICALSECTION=_36c0wc032.htm
+IDH_WORKER::UPDATEPROGRESS=_36c0wc030.htm
+IDH_WORKER::CPUCOUNT=_36c0wc03a.htm
+IDH_WORKER::PROGRESSINTERVAL=_36c0wc039.htm
+
+
+[MAP]
+#include c:\vfpx\parallelfox\help\parallelfox_help.h

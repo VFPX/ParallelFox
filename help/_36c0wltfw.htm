@@ -1,0 +1,78 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head> 
+	<topictype value="TOPIC" />
+	<title>Error Handling</title>
+	<link rel="stylesheet" type="text/css" href="templates/wwhelp.css">
+	<script src="templates/wwhelp.js" type="text/javascript"></script>
+</head>
+<body>
+<div class="banner">
+  <div>
+		  <img src="bmp/seealso.gif" border=0  alt="Related Topics" style="cursor:hand" onmouseover="SeeAlsoButton();" />
+	<div id="See" class="hotlinkbox" style="display:none" onmouseleave="SeeAlsoButton();">
+	  <b>See also</b><br>
+	  <div class="seealsotopics"><a href="_36c0wc035.htm" >worker::ReturnError</a> <br/> 
+<a href="_36c0waljo.htm" >parallel::OnError</a> <br/> 
+<a href="_36c0waljk.htm" >parallel::BindEvent</a> <br/> 
+<a href="_36c0waljn.htm" >parallel::StopWorkers</a> <br/> 
+<a href="_36c0waljf.htm" >parallel::StartWorkers</a></div>
+	</div>
+	<span class="projectname">ParallelFox</span>
+ </div>
+ <div class="topicname">
+	<img src="bmp/TOPIC.gif">&nbsp;Error Handling
+ </div>
+</div>
+
+<div class="contentpane">
+
+<div class="contentbody">Error handling is where things can get a bit tricky.  That's because you have two error handlers in play: one in the main process and one for the workers.  Fortunately, most FoxPro developers are all too familiar with their error handling system.  It's likely that your worker error handler will be a modified version of your main error handler, but that's up to you.  Everyone's error handler is different, so ParallelFox doesn't try to steer you in a specific direction. It simply emulates the various methods of error handling available in VFP.<p><b><u>Returning an Error</u></b><br>Unless an error is handled silently in a worker, you will most likely want to notify the main process when an error occurs.  This is done with <a href="_36c0wc035.htm" >Worker.ReturnError()</a>.  The call should be placed somewhere in your worker error handler.<p><pre><div class="vfpcode"><span class="programcontrol">Local</span> Worker as Worker
+Worker = <span class="functions">NewObject</span>(<span class="codestring">"Worker"</span>, <span class="codestring">"ParallelFox.vcx"</span>)
+
+Worker.ReturnError(nError, cMethod, nLine, cMessage, cCode)</div></pre><p><b>Note:</b> Worker.ReturnError() notifies the main process that an error occurred, but it does not actually raise an error in the main process.  Any inspection of the error using AError() or by other means should be done in the worker before returning the error.<p><u><b>Global Error Handler</b></u><br>Use <a href="_36c0waljo.htm" >Parallel.OnError()</a> to set up a global error handler to respond to errors that occur on workers.  It functions similarly to FoxPro's ON ERROR command.  The parameters returned by Worker.ReturnError() are available for use in your command, using the same variable names:<p><pre><div class="vfpcode"><span class="programcontrol">Local</span> Parallel as Parallel
+Parallel = <span class="functions">NewObject</span>(<span class="codestring">"Parallel"</span>, <span class="codestring">"ParallelFox.vcx"</span>)
+
+Parallel.OnError(<span class="codestring">"Do MyErrorHandler with nError, cMethod, nLine, cMessage, cCode"</span>)
+Parallel.StartWorkers(<span class="codestring">"MyApp.EXE"</span>)</div></pre><p><u><b>Error() Method</b></u><br>To emulate the Error() method on a class, use <a href="_36c0waljk.htm" >Parallel.BindEvent()</a> to bind to the ReturnError event.  As with VFP, this supercedes the global error handler set up with Parallel.OnError().  Your event handler (delegate) should accept the nError, cMethod, nLine, cMessage, cCode parameters.<p><pre><div class="vfpcode"><span class="programcontrol">Local</span> Parallel as Parallel
+Parallel = <span class="functions">NewObject</span>(<span class="codestring">"Parallel"</span>, <span class="codestring">"ParallelFox.vcx"</span>)
+
+oMyObject = <span class="functions">CreateObject</span>(<span class="codestring">"MyObject"</span>)
+
+Parallel.<span class="functions">BindEvent</span>(<span class="codestring">"ReturnError"</span>, oMyObject, <span class="codestring">"HandleError"</span>)
+Parallel.<span class="programcontrol">Do</span>(<span class="codestring">"MyProgram"</span>)
+
+<span class="programcontrol">DEFINE</span> <span class="commands">CLASS</span> MyObject AS <span class="classes">Custom</span>
+
+<span class="programcontrol">PROCEDURE</span> HandleError(nError, cMethod, nLine, cMessage, cCode)
+   <span class="codecomment">* Handle error here.</span>
+<span class="programcontrol">ENDPROC</span>
+
+<span class="programcontrol">ENDDEFINE</span></div></pre><p><u><b>Structured Exception Handling</b></u><br>What about structured exception handling (Try/Catch)?  Can it be used?  Yes and no.  You can use it in the worker to catch the error and return it to the main process.<p><pre><div class="vfpcode"><span class="programcontrol">Try</span> 
+   <span class="codecomment">* Code running in worker</span>
+   ... 
+<span class="programcontrol">Catch</span> <span class="commands">to</span> loException
+   <span class="codecomment">* Catch error </span>
+   ...
+   Worker.ReturnError(nError, cMethod, nLine, cMessage, cCode)
+<span class="programcontrol">EndTry</span></div></pre><p>However, the main process cannot "catch" an error that occurs in a worker.<p><pre><div class="vfpcode"><span class="programcontrol">Try</span> 
+   Parallel.<span class="programcontrol">Do</span>(<span class="codestring">"MyProgram.prg"</span>)
+<span class="programcontrol">Catch</span> <span class="commands">to</span> loException
+   <span class="codecomment">* Catch error that occurs in worker (doesn't work)</span>
+<span class="programcontrol">EndTry</span></div></pre><p>For one, as stated above, Worker.ReturnError() does not actually raise an error in then main process, so there is nothing to "catch".  Also, if you think about it, structured exception handling is a very synchronous method that relies on the call stack.  ParallelFox runs programs asynchronously, so by the time an error occurs in a worker, the main process may have already moved outside of the Try/Catch structure.<p><u><b>Handling the Error</b></u><br>The main process has been notified of the error...  now what?  That's completely up to you.  You decide how much handling is done in the worker vs. the main process, and it depends on the type of error.  If it's a localized error, perhaps you simply handle the error and move on.  If it is more critical, you may want to shutdown the workers completely.  Here are a couple of functions available to you:<p>If your workers are in an unknown state after an error, you'll want to at least call <a href="_36c0waljp.htm" >Parallel.ClearQueue()</a> in the main process.  This clears any pending commands from the queue, so that they will not be sent to workers and exacerbate the problem.  Some error handlers virtually restart the application when an unhandled error occurs.  In this case, you may choose to completely shutdown the workers.  Call <a href="_36c0waljn.htm" >Parallel.StopWorkers()</a> with .T. as the first parameter to clear the queue and shut down all workers immediately, rather than waiting for any pending commands to complete.  You'll then need to call <a href="_36c0waljf.htm" >Parallel.StartWorkers()</a> to start the workers back up.<p><u><b>Default Error Handler</b></u><br>When not in debug mode, unhandled errors can cause workers to crash or cause instability in main process. ParallelFox includes a default error handler that will display a list of worker error messages in the main process. This is only in effect when not in debug mode. When in debug mode, unhandled error messages pop up in workers, so that they can be debugged.
+</div>
+
+<h3 class="outdent">Remarks</h3>The error handler in the main process cannot RETRY or RETURN to code in the worker process.
+<h3 class="outdent">See also</h3><a href="_36c0wc035.htm" >worker::ReturnError</a> | 
+<a href="_36c0waljo.htm" >parallel::OnError</a> | 
+<a href="_36c0waljk.htm" >parallel::BindEvent</a> | 
+<a href="_36c0waljn.htm" >parallel::StopWorkers</a> | 
+<a href="_36c0waljf.htm" >parallel::StartWorkers</a>
+
+</div><hr />
+<small>&nbsp;&nbsp;Last Updated: 11/10/11 | 
+&copy Joel Leach, 2012</small>
+<br clear="all" />
+<br/>
+</body>
+</html>

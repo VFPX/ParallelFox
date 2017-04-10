@@ -1,0 +1,7 @@
+<hr />
+<small>&nbsp;&nbsp;Last Updated: <%= TTOD(oHelp.oTopic.Updated) %> | 
+&copy <%= oHelp.cProjCompany %>, <%= Year(Date()) %></small>
+<br clear="all" />
+<br/>
+</body>
+</html>

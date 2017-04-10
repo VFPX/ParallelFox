@@ -1,0 +1,261 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="West Wind HTML Help Builder">
+<!-- Sitemap 1.0 -->
+</HEAD><BODY>
+<UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="parallel::BindEvent">
+		<param name="Local" value="_36c0waljk.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="BindEvent">
+		<param name="Local" value="_36c0waljk.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="parallel::Call">
+		<param name="Local" value="_36c0waljj.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Call">
+		<param name="Local" value="_36c0waljj.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="parallel::CallMethod">
+		<param name="Local" value="_36c0waljm.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="CallMethod">
+		<param name="Local" value="_36c0waljm.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="parallel::ClearQueue">
+		<param name="Local" value="_36c0waljp.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="ClearQueue">
+		<param name="Local" value="_36c0waljp.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Installation">
+		<param name="Local" value="_36c0wvokk.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="parallel::Do">
+		<param name="Local" value="_36c0walje.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Version History">
+		<param name="Local" value="_36p10kzwy.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="parallel::DoCmd">
+		<param name="Local" value="_36c0waljh.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="DoCmd">
+		<param name="Local" value="_36c0waljh.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Training Videos">
+		<param name="Local" value="_36c0wgcqa.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="parallel::ExecScript">
+		<param name="Local" value="_36c0walji.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="ExecScript">
+		<param name="Local" value="_36c0walji.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Getting Started">
+		<param name="Local" value="_36c11399w.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="parallel::DetectHyperThreading">
+		<param name="Local" value="_36p0xcjon.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="DetectHyperThreading">
+		<param name="Local" value="_36p0xcjon.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Running Code in Parallel">
+		<param name="Local" value="_36c0wgr22.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="parallel::OnError">
+		<param name="Local" value="_36c0waljo.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="OnError">
+		<param name="Local" value="_36c0waljo.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Worker Events">
+		<param name="Local" value="_36c0wkqqw.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="parallel::SetWorkerClass">
+		<param name="Local" value="_36c0waljq.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="SetWorkerClass">
+		<param name="Local" value="_36c0waljq.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Debugging">
+		<param name="Local" value="_36c0wlklo.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="parallel::SetWorkerCount">
+		<param name="Local" value="_36c0waljg.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="SetWorkerCount">
+		<param name="Local" value="_36c0waljg.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Error Handling">
+		<param name="Local" value="_36c0wltfw.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="parallel::StartWorkers">
+		<param name="Local" value="_36c0waljf.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="StartWorkers">
+		<param name="Local" value="_36c0waljf.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Scalability and Performance">
+		<param name="Local" value="_36c0wmtk2.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="parallel::StopWorkers">
+		<param name="Local" value="_36c0waljn.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="StopWorkers">
+		<param name="Local" value="_36c0waljn.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Concurrency">
+		<param name="Local" value="_36c0wnaqp.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="parallel::Wait">
+		<param name="Local" value="_36c0waljl.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Wait">
+		<param name="Local" value="_36c0waljl.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="HyperThreading">
+		<param name="Local" value="_36p0yqx4z.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="parallel::CPUCount">
+		<param name="Local" value="_36c0waljr.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="CPUCount">
+		<param name="Local" value="_36c0waljr.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Deployment">
+		<param name="Local" value="_36c0wueec.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Class Parallel">
+		<param name="Local" value="_36c0waljd.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Class Worker">
+		<param name="Local" value="_36c0wc02z.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="worker::EndCriticalSection">
+		<param name="Local" value="_36c0wc033.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="EndCriticalSection">
+		<param name="Local" value="_36c0wc033.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="worker::IsWorker">
+		<param name="Local" value="_36c0wc036.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="IsWorker">
+		<param name="Local" value="_36c0wc036.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="worker::ReturnCursor">
+		<param name="Local" value="_36c0wc037.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="ReturnCursor">
+		<param name="Local" value="_36c0wc037.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="worker::ReturnData">
+		<param name="Local" value="_36c0wc031.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="ReturnData">
+		<param name="Local" value="_36c0wc031.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="worker::ReturnError">
+		<param name="Local" value="_36c0wc035.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="ReturnError">
+		<param name="Local" value="_36c0wc035.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="worker::Sleep">
+		<param name="Local" value="_36c0wc034.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Sleep">
+		<param name="Local" value="_36c0wc034.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="worker::StartCriticalSection">
+		<param name="Local" value="_36c0wc032.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="StartCriticalSection">
+		<param name="Local" value="_36c0wc032.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="worker::UpdateProgress">
+		<param name="Local" value="_36c0wc030.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="UpdateProgress">
+		<param name="Local" value="_36c0wc030.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="worker::CPUCount">
+		<param name="Local" value="_36c0wc03a.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="CPUCount">
+		<param name="Local" value="_36c0wc03a.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="worker::ProgressInterval">
+		<param name="Local" value="_36c0wc039.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="ProgressInterval">
+		<param name="Local" value="_36c0wc039.htm">
+		</OBJECT>
+</UL>
+</BODY></HTML>

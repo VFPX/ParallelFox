@@ -1,0 +1,75 @@
+<% lcSeeAlsoTopics = oHelp.InsertSeeAlsoTopics() %>	
+<%= ExecuteTemplate("Header_template.wcs") %>
+
+<div class="contentpane">
+<br>
+<%= oHelp.FormatHTML(oHelp.oTopic.Body) %>
+<br>
+
+<% IF !EMPTY(oHelp.oTopic.Remarks) %>
+<br>
+<h3 class="outdent">Remarks</h3>
+    <%= oHelp.FormatHTML(oHelp.oTopic.Remarks) %>
+<% ENDIF %>  
+
+<% IF !EMPTY(oHelp.oTopic.Example) %>
+<br>
+<h3 class="Outdent">Example</h3>
+<pre><%= oHelp.FormatHTML(oHelp.oTopic.Example)%></pre>
+<% ENDIF %>  
+
+<% 
+cCurrentPk = oHelp.oTopic.Pk
+cHTML = ""
+oTopics = oHelp.GetTopics("ARRAY","type # 'WHATSNEW'",;
+                          "updated DESC TOP 35","ParentPk,Pk") 
+
+If !ISNULL(oTopics) AND oTopics.nCount > 0 
+	cHTML = cHTML + "<H3 class='outdent'>Recently updated topics</H3><br>"
+	cHTML = cHTML + "<table border=1 cellpadding=3 align='center'>"
+	cHTML = cHTML + "<tr><th>Name</th>"
+	cHTML = cHTML + "<th>Description</th>"
+
+   llAlternateFlag = .f.
+	For lnLoop = 1 To oTopics.nCount
+		oHelp.LoadTopic(oTopics.aTopics[lnLoop,2])
+		
+		IF llAlternateFlag
+		   cHTML = cHtml + "<tr class='alternaterow'>"
+		ELSE
+		   cHTML = cHtml + "<tr>"
+		ENDIF
+		llAlternateFlag = !llAlternateFlag
+		
+		cHtml = cHtml + "<td Align = 'Left' VAlign = 'Top'>" + TopicLink(oHelp.oTopic.Topic,oHelp.oTopic.Topic) +;
+		                "<br>" + DTOC(oHelp.oTopic.Updated) + "<td Align ='Left' VAlign ='Top'>"  
+		
+		lcBody = oHelp.FormatHTML(oHelp.oTopic.Body)
+		nBreak = ATC("<p>",lcBody)
+		IF nBreak = 0
+		   nBreak = ATC("<br>",lcBody)
+		ENDIF
+		IF nBreak > 1
+		   cHTML = cHTML + LEFT(lcBody,nBreak - 1)
+		ELSE
+		   cHTML = cHTML + lcBody
+      ENDIF		   
+
+		cHTML = cHTML + "</td></tr>"
+	EndFor
+	
+	oHelp.LoadTopic(cCurrentPk)
+	cHTML = cHTML + "</table><p>"
+	
+	Response.Write( cHTML )
+EndIf 
+%>
+
+<% if !EMPTY(oHelp.oTopic.SeeAlso) %>
+<br>
+<h3 class="outdent">See also</h3>
+<%= lcSeeAlsoTopics %>
+<%  endif %>
+<p>
+</div>
+<%= ExecuteTemplate("Footer_Template.wcs") %>
