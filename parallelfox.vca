@@ -1110,7 +1110,7 @@ This.lDebugMode = llDebugMode
 
 For lnWorker = 1 to This.nWorkerCount
 	* .T. llMTDLL for testing. Replace with property set by user.
-	loWorkerProxy = NewObject("WorkerProxy", "ParallelFox.vcx", "", lcProcedureFile, lcDirectory, llDebugMode, lnWorker, .t.)
+	loWorkerProxy = NewObject("WorkerProxy", "ParallelFox.vcx", "", lcProcedureFile, lcDirectory, llDebugMode, lnWorker, .f.)
 	ComArray(loWorkerProxy, 11)
 	This.Workers.Add(loWorkerProxy)
 EndFor 
