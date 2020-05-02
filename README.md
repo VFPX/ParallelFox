@@ -13,7 +13,7 @@ ParallelFox includes complete documentation (ParallelFox.chm).  The Help file is
 ParallelFox also takes advantage of Doug Hennig's [Favorites for IntelliSense](http://www.stonefield.com/techpap.aspx), which Doug also used in the [MY project for Sedna](http://vfpx.codeplex.com/wikipage?title=Sedna#MY). This greatly simplifies the ParallelFox interfaces and provides extra details while you are coding. 
 
 ## Installation
-- Download and unzip the latest stable release from the Releases page. Grab ParallelFox_x.x.zip, rather than the Source Code zip file GitHub automatically creates.
+- Download and unzip the latest stable release from the Releases page. Grab **ParallelFox_x.x.zip**, rather than the Source Code zip file GitHub automatically creates.
   - Alternatively, you can clone the repository or download the latest files, although this may contain experimental/unstable changes. As a minimum, you need all files in the root ParallelFox folder, as well as the **ffi** subdirectory.  
 - **DO INSTALL** to register ParallelFox.exe and install the IntelliSense scripts.  
 - See the "Installation" topic in the Help file for details.
