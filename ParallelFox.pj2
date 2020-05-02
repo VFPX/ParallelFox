@@ -60,16 +60,18 @@ FOR EACH loProject IN _VFP.Projects FOXOBJECT
 ENDFOR
 
 STRTOFILE( '', '__newproject.f2b' )
-BUILD PROJECT ParallelFox.PJX FROM '__newproject.f2b'
+BUILD PROJECT ParallelFox.pjx FROM '__newproject.f2b'
 FOR EACH loProject IN _VFP.Projects FOXOBJECT
 	loProject.Close()
 ENDFOR
 
-MODIFY PROJECT 'ParallelFox.PJX' NOWAIT NOSHOW NOPROJECTHOOK
+MODIFY PROJECT 'ParallelFox.pjx' NOWAIT NOSHOW NOPROJECTHOOK
 
-loProject = _VFP.Projects('ParallelFox.PJX')
+loProject = _VFP.Projects('ParallelFox.pjx')
 
 WITH loProject.FILES
+	.ADD('ffi\ffi.dbf')		&& *< FileMetadata: Type="D" Cpid="1252" Timestamp="0" ID="0" ObjRev="0" User="" />
+	.ADD('ffi\parfoxcode.dbf')		&& *< FileMetadata: Type="D" Cpid="1252" Timestamp="0" ID="0" ObjRev="0" User="" />
 	.ADD('install.prg')		&& *< FileMetadata: Type="P" Cpid="1252" Timestamp="0" ID="0" ObjRev="0" User="" />
 	.ADD('parallelfox.vcx')		&& *< FileMetadata: Type="V" Cpid="1252" Timestamp="0" ID="0" ObjRev="0" User="" />
 	.ADD('parfoxapp.prg')		&& *< FileMetadata: Type="P" Cpid="1252" Timestamp="0" ID="0" ObjRev="0" User="" />
@@ -82,6 +84,8 @@ WITH loProject.FILES
 	*</FileComments>
 
 	*<ExcludedFiles>
+	.ITEM(lcCurdir + 'ffi\ffi.dbf').Exclude = .T.
+	.ITEM(lcCurdir + 'ffi\parfoxcode.dbf').Exclude = .T.
 	.ITEM(lcCurdir + 'install.prg').Exclude = .T.
 	.ITEM(lcCurdir + 'parallelfox.vcx').Exclude = .T.
 	.ITEM(lcCurdir + 'uninstall.prg').Exclude = .T.
@@ -106,7 +110,7 @@ WITH loProject
 ENDWITH
 
 
-_VFP.Projects('ParallelFox.PJX').Close()
+_VFP.Projects('ParallelFox.pjx').Close()
 *ERASE '__newproject.f2b'
 CD (lcCurdir)
 RETURN
