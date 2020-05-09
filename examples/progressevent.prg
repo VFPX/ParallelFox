@@ -1,10 +1,15 @@
-* Progress example using thermometer form
+* Progress example using status bar
+Lparameters llWait && .T. for unit test
 Local loMyObject
 Set Path To "..;examples" Additive 
 loMyObject = CreateObject("MyObject")
 
+If Vartype(_Screen.oMyHandler) = "O"
+	_Screen.RemoveObject("oMyHandler")
+EndIf 
 _Screen.AddObject("oMyHandler", "MyHandler")
 
+loMyObject.lWait = llWait
 loMyObject.Test()
 
 
@@ -19,23 +24,38 @@ Procedure DisplayProgress
 
 EndProc 
 
+Procedure Cleanup
+	Lparameters lvReturn
+	If Vartype(_Screen.oMyHandler) = "O"
+		_Screen.RemoveObject("oMyHandler")
+	EndIf 
+EndProc 
 EndDefine 
 
 
 DEFINE CLASS MyObject AS Custom
 
+lWait = .f.	&& .T. for unit test
+
 Procedure Test
 	Local i, lnTimer, loMyObject
-	Local Parallel as Parallel of ParallelFox.vcx
+	Local Parallel as Parallel
 	Parallel = NewObject("Parallel", "ParallelFox.vcx")
 
 	Parallel.StartWorkers(FullPath("ProgressEvent.prg"))
 
 	Parallel.BindEvent("UpdateProgress", _Screen.oMyHandler, "DisplayProgress")
+	Parallel.BindEvent("Complete", _Screen.oMyHandler, "Cleanup")
 	
 	lnTimer = Seconds()
 
 	Parallel.CallMethod("SimulateReport", This.Class, This.ClassLibrary)
+
+	If This.lWait	&& for unit test, wait until finished
+		Parallel.Wait()
+	EndIf 
+	
+	Parallel.StopWorkers()
 
 EndProc 
 

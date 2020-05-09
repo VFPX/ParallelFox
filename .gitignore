@@ -2,3 +2,6 @@
 *.FXP
 temptext.*
 tempview.*
+/Tests/FXUPERSIST.XML
+/Tests/FXUPERSISTGETTEMPLATE.XML
+/Tests/FXUResults.*

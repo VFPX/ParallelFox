@@ -17,6 +17,7 @@ EndFor
 	
 Parallel.Wait()
 ? "Total Time", Seconds() - lnTimer
+Parallel.StopWorkers()
 
 Return 
 

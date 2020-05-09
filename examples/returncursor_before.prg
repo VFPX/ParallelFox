@@ -1,12 +1,16 @@
 * ReturnCursor event example
+Lparameters llNoBrowse	&& .T. for unit test
 Local loMyObject
 Clear 
 loMyObject = CreateObject("MyObject")
+loMyObject.lNoBrowse = llNoBrowse
 loMyObject.Test()
 
 Return 
 
 DEFINE CLASS MyObject AS Custom
+
+lNoBrowse = .f.
 
 Procedure Test
 	Local i, lnTimer, loMyObject
@@ -27,7 +31,9 @@ Procedure Test
 	
 	? "Total Time", Seconds() - lnTimer
 	
-	Browse Last NoCaption NORMAL 		
+	If !This.lNoBrowse
+		Browse Last NoCaption NORMAL 		
+	EndIf 
 	
 EndProc 
 

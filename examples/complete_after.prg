@@ -27,6 +27,7 @@ Procedure Test
 	Parallel.Wait()
 	This.UpdateProgress(100, "Process Complete.", .t.)	
 	? "Total Time", Seconds() - lnTimer
+	Parallel.StopWorkers()
 EndProc 
 
 Procedure IncrementProgress()

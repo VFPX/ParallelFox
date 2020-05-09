@@ -1,4 +1,5 @@
 * Steps example
+Lparameters llNoBrowse
 Local lnTimer, lnUnits
 
 Clear 
@@ -25,8 +26,11 @@ Do Step5 with lnUnits
 ? "Total Time", Seconds() - lnTimer
 
 Select StepsLog
-Browse Last NoCaption NORMAL 
+If !llNoBrowse	&& .T. for unit test
+	Browse Last NoCaption NORMAL 
+EndIf 
 Use 
+Erase StepsLog.dbf
 
 Procedure SimulateWork
 	Local i

@@ -1,12 +1,16 @@
 * Event handlers should be kept short
+Lparameters llMessageBoxTimeout
 Local loMyObject
 Set Path To "..;examples" Additive 
 loMyObject = CreateObject("MyObject")
+loMyObject.lMessageBoxTimeout = llMessageBoxTimeout
 loMyObject.Test()
 
 Return 
 
 DEFINE CLASS MyObject AS Custom
+
+lMessageBoxTimeout = .f.	&& .T. during unit test
 
 Procedure Test
 	Local i, lnTimer, loMyObject
@@ -20,15 +24,20 @@ Procedure Test
 	lnTimer = Seconds()
 
 	* Try running this on all workers by changing .f. parameter to .t.
-	Parallel.CallMethod("RunUnits", This.Class, This.ClassLibrary,,.f.,10)
+	Parallel.CallMethod("RunUnits", This.Class, This.ClassLibrary,,.t.,10)
 
 	Parallel.Wait()
+	Parallel.StopWorkers()
 EndProc 
 
 Procedure HandleComplete
 	Lparameters lvReturn
-	* This is bad.  Event could last forever.
-	MessageBox(Transform(lvReturn),0,"HandleComplete")
+	If This.lMessageBoxTimeout && unit test
+		MessageBox(Transform(lvReturn),0,"HandleComplete", 5000)
+	Else 
+		* This is bad.  Event could last forever.
+		MessageBox(Transform(lvReturn),0,"HandleComplete")
+	EndIf 
 EndProc 
 
 Procedure SimulateWork

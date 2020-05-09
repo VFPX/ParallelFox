@@ -1,8 +1,10 @@
 * ReturnData event example
+Lparameters llNoBrowse	&& .T. for unit test
 Local loMyObject
 Set Path To "..;examples" Additive 
 Clear 
 loMyObject = CreateObject("MyObject")
+loMyObject.lNoBrowse = llNoBrowse
 loMyObject.Test()
 
 Return 
@@ -10,6 +12,8 @@ Return
 DEFINE CLASS MyObject AS Custom
 
 oThermometer = NULL
+
+lNoBrowse = .f.
 
 Procedure Test
 	Local i, lnTimer, loMyObject
@@ -28,11 +32,15 @@ Procedure Test
 		Parallel.CallMethod("RunUnits",This.Class,This.ClassLibrary,,,i*10)
 	EndFor 
 	Parallel.Wait()
+	Parallel.StopWorkers()
 	This.SaveResults()
 	? "Total Time", Seconds() - lnTimer
 	Select ReturnDataLog
-	Browse Last NoCaption NORMAL 
+	If !This.lNoBrowse
+		Browse Last NoCaption NORMAL 		
+	EndIf 
 	Use 
+	Erase ReturnDataLog.dbf
 EndProc 
 
 Procedure RunUnits

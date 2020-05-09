@@ -15,6 +15,8 @@ Parallel.Wait()
 
 ? "Work Complete"
 
+Parallel.StopWorkers()
+
 Return 
 
 DEFINE CLASS MyObject AS Custom

@@ -1,7 +1,9 @@
 * Progress example using thermometer form
+Lparameters llWait && .T. for unit test
 Local loMyObject
 Set Path To "..;examples" Additive 
 loMyObject = CreateObject("MyObject")
+loMyObject.lWait = llWait
 loMyObject.Test()
 
 Return 
@@ -10,10 +12,11 @@ DEFINE CLASS MyObject AS Custom
 
 oThermometer = NULL
 nProgress = 0
+lWait = .f.
 
 Procedure Test
 	Local i, lnTimer, loMyObject
-	Local Parallel as Parallel of ParallelFox.vcx
+	Local Parallel as Parallel
 	Parallel = NewObject("Parallel", "ParallelFox.vcx")
 
 	Parallel.StartWorkers(FullPath("ProgressForm.prg"))
@@ -21,8 +24,14 @@ Procedure Test
 	lnTimer = Seconds()
 
 	Parallel.CallMethod("SimulateReport", This.Class, This.ClassLibrary)
+	
+	If This.lWait
+		Parallel.Wait()
+	EndIf 
+	
+	Parallel.StopWorkers()
 
-EndProc 
+EndProc
 
 Procedure SimulateReport
 	Local lnPage	

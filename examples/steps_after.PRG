@@ -1,4 +1,5 @@
 * Steps example
+Lparameters llNoBrowse
 Local lnTimer, lnUnits
 Set Path To "..;examples" Additive 
 Local Parallel as Parallel of ParallelFox.vcx
@@ -30,8 +31,11 @@ If !Used("StepsLog")
 	Use StepsLog In 0
 EndIf 	
 Select StepsLog
-Browse Last NoCaption NORMAL 
+If !llNoBrowse	&& .T. for unit test
+	Browse Last NoCaption NORMAL 
+EndIf 
 Use 
+Erase StepsLog.dbf
 
 Parallel.StopWorkers()
 

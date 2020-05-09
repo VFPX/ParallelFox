@@ -1,13 +1,17 @@
 * Make sure variables in your event handlers are local
+Lparameters llUseLocalVariable
 Local loMyObject
 Set Path To "..;examples" Additive 
 clear
 loMyObject = CreateObject("MyObject")
+loMyObject.lUseLocalVariable = llUseLocalVariable
 loMyObject.Test()
 
 Return 
 
 DEFINE CLASS MyObject AS Custom
+
+lUseLocalVariable = .T.
 
 Procedure Test
 	Local i, lnTimer, loMyObject
@@ -27,14 +31,17 @@ Procedure Test
 
 	Parallel.Wait()
 	? "Time", Seconds() - lnTimer
+	Parallel.StopWorkers()
 	
 EndProc 
 
 Procedure HandleComplete
 	Lparameters lvReturn
 	Local i
-	* Comment/uncomment line below to see how results change
-	Local j
+	* Toggle llUseLocalVariable to see how results change
+	If This.lUseLocalVariable
+		Local j
+	EndIf 
 	j = 0
 	? Program(), "Start"
 	For i = 1 to 5

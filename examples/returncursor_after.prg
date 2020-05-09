@@ -1,13 +1,17 @@
 * ReturnCursor event example
+Lparameters llNoBrowse	&& .T. for unit test
 Local loMyObject
 Set Path To "..;examples" Additive 
 Clear 
 loMyObject = CreateObject("MyObject")
+loMyObject.lNoBrowse = llNoBrowse
 loMyObject.Test()
 
 Return 
 
 DEFINE CLASS MyObject AS Custom
+
+lNoBrowse = .f.
 
 Procedure Test
 	Local i, lnTimer, loMyObject
@@ -22,6 +26,7 @@ Procedure Test
 	Parallel.CallMethod("Query2",This.Class,This.ClassLibrary)
 	Parallel.CallMethod("Query3",This.Class,This.ClassLibrary)
 	Parallel.Wait()
+	Parallel.StopWorkers()
 	
 	Select CustCsr.CustomerID, CustCsr.CompanyName, CustCsr.ContactName, ;
 		OrderCsr.OrderID, OrderCsr.OrderDate, ;
@@ -33,8 +38,9 @@ Procedure Test
 	
 	? "Total Time", Seconds() - lnTimer
 	
-	Browse Last NoCaption NORMAL 		
-	
+	If !This.lNoBrowse
+		Browse Last NoCaption NORMAL 		
+	EndIf 	
 EndProc 
 
 Procedure Query1

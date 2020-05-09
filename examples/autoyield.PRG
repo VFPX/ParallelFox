@@ -1,12 +1,19 @@
 * Autoyield example. Toggle to see effect.
-Local loMyObject
+Lparameters llAutoYield
+Local loMyObject, llPreviousAutoYield
 Set Path To "..;examples" Additive 
 
-_VFP.AutoYield = .f.	&& toggle .T. to .F.
+Try
+	llPreviousAutoYield = _VFP.AutoYield 
 
-clear
-loMyObject = CreateObject("MyObject")
-loMyObject.Test()
+	_VFP.AutoYield = llAutoYield	&& toggle .T. to .F.
+
+	clear
+	loMyObject = CreateObject("MyObject")
+	loMyObject.Test()
+Finally
+	_VFP.AutoYield = llPreviousAutoYield 
+EndTry 
 
 Return 
 
@@ -35,6 +42,7 @@ Procedure Test
 	
 	Parallel.Wait()
 	? "Time", Seconds() - lnTimer
+	Parallel.StopWorkers()
 	
 EndProc 
 
