@@ -18,4 +18,4 @@ Some examples include "_before" and "_after" versions to demonstrate how a progr
 Examples were designed to demonstrate parallel processing techniques, not strictly for performance.  On a quad-core machine, it is possible to achieve a nearly four-fold increase in performance.  However, you may not see that with these examples.  It depends on your scenario.
 
 It is recommended you review the training videos and blogs associated with these examples from the main ParallelFox page on VFPX:
-http://vfpx.codeplex.com/wikipage?title=ParallelFox
+https://github.com/VFPX/ParallelFox
