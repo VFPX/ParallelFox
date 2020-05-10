@@ -18,7 +18,7 @@ ParallelFox also takes advantage of Doug Hennig's [Favorites for IntelliSense](h
 - **DO INSTALL** to register ParallelFox.exe and install the IntelliSense scripts.  
 - See the "Installation" topic in the Help file for details.
 ## Training Videos
-These videos were recorded at a fairly high resolution.  If the Flash version does not fit in your browser window, give the WMV version a try.
+These videos are now available on YouTube: [ParallelFox Training Videos](https://www.youtube.com/watch?v=lXPrgN4CQs0&list=PLiJ9w2ByRUjYVO4mBFWgIW01ucjVpfQcQ). The previous videos are still available below.
 
 **Introduction** [Flash](http://www.mbs-intl.com/vfpx/parallelfox/ParallelFox_Intro/ParallelFox_Intro.html) [WMV](http://www.mbs-intl.com/vfpx/parallelfox/ParallelFox_Intro/ParallelFox_Intro.wmv)
 Errata: In this video, I said that CPU speeds topped out a 3-4 "Megahertz", which was about the speed of my first computer, a [PCjr](http://en.wikipedia.org/wiki/Pcjr).  I should have said "Gigahertz".  It's only a thousand-fold difference. :)
