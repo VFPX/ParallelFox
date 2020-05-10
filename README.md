@@ -10,7 +10,7 @@ Although parallel processing and multi-threading have been possible in VFP for q
 ## Documentation
 ParallelFox includes complete documentation (ParallelFox.chm).  The Help file is designed to be used in conjunction with the training videos below. Use the Help file as a quick reference or short overview of topics. Watch the training videos for more in-depth discussions, examples, and techniques.
 
-ParallelFox also takes advantage of Doug Hennig's [Favorites for IntelliSense](http://www.stonefield.com/techpap.aspx), which Doug also used in the [MY project for Sedna](http://vfpx.codeplex.com/wikipage?title=Sedna#MY). This greatly simplifies the ParallelFox interfaces and provides extra details while you are coding. 
+ParallelFox also takes advantage of Doug Hennig's [Favorites for IntelliSense](https://doughennig.com/papers.aspx), which Doug also used in the [MY project for Sedna](https://github.com/VFPX/My). This greatly simplifies the ParallelFox interfaces and provides extra details while you are coding. 
 
 ## Installation
 - Download and unzip the latest stable release from the Releases page. Grab **ParallelFox_x.x.zip**, rather than the Source Code zip file GitHub automatically creates.
