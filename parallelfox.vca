@@ -515,7 +515,7 @@ Pixels[END RESERVED6]
 [START PROPERTIES]
 Name = "parallel"
 _events = NULL
-_memberdata =      825<VFPData><memberdata name="do" display="Do"/><memberdata name="startworkers" display="StartWorkers"/><memberdata name="cpucount" display="CPUCount"/><memberdata name="setworkercount" display="SetWorkerCount"/><memberdata name="docmd" display="DoCmd"/><memberdata name="execscript" display="ExecScript"/><memberdata name="call" display="Call"/><memberdata name="bindevent" display="BindEvent"/><memberdata name="wait" display="Wait"/><memberdata name="_events" display="_Events"/><memberdata name="callmethod" display="CallMethod"/><memberdata name="stopworkers" display="StopWorkers"/><memberdata name="onerror" display="OnError"/><memberdata name="clearqueue" display="ClearQueue"/><memberdata name="setworkerclass" display="SetWorkerClass"/><memberdata name="detecthyperthreading" display="DetectHyperThreading"/></VFPData>
+_memberdata =      889<VFPData><memberdata name="do" display="Do"/><memberdata name="startworkers" display="StartWorkers"/><memberdata name="cpucount" display="CPUCount"/><memberdata name="setworkercount" display="SetWorkerCount"/><memberdata name="docmd" display="DoCmd"/><memberdata name="execscript" display="ExecScript"/><memberdata name="call" display="Call"/><memberdata name="bindevent" display="BindEvent"/><memberdata name="wait" display="Wait"/><memberdata name="_events" display="_Events"/><memberdata name="callmethod" display="CallMethod"/><memberdata name="stopworkers" display="StopWorkers"/><memberdata name="onerror" display="OnError"/><memberdata name="clearqueue" display="ClearQueue"/><memberdata name="setworkerclass" display="SetWorkerClass"/><memberdata name="detecthyperthreading" display="DetectHyperThreading"/><memberdata name="setmultithreaded" display="SetMultiThreaded"/></VFPData>
 cpucount = 0
 [END PROPERTIES]
 [START METHODS]
@@ -684,6 +684,14 @@ Debugout Time(0), Program(), cOnErrorCommand
 
 _Screen.ParPoolMgr.cOnError = cOnErrorCommand
 ENDPROC
+PROCEDURE setmultithreaded
+* Set .T. to use in-process multithreaded DLL workers. Otherwise, out-of-process EXEs are used.
+* Must be set before StartWorkers is called.
+Lparameters llMTDLL
+
+_Screen.ParPoolMgr.lMTDLL = llMTDLL
+
+ENDPROC
 PROCEDURE setworkerclass
 * Change worker class from default. lcClass and lcLibrary are used in debug mode.
 Lparameters cCOMProgID, cClass, cLibrary
@@ -778,6 +786,7 @@ Class[END RESERVED1]
 *docmd Execute single command on worker.
 *execscript Execute script on worker.
 *onerror Set up global handler for worker errors. Available variables are nError, cMethod, nLine, cMessage, cCode. Example: Parallel.OnError("Do MyErrorHandler with nError, cMethod, nLine, cMessage, cCode")
+*setmultithreaded Set .T. to use in-process multithreaded DLL workers. Otherwise, out-of-process EXEs are used.
 *setworkerclass Change worker class from default. lcClass and lcLibrary are used in debug mode.
 *setworkercount Set number of workers. Defaults to CPU count. Set before starting workers.
 *startworkers Start worker processes.
@@ -860,13 +869,14 @@ Pixels[END RESERVED6]
 [OBJNAME] parpoolmgr
 [START PROPERTIES]
 Name = "parpoolmgr"
-_memberdata =     1115<VFPData><memberdata name="ncpucount" display="nCPUCount"/><memberdata name="nworkercount" display="nWorkerCount"/><memberdata name="startworkers" display="StartWorkers"/><memberdata name="workers" display="Workers"/><memberdata name="nbusyworkers" display="nBusyWorkers"/><memberdata name="queuecommand" display="QueueCommand"/><memberdata name="processqueue" display="ProcessQueue"/><memberdata name="commandqueue" display="CommandQueue"/><memberdata name="ldebugmode" display="lDebugMode"/><memberdata name="stopworkers" display="StopWorkers"/><memberdata name="handleerror" display="HandleError"/><memberdata name="conerror" display="cOnError"/><memberdata name="clearqueue" display="ClearQueue"/><memberdata name="cworkercomprogid" display="cWorkerCOMProgID"/><memberdata name="cworkerclass" display="cWorkerClass"/><memberdata name="cworkerlibrary" display="cWorkerLibrary"/><memberdata name="nprocessing" display="nProcessing"/><memberdata name="setworkercount" display="SetWorkerCount"/><memberdata name="displayerrors" display="DisplayErrors"/><memberdata name="oerrorlist" display="oErrorList"/></VFPData>
+_memberdata =     1159<VFPData><memberdata name="ncpucount" display="nCPUCount"/><memberdata name="nworkercount" display="nWorkerCount"/><memberdata name="startworkers" display="StartWorkers"/><memberdata name="workers" display="Workers"/><memberdata name="nbusyworkers" display="nBusyWorkers"/><memberdata name="queuecommand" display="QueueCommand"/><memberdata name="processqueue" display="ProcessQueue"/><memberdata name="commandqueue" display="CommandQueue"/><memberdata name="ldebugmode" display="lDebugMode"/><memberdata name="stopworkers" display="StopWorkers"/><memberdata name="handleerror" display="HandleError"/><memberdata name="conerror" display="cOnError"/><memberdata name="clearqueue" display="ClearQueue"/><memberdata name="cworkercomprogid" display="cWorkerCOMProgID"/><memberdata name="cworkerclass" display="cWorkerClass"/><memberdata name="cworkerlibrary" display="cWorkerLibrary"/><memberdata name="nprocessing" display="nProcessing"/><memberdata name="setworkercount" display="SetWorkerCount"/><memberdata name="displayerrors" display="DisplayErrors"/><memberdata name="oerrorlist" display="oErrorList"/><memberdata name="lmtdll" display="lMTDLL"/></VFPData>
 commandqueue = 
 conerror = This.DisplayErrors(nError, cMethod, nLine, cMessage, cCode)
 cworkerclass = WorkerMgr
 cworkercomprogid = ParallelFox.WorkerMgr
 cworkerlibrary = ParallelFox.vcx
 ldebugmode = .F.
+lmtdll = .F.
 nbusyworkers = 0
 ncpucount = 0
 nprocessing = 0
@@ -1109,8 +1119,7 @@ EndIf
 This.lDebugMode = llDebugMode
 
 For lnWorker = 1 to This.nWorkerCount
-	* .T. llMTDLL for testing. Replace with property set by user.
-	loWorkerProxy = NewObject("WorkerProxy", "ParallelFox.vcx", "", lcProcedureFile, lcDirectory, llDebugMode, lnWorker, .f.)
+	loWorkerProxy = NewObject("WorkerProxy", "ParallelFox.vcx", "", lcProcedureFile, lcDirectory, llDebugMode, lnWorker, This.lMTDLL)
 	ComArray(loWorkerProxy, 11)
 	This.Workers.Add(loWorkerProxy)
 EndFor 
@@ -1155,6 +1164,7 @@ cworkerclass Worker class name (used in debug mode).
 cworkercomprogid COM ProgID for worker class.
 cworkerlibrary Worker class library (used in debug mode).
 ldebugmode Start workers in Debug mode.
+lmtdll Set .T. to use in-process multithreaded DLL workers. Otherwise, out-of-process EXEs are used.
 nbusyworkers Number of workers currently processing commands.
 ncpucount Number of logical processors on machine.
 nprocessing Number of times ProcessQueue has been called.
@@ -1853,11 +1863,11 @@ If This.lMTDLL
 		lnThreadExitCode = 0
 		GetExitCodeThread(This.nMTHandle, @lnThreadExitCode)
 		If lnThreadExitCode <> STILL_ALIVE
-			? "Thread exited normally", lnThreadCheck
+			? "Thread exited normally", This.nMTHandle, lnThreadCheck
 			Exit
 		EndIf 
 		
-		? "Thread still alive", lnThreadCheck
+		? "Thread still alive", This.nMTHandle, lnThreadCheck
 
 		* Give DMULT a chance to unload worker normally
 		Inkey(.1, "H")

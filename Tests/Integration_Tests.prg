@@ -180,6 +180,7 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 		
 		Parallel.BindEvent("ReturnError", This.oErrorHandler, "HandleError")
 		Parallel.SetWorkerCount(This.nWorkerCount)
+		Parallel.SetMultiThreaded(This.lMTDLL)
 		If This.lDebugMode
 			* Short pause to let previous instances of VFP close, or may get error
 			Inkey(1, "H")
@@ -199,6 +200,11 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 		Return This.DoCmd_Runs()
 	EndFunc 
 
+	Function DoCmd_Runs_MTDLL
+		This.lMTDLL = .t.
+		Return This.DoCmd_Runs()
+	EndFunc 
+
 	Function DoCmd_AllWorkers_Runs
 		This.nWorkerCount = 4
 		This.lAllWorkers = .t.
@@ -207,6 +213,11 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 
 	Function DoCmd_AllWorkers_Runs_DebugMode
 		This.lDebugMode = .t.
+		Return This.DoCmd_AllWorkers_Runs()
+	EndFunc 
+
+	Function DoCmd_AllWorkers_Runs_MTDLL
+		This.lMTDLL = .t.
 		Return This.DoCmd_AllWorkers_Runs()
 	EndFunc 
 
@@ -221,6 +232,11 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 		Return This.DoCmd_Iterations_Run()
 	EndFunc 
 
+	Function DoCmd_Iterations_Run_MTDLL
+		This.lMTDLL = .t.
+		Return This.DoCmd_Iterations_Run()
+	EndFunc 
+
 	* Do Tests
 	Function Do_Runs
 		Local Parallel as Parallel, lnI
@@ -228,6 +244,7 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 		
 		Parallel.BindEvent("ReturnError", This.oErrorHandler, "HandleError")
 		Parallel.SetWorkerCount(This.nWorkerCount)
+		Parallel.SetMultiThreaded(This.lMTDLL)
 		If This.lDebugMode
 			* Short pause to let previous instances of VFP close, or may get error
 			Inkey(1, "H")
@@ -247,6 +264,11 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 		Return This.Do_Runs()
 	EndFunc 
 
+	Function Do_Runs_MTDLL
+		This.lMTDLL = .t.
+		Return This.Do_Runs()
+	EndFunc 
+
 	Function Do_AllWorkers_Runs
 		This.nWorkerCount = 4
 		This.lAllWorkers = .t.
@@ -255,6 +277,11 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 
 	Function Do_AllWorkers_Runs_DebugMode
 		This.lDebugMode = .t.
+		Return This.Do_AllWorkers_Runs()
+	EndFunc 
+
+	Function Do_AllWorkers_Runs_MTDLL
+		This.lMTDLL = .t.
 		Return This.Do_AllWorkers_Runs()
 	EndFunc 
 
@@ -269,6 +296,11 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 		Return This.Do_Iterations_Run()
 	EndFunc 
 
+	Function Do_Iterations_Run_MTDLL
+		This.lMTDLL = .t.
+		Return This.Do_Iterations_Run()
+	EndFunc 
+
 	* Call Tests
 	Function Call_Runs
 		Local Parallel as Parallel, lnI
@@ -276,6 +308,7 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 		
 		Parallel.BindEvent("ReturnError", This.oErrorHandler, "HandleError")
 		Parallel.SetWorkerCount(This.nWorkerCount)
+		Parallel.SetMultiThreaded(This.lMTDLL)
 		If This.lDebugMode
 			* Short pause to let previous instances of VFP close, or may get error
 			Inkey(1, "H")
@@ -295,6 +328,11 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 		Return This.Call_Runs()
 	EndFunc 
 
+	Function Call_Runs_MTDLL
+		This.lMTDLL = .t.
+		Return This.Call_Runs()
+	EndFunc 
+
 	Function Call_AllWorkers_Runs
 		This.nWorkerCount = 4
 		This.lAllWorkers = .t.
@@ -303,6 +341,11 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 
 	Function Call_AllWorkers_Runs_DebugMode
 		This.lDebugMode = .t.
+		Return This.Call_AllWorkers_Runs()
+	EndFunc 
+
+	Function Call_AllWorkers_Runs_MTDLL
+		This.lMTDLL = .t.
 		Return This.Call_AllWorkers_Runs()
 	EndFunc 
 
@@ -317,6 +360,11 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 		Return This.Call_Iterations_Run()
 	EndFunc 
 
+	Function Call_Iterations_Run_MTDLL
+		This.lMTDLL = .t.
+		Return This.Call_Iterations_Run()
+	EndFunc 
+
 	* CallMethod Tests
 	Function CallMethod_Runs
 		Local Parallel as Parallel, lnI
@@ -324,6 +372,7 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 		
 		Parallel.BindEvent("ReturnError", This.oErrorHandler, "HandleError")
 		Parallel.SetWorkerCount(This.nWorkerCount)
+		Parallel.SetMultiThreaded(This.lMTDLL)
 		If This.lDebugMode
 			* Short pause to let previous instances of VFP close, or may get error
 			Inkey(1, "H")
@@ -343,6 +392,11 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 		Return This.CallMethod_Runs()
 	EndFunc 
 
+	Function CallMethod_Runs_MTDLL
+		This.lMTDLL = .t.
+		Return This.CallMethod_Runs()
+	EndFunc 
+
 	Function CallMethod_AllWorkers_Runs
 		This.nWorkerCount = 4
 		This.lAllWorkers = .t.
@@ -351,6 +405,11 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 
 	Function CallMethod_AllWorkers_Runs_DebugMode
 		This.lDebugMode = .t.
+		Return This.CallMethod_AllWorkers_Runs()
+	EndFunc 
+
+	Function CallMethod_AllWorkers_Runs_MTDLL
+		This.lMTDLL = .t.
 		Return This.CallMethod_AllWorkers_Runs()
 	EndFunc 
 
@@ -365,6 +424,11 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 		Return This.CallMethod_Iterations_Run()
 	EndFunc 
 
+	Function CallMethod_Iterations_Run_MTDLL
+		This.lMTDLL = .t.
+		Return This.CallMethod_Iterations_Run()
+	EndFunc 
+
 	* ExecScript Tests
 	Function ExecScript_Runs
 		Local Parallel as Parallel, lnI, lcScript
@@ -372,6 +436,7 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 		
 		Parallel.BindEvent("ReturnError", This.oErrorHandler, "HandleError")
 		Parallel.SetWorkerCount(This.nWorkerCount)
+		Parallel.SetMultiThreaded(This.lMTDLL)
 		If This.lDebugMode
 			* Short pause to let previous instances of VFP close, or may get error
 			Inkey(1, "H")
@@ -398,6 +463,11 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 		Return This.ExecScript_Runs()
 	EndFunc 
 
+	Function ExecScript_Runs_MTDLL
+		This.lMTDLL = .t.
+		Return This.ExecScript_Runs()
+	EndFunc 
+
 	Function ExecScript_AllWorkers_Runs
 		This.nWorkerCount = 4
 		This.lAllWorkers = .t.
@@ -406,6 +476,11 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 
 	Function ExecScript_AllWorkers_Runs_DebugMode
 		This.lDebugMode = .t.
+		Return This.ExecScript_AllWorkers_Runs()
+	EndFunc 
+
+	Function ExecScript_AllWorkers_Runs_MTDLL
+		This.lMTDLL = .t.
 		Return This.ExecScript_AllWorkers_Runs()
 	EndFunc 
 
@@ -420,6 +495,11 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 		Return This.ExecScript_Iterations_Run()
 	EndFunc 
 	
+	Function ExecScript_Iterations_Run_MTDLL
+		This.lMTDLL = .t.
+		Return This.ExecScript_Iterations_Run()
+	EndFunc 
+	
 	Function Complete_Returns_Expected_Result
 		Local Parallel as Parallel, lnI, lcScript
 		Parallel = NewObject("Parallel", "ParallelFox.vcx")
@@ -431,6 +511,7 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 
 		Parallel.BindEvent("ReturnError", This.oErrorHandler, "HandleError")
 		Parallel.SetWorkerCount(This.nWorkerCount)
+		Parallel.SetMultiThreaded(This.lMTDLL)
 		If This.lDebugMode
 			* Short pause to let previous instances of VFP close, or may get error
 			Inkey(1, "H")
@@ -449,6 +530,11 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 		Return This.Complete_Returns_Expected_Result()
 	EndFunc 
 
+	Function Complete_Returns_Expected_Result_MTDLL
+		This.lMTDLL = .t.
+		Return This.Complete_Returns_Expected_Result()
+	EndFunc 
+
 	Function ReturnData_Returns_Expected_Results
 		Local Parallel as Parallel, lnI, lcScript
 		Parallel = NewObject("Parallel", "ParallelFox.vcx")
@@ -460,6 +546,7 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 
 		Parallel.BindEvent("ReturnError", This.oErrorHandler, "HandleError")
 		Parallel.SetWorkerCount(This.nWorkerCount)
+		Parallel.SetMultiThreaded(This.lMTDLL)
 		If This.lDebugMode
 			* Short pause to let previous instances of VFP close, or may get error
 			Inkey(1, "H")
@@ -479,6 +566,11 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 		Return This.ReturnData_Returns_Expected_Results()
 	EndFunc 
 
+	Function ReturnData_Returns_Expected_Results_MTDLL
+		This.lMTDLL = .t.
+		Return This.ReturnData_Returns_Expected_Results()
+	EndFunc 
+
 	Function UpdateProgress_Returns_Expected_Results
 		Local Parallel as Parallel, lnI, lcScript
 		Parallel = NewObject("Parallel", "ParallelFox.vcx")
@@ -490,6 +582,7 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 
 		Parallel.BindEvent("ReturnError", This.oErrorHandler, "HandleError")
 		Parallel.SetWorkerCount(This.nWorkerCount)
+		Parallel.SetMultiThreaded(This.lMTDLL)
 		If This.lDebugMode
 			* Short pause to let previous instances of VFP close, or may get error
 			Inkey(1, "H")
@@ -509,6 +602,11 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 		Return This.UpdateProgress_Returns_Expected_Results()
 	EndFunc 
 
+	Function UpdateProgress_Returns_Expected_Results_MTDLL
+		This.lMTDLL = .t.
+		Return This.UpdateProgress_Returns_Expected_Results()
+	EndFunc 
+
 	Function ReturnCursor_Returns_Cursor
 		Local Parallel as Parallel, lnI, lcScript
 		Parallel = NewObject("Parallel", "ParallelFox.vcx")
@@ -520,6 +618,7 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 
 		Parallel.BindEvent("ReturnError", This.oErrorHandler, "HandleError")
 		Parallel.SetWorkerCount(This.nWorkerCount)
+		Parallel.SetMultiThreaded(This.lMTDLL)
 		If This.lDebugMode
 			* Short pause to let previous instances of VFP close, or may get error
 			Inkey(1, "H")
@@ -541,6 +640,11 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 		Return This.ReturnCursor_Returns_Cursor()
 	EndFunc 
 
+	Function ReturnCursor_Returns_Cursor_MTDLL
+		This.lMTDLL = .t.
+		Return This.ReturnCursor_Returns_Cursor()
+	EndFunc 
+
 	Function Error_Returns_Error
 		Local Parallel as Parallel, lnI, lcScript
 		Parallel = NewObject("Parallel", "ParallelFox.vcx")
@@ -551,6 +655,7 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 		Parallel.BindEvent("ReturnError", loTestEventHandler, "ReturnError")
 
 		Parallel.SetWorkerCount(This.nWorkerCount)
+		Parallel.SetMultiThreaded(This.lMTDLL)
 		If This.lDebugMode
 			* Short pause to let previous instances of VFP close, or may get error
 			Inkey(1, "H")
@@ -573,6 +678,11 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 	
 	Function Error_Returns_Error_DebugMode
 		This.lDebugMode = .t.
+		Return This.Error_Returns_Error()
+	EndFunc 
+
+	Function Error_Returns_Error_MTDLL
+		This.lMTDLL = .t.
 		Return This.Error_Returns_Error()
 	EndFunc 
 
