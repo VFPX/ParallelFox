@@ -1210,8 +1210,6 @@ oreleasetimer
 PROCEDURE Destroy
 Debugout Time(0), "(" + Transform(This.nThreadHandle) + ")", Program()
 
-? Program()
-
 This.StopThread()
 ENDPROC
 PROCEDURE createthread
@@ -1238,8 +1236,6 @@ This.nEventHandle = CreateEvent (0, 0, 0, 0)
 * Create COM reference that can be passed to thread
 Local loCOMRef
 loCOMRef = _VFP.Eval("This")
-? Program(), "oComRef+", Sys(3097, loComRef)
-? Program(), "oComRef-", Sys(3098, loComRef)
 
 * Create thread 
 lnThreadID = 0
@@ -1249,14 +1245,7 @@ This.nThreadHandle = CreateThreadWithObject( ;
 	loCOMRef, ;
 	@lnThreadID)
 
-? Program(), "CreateThreadWithObject oComRef+", Sys(3097, loComRef)
-? Program(), "CreateThreadWithObject oComRef-", Sys(3098, loComRef)
-
 This.nThreadID = lnThreadID
-
-? "Event Handle", This.nEventHandle
-? "Thread Handle", This.nThreadHandle
-? "Thread ID", This.nThreadID
 
 
 ENDPROC
@@ -1274,8 +1263,6 @@ EndIf
 This.lReleaseProcessed= .t.
 This.oReleaseTimer = NULL
 
-? Program()
-
 DECLARE INTEGER GetExitCodeThread IN kernel32;
     INTEGER hThread,;
     LONG @lpExitCode
@@ -1285,12 +1272,9 @@ For lnThreadCheck = 1 to 10
 	lnThreadExitCode = 0
 	GetExitCodeThread(This.nThreadHandle, @lnThreadExitCode)
 	If lnThreadExitCode <> STILL_ALIVE
-		? "Thread exited normally", This.nThreadHandle, lnThreadCheck
 		Exit
 	EndIf 
 	
-	? "Thread still alive", This.nThreadHandle, lnThreadCheck
-
 	* Give DMULT a chance to unload worker normally
 	Inkey(.1, "H")
 EndFor 
@@ -1299,9 +1283,8 @@ EndFor
 * Heavy handed, but otherwise VFP will crash, especially after CLEAR ALL
 If lnThreadExitCode = STILL_ALIVE
 	Declare Long TerminateThread IN kernel32 ;
-		Long hThread, Long dwExitCode
-		
- 	? "TerminateThread:", This.nThreadHandle, TerminateThread(This.nThreadHandle, 0)
+		Long hThread, Long dwExitCode				
+ 	TerminateThread(This.nThreadHandle, 0)
 EndIf 
 
 Declare CloseHandle in Win32API LONG
@@ -1312,17 +1295,7 @@ CloseHandle(This.nThreadHandle)
 * Release dangling COM reference to this object
 Local loCOMRef
 loCOMRef = _VFP.Eval("This")
-? "Pointer", Sys(3095, loCOMRef)
-? Program(), "oComRef+", Sys(3097, loComRef)
-? Program(), "oComRef-", Sys(3098, loComRef)
-? Program(), "oComRef-", Sys(3098, loComRef)
-
-*JAL*	lnRefs = Sys(3097, oComRef) - 1
-*JAL*	For i = 1 to lnRefs
-*JAL*		? Program(), "oComRef-", Sys(3098, oComRef)
-*JAL*	EndFor 
-
-* Release This
+Sys(3098, loComRef)
 
 ENDPROC
 PROCEDURE sendcommand
@@ -1371,22 +1344,11 @@ This.CreateThread(This.cWorkerCOMProgID)
 ENDPROC
 PROCEDURE stopthread
 * Stop thread used in MTDLL
-? Program()
-
 This.cMTScript = "STOPWORKER"
 SetEvent(This.nEventHandle)
 	
-*	? Transform(This.nEventHandle) + ": loWorkerProxy RefCount - " + Transform(SYS(3098, This))
-*	Release This
-
-Local oCOMRef
-oCOMRef = _VFP.Eval("This")
-? "Pointer", Sys(3095, oCOMRef)
-? Program(), "oComRef+", Sys(3097, oComRef)
-? Program(), "oComRef-", Sys(3098, oComRef)
-
 * Use timer to release thread
-* This gives thread a chance to process STOPWORKER command before thread is closed
+* This gives thread a chance to process STOPWORKER command before thread is released
 If !This.lReleaseProcessed
 	Local loTimer as Timer
 	loTimer = CreateObject("Timer")
@@ -1396,10 +1358,6 @@ If !This.lReleaseProcessed
 	loTimer.Enabled = .t.
 EndIf 
 
-*JAL*	lnRefs = Sys(3097, oComRef) - 5
-*JAL*	For i = 1 to lnRefs
-*JAL*		? Program(), "oComRef-", Sys(3098, oComRef)
-*JAL*	EndFor 
 ENDPROC
 [END METHODS]
 [START RESERVED1]
@@ -1766,8 +1724,6 @@ Debugout Time(0), Program()
 
 If _VFP.StartMode <> 5
 	Quit
-Else 
-	StrToFile(Transform(Datetime()) + ": " + Program() + Chr(13), "MTLog.txt", 1)
 EndIf 
 
 ENDPROC
@@ -1785,8 +1741,6 @@ Set TablePrompt Off
 If _VFP.StartMode <> 5
 	This.oCmdTimer = NewObject("tmrCommand", "ParallelFox.vcx")
 EndIf 
-
-StrToFile(Transform(Datetime()) + ": " + Program() + Chr(13), "MTLog.txt", 1)
 
 Return DoDefault()
 ENDPROC
@@ -1937,13 +1891,10 @@ PROCEDURE setmainprocess
 Lparameters loMainVFP, lcWorkerApp
 Local loMainProcess as MainProcess of ParallelFox.vcx
 
-StrToFile(Transform(Datetime()) + ": " + Program() + " - " + Transform(lcWorkerApp) + Chr(13), "MTLog.txt", 1)
-
 If VarType(_Screen.oMainProcess) = "U"
 	_Screen.AddProperty("oMainProcess", NULL)
 EndIf 
 
-StrToFile(Transform(Datetime()) + ": lcWorkerApp " + lcWorkerApp + Chr(13), "MTLog.txt", 1)
 loMainProcess = NewObject("MainProcess", This.ClassLibrary, lcWorkerApp)
 loMainProcess.oMainVFP = loMainVFP
 loMainProcess.StartTimer()
@@ -1978,28 +1929,21 @@ lnEventHandle = loThreadHandler.nEventHandle
 
 This.SetWorkerEvents(loThreadHandler.oEvents)
 
-StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": " + Program() + Chr(13), "MTLog.txt", 1)
-
 llExit = .f.
 Do while .t.
 	
 	* Wait until main thread sends event that a command is ready to process
-	StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": Waiting for Event" + Chr(13), "MTLog.txt", 1)
 	lnWaitStatus = WaitForSingleObject(lnEventHandle, 10000)
 	If lnWaitStatus <> 0
 		* Zero means event fired
 		* If timeout, check and see if proxy still good
 		If lnWaitStatus = WAIT_TIMEOUT and Type("loThreadHandler.Name") = "C"
-			StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": Wait Timeout " + Chr(13), "MTLog.txt", 1)
 			Loop 
 		Else 
 			* Otherwise, something went wrong, so exit
-			StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": Wait Status Problem " + Transform(lnWaitStatus) + Chr(13), "MTLog.txt", 1)
 			Exit 
 		EndIf 
 	EndIf 
-
-	StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": Event Received" + Chr(13), "MTLog.txt", 1)
 
 	Try
 		lcScript = loThreadHandler.cMTScript
@@ -2014,47 +1958,21 @@ Do while .t.
 	
 	* Exit if stop workers command sent
 	If Upper(lcScript) = "STOPWORKER"
-		StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": STOPWORKER Command" + Chr(13), "MTLog.txt", 1)
 		Exit 
 	EndIf 
 	
 	* Process command
-	StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": Processing Command" + Chr(13), "MTLog.txt", 1)
 	This.ProcessCommand()
-	StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": Processing Complete" + Chr(13), "MTLog.txt", 1)
 
 EndDo 
 
-StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": Exited Loop" + Chr(13), "MTLog.txt", 1)
-
 This.oCommand = NULL
-StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": This.oCommand Released" + Chr(13), "MTLog.txt", 1)
-
 If VarType(_Screen.oMainProcess) = "O" and !IsNull(_Screen.oMainProcess)
 	_Screen.oMainProcess.oMainVFP = NULL
 	_Screen.oMainProcess = NULL
 EndIf 
-StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": loThreadHandler Pointer - " + Transform(SYS(3095, loThreadHandler)) + Chr(13), "MTLog.txt", 1)
-StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": loThreadHandler RefCount + " + Transform(SYS(3097, loThreadHandler)) + Chr(13), "MTLog.txt", 1)
-StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": loThreadHandler RefCount - " + Transform(SYS(3098, loThreadHandler)) + Chr(13), "MTLog.txt", 1)
-
-*JAL*	lnRefs = Sys(3097, loThreadHandler)
-*JAL*	For i = 1 to lnRefs
-*JAL*		StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": loThreadHandler RefCount - " + Transform(SYS(3098, loThreadHandler)) + Chr(13), "MTLog.txt", 1)
-*JAL*	EndFor 
-
-*JAL*	StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": loThreadHandler After RefCount + " + Transform(SYS(3097, loThreadHandler)) + Chr(13), "MTLog.txt", 1)
-*JAL*	StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": loThreadHandler After RefCount - " + Transform(SYS(3098, loThreadHandler)) + Chr(13), "MTLog.txt", 1)
-
-*JAL*	StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": loThreadHandler RefCount - " + Transform(SYS(3098, loThreadHandler)) + Chr(13), "MTLog.txt", 1)
-*JAL*	loThreadHandler = NULL
-* Release loThreadHandler
 
 This.SetWorkerEvents(NULL)
-
-StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": SetWorkerEvents(NULL)" + Chr(13), "MTLog.txt", 1)
-
-* loThreadHandler.Release()
 
 ENDPROC
 [END METHODS]
@@ -2117,8 +2035,6 @@ oworker
 [START METHODS]
 PROCEDURE Destroy
 Debugout Time(0), "(" + Transform(This.nWorkerNum) + ")", Program()
-
-? Program()
 
 If This.lMTDLL
     This.StopWorker()
