@@ -1174,8 +1174,8 @@ DEFINE CLASS threadhandler AS custom
 		*p: neventhandle		&& Handle for Win32 events sent to MTDLL to process a command.
 		*p: nthreadhandle		&& Thread Handle.
 		*p: nthreadid		&& Thread ID.
+		*p: ocommand		&& Command object for MTDLL worker.
 		*p: oevents		&& Reference to worker events object.
-		*p: omtcommand		&& Command object for MTDLL worker.
 		*p: oreleasetimer		&& Timer used to call Release().
 		*p: _memberdata		&& XML Metadata for customizable properties
 	*</DefinedPropArrayMethod>
@@ -1188,15 +1188,14 @@ DEFINE CLASS threadhandler AS custom
 	neventhandle = 0		&& Handle for Win32 events sent to MTDLL to process a command.
 	nthreadhandle = 0		&& Thread Handle.
 	nthreadid = 0		&& Thread ID.
+	ocommand = .NULL.		&& Command object for MTDLL worker.
 	oevents = .NULL.		&& Reference to worker events object.
-	omtcommand = .NULL.		&& Command object for MTDLL worker.
 	oreleasetimer = 		&& Timer used to call Release().
 	_memberdata = <VFPData>
 		<memberdata name="nthreadhandle" display="nThreadHandle"/>
 		<memberdata name="cmtscript" display="cMTScript"/>
 		<memberdata name="neventhandle" display="nEventHandle"/>
 		<memberdata name="nthreadid" display="nThreadID"/>
-		<memberdata name="omtcommand" display="oMTCommand"/>
 		<memberdata name="startthread" display="StartThread"/>
 		<memberdata name="createthread" display="CreateThread"/>
 		<memberdata name="cworkercomprogid" display="cWorkerCOMProgID"/>
@@ -1206,6 +1205,7 @@ DEFINE CLASS threadhandler AS custom
 		<memberdata name="oreleasetimer" display="oReleaseTimer"/>
 		<memberdata name="sendcommand" display="SendCommand"/>
 		<memberdata name="oevents" display="oEvents"/>
+		<memberdata name="ocommand" display="oCommand"/>
 		</VFPData>		&& XML Metadata for customizable properties
 	
 	PROTECTED PROCEDURE createthread		&& Create thread for MTDLL.
@@ -1306,7 +1306,7 @@ DEFINE CLASS threadhandler AS custom
 		Lparameters loCommand as Command of ParallelFox.vcx
 		
 		* Set command, then send event so MTDLL worker will grab command from main process
-		This.oMTCommand = loCommand
+		This.oCommand = loCommand
 		SetEvent(This.nEventHandle)
 		
 	ENDPROC
@@ -1941,14 +1941,14 @@ DEFINE CLASS workermgr AS amanager OF "parallelfox.vcx"
 				If lnWaitStatus = WAIT_TIMEOUT and Type("loThreadHandler.Name") = "C"
 					Loop 
 				Else 
-					* Otherwise, something went wrong, so exit
+					* Otherwise, something went wrong, so exit
 					Exit 
 				EndIf 
 			EndIf 
 		
 			Try
 				lcScript = loThreadHandler.cMTScript
-				This.oCommand = loThreadHandler.oMTCommand
+				This.oCommand = loThreadHandler.oCommand
 			Catch 
 				* If can't access worker proxy object or commands, exit	
 				llExit = .t.
