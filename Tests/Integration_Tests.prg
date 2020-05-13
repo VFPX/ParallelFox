@@ -686,6 +686,38 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 		Return This.Error_Returns_Error()
 	EndFunc 
 
+	Function Load_Test_Many_Iterations_Run
+		This.nWorkerCount = 8
+		This.nIterations = 1000
+		Return This.DoCmd_Runs()
+	EndFunc
+
+	Function Load_Test_Many_Iterations_Run_DebugMode
+		This.lDebugMode = .t.
+		Return This.Load_Test_Many_Iterations_Run()
+	EndFunc 
+
+	Function Load_Test_Many_Iterations_Run_MTDLL
+		This.lMTDLL = .t.
+		Return This.Load_Test_Many_Iterations_Run()
+	EndFunc 
+
+	Function Load_Test_Many_Workers_Run
+		This.nWorkerCount = 50
+		This.nIterations = 1000
+		Return This.DoCmd_Runs()
+	EndFunc
+
+	Function Load_Test_Many_Workers_Run_DebugMode
+		This.lDebugMode = .t.
+		Return This.Load_Test_Many_Workers_Run()
+	EndFunc 
+
+	Function Load_Test_Many_Workers_Run_MTDLL
+		This.lMTDLL = .t.
+		Return This.Load_Test_Many_Workers_Run()
+	EndFunc 
+
 **********************************************************************
 ENDDEFINE
 **********************************************************************
