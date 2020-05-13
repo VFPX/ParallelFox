@@ -46,8 +46,8 @@ Hidden WriteMethod
 
 * Start worker in MTDLL
 Procedure StartMTWorker
-	Lparameters loWorkerProxy as WorkerProxy of ParallelFox.vcx
-	ExecScript(loWorkerProxy.cMTScript, loWorkerProxy)
+	Lparameters loThreadHandler as ThreadHandler of ParallelFox.vcx
+	ExecScript(loThreadHandler.cMTScript, loThreadHandler)
 EndProc 
 
 Procedure Eval(lcExpression)

@@ -1,0 +1,6 @@
+<solution>
+	<projects>
+		<project name="parallelfoxmt.pjx" buildaction="5" recompile="false" displayerrors="true" regenerate="false" runafterbuild="false" outputfile="parallelfoxmt.dll" />
+	</projects>
+	<versioncontrol class="GitOperations" library="ProjectExplorerEngine.vcx" repository="." includeinversioncontrol="3" autocommit="false" fileaddmessage="File added to project" fileremovemessage="File removed from project" cleanupmessage="Project cleanup" savedsolutionmessage="Solution settings changed" buildmessage="Built the project: version {Project.VersionNumber}" />
+</solution>
