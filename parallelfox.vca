@@ -1182,6 +1182,257 @@ Pixels[END RESERVED6]
 
 [ RECORD]
 [PLATFORM] WINDOWS 
+[UNIQUEID] _5RL124JWH
+[CLASS] custom
+[BASECLASS] custom
+[OBJNAME] threadhandler
+[START PROPERTIES]
+Name = "threadhandler"
+_memberdata =      781<VFPData><memberdata name="nthreadhandle" display="nThreadHandle"/><memberdata name="cmtscript" display="cMTScript"/><memberdata name="neventhandle" display="nEventHandle"/><memberdata name="nthreadid" display="nThreadID"/><memberdata name="omtcommand" display="oMTCommand"/><memberdata name="startthread" display="StartThread"/><memberdata name="createthread" display="CreateThread"/><memberdata name="cworkercomprogid" display="cWorkerCOMProgID"/><memberdata name="stopthread" display="StopThread"/><memberdata name="release" display="Release"/><memberdata name="lreleaseprocessed" display="lReleaseProcessed"/><memberdata name="oreleasetimer" display="oReleaseTimer"/><memberdata name="sendcommand" display="SendCommand"/><memberdata name="oevents" display="oEvents"/></VFPData>
+cmtscript = 
+cworkercomprogid = ParallelFoxMT.Application
+lreleaseprocessed = .F.
+neventhandle = 0
+nthreadhandle = 0
+nthreadid = 0
+oevents = .NULL.
+omtcommand = .NULL.
+oreleasetimer = 
+[END PROPERTIES]
+[START PROTECTED]
+createthread
+lreleaseprocessed
+nthreadhandle
+nthreadid
+oreleasetimer
+[END PROTECTED]
+[START METHODS]
+PROCEDURE Destroy
+Debugout Time(0), "(" + Transform(This.nThreadHandle) + ")", Program()
+
+? Program()
+
+This.StopThread()
+ENDPROC
+PROCEDURE createthread
+* Create thread for MTDLL using Christof's DMULT
+Lparameters lcWorkerCOMProgID
+Local lnThreadID
+
+Declare Long CreateThreadWithObject in DMult.DLL ;
+	String lpszClass, ;
+	String lpszMethod, ;
+	Object oRef,  ;
+	Long @lpdwThreadId 
+
+* Create event 
+* Win32 event is sent to MTDLL when main thread is ready to process another command
+DECLARE INTEGER CreateEvent IN kernel32;
+    INTEGER lpEventAttributes, INTEGER bManualReset,;
+    INTEGER bInitialState, STRING lpName
+ 
+DECLARE INTEGER SetEvent IN kernel32 INTEGER hEvent
+
+This.nEventHandle = CreateEvent (0, 0, 0, 0)
+
+* Create COM reference that can be passed to thread
+Local loCOMRef
+loCOMRef = _VFP.Eval("This")
+? Program(), "oComRef+", Sys(3097, loComRef)
+? Program(), "oComRef-", Sys(3098, loComRef)
+
+* Create thread 
+lnThreadID = 0
+This.nThreadHandle = CreateThreadWithObject( ;
+	Strconv(lcWorkerCOMProgID + Chr(0),5), ;
+	Strconv("StartMTWorker" + Chr(0),5), ;
+	loCOMRef, ;
+	@lnThreadID)
+
+? Program(), "CreateThreadWithObject oComRef+", Sys(3097, loComRef)
+? Program(), "CreateThreadWithObject oComRef-", Sys(3098, loComRef)
+
+This.nThreadID = lnThreadID
+
+? "Event Handle", This.nEventHandle
+? "Thread Handle", This.nThreadHandle
+? "Thread ID", This.nThreadID
+
+
+ENDPROC
+PROCEDURE release
+* Release thread and object references
+* Called by timer so thread has a chance to close normally before this method is called
+Local lnThreadExitCode, lnThreadCheck
+Debugout Time(0), "(" + Transform(This.nThreadHandle) + ")", Program()
+
+#DEFINE STILL_ALIVE 259
+
+If This.lReleaseProcessed
+	Return 
+EndIf 
+This.lReleaseProcessed= .t.
+This.oReleaseTimer = NULL
+
+? Program()
+
+DECLARE INTEGER GetExitCodeThread IN kernel32;
+    INTEGER hThread,;
+    LONG @lpExitCode
+
+* If thread is still alive, give it a chance to stop normally before terminating
+For lnThreadCheck = 1 to 10
+	lnThreadExitCode = 0
+	GetExitCodeThread(This.nThreadHandle, @lnThreadExitCode)
+	If lnThreadExitCode <> STILL_ALIVE
+		? "Thread exited normally", This.nThreadHandle, lnThreadCheck
+		Exit
+	EndIf 
+	
+	? "Thread still alive", This.nThreadHandle, lnThreadCheck
+
+	* Give DMULT a chance to unload worker normally
+	Inkey(.1, "H")
+EndFor 
+	
+* Kill thread if it is still running
+* Heavy handed, but otherwise VFP will crash, especially after CLEAR ALL
+If lnThreadExitCode = STILL_ALIVE
+	Declare Long TerminateThread IN kernel32 ;
+		Long hThread, Long dwExitCode
+		
+ 	? "TerminateThread:", This.nThreadHandle, TerminateThread(This.nThreadHandle, 0)
+EndIf 
+
+Declare CloseHandle in Win32API LONG
+	
+CloseHandle(This.nEventHandle)
+CloseHandle(This.nThreadHandle)
+
+* Release dangling COM reference to this object
+Local loCOMRef
+loCOMRef = _VFP.Eval("This")
+? "Pointer", Sys(3095, loCOMRef)
+? Program(), "oComRef+", Sys(3097, loComRef)
+? Program(), "oComRef-", Sys(3098, loComRef)
+? Program(), "oComRef-", Sys(3098, loComRef)
+
+*JAL*	lnRefs = Sys(3097, oComRef) - 1
+*JAL*	For i = 1 to lnRefs
+*JAL*		? Program(), "oComRef-", Sys(3098, oComRef)
+*JAL*	EndFor 
+
+* Release This
+
+ENDPROC
+PROCEDURE sendcommand
+Lparameters loCommand as Command of ParallelFox.vcx
+
+* Set command, then send event so MTDLL worker will grab command from main process
+This.oMTCommand = loCommand
+SetEvent(This.nEventHandle)
+
+ENDPROC
+PROCEDURE startthread
+* Start thread for MTDLL worker
+Lparameters lcDirectory, lcWorkerVCX, lcWorkerApp, lcProcedureFile
+
+* Start startup script for MTDLL worker
+Text to This.cMTScript TEXTMERGE NOSHOW 
+	Lparameters loThreadHandler as ThreadHandler of ParallelFox.vcx
+	Local loWorkerMgr as WorkerMgr of ParallelFox.vcx, loException as Exception, lcException
+	Try 
+		CD <<lcDirectory>>
+		StrToFile(Transform(Datetime()) + ": Creating WorkerMgr Object" + Chr(13), "MTLog.txt", 1)
+		loWorkerMgr = NewObject("<<_Screen.ParPoolMgr.cWorkerClass>>", "<<lcWorkerVCX>>", "<<lcWorkerApp>>")
+		StrToFile(Transform(Datetime()) + ": Setting Main Process" + Chr(13), "MTLog.txt", 1)
+		* Not sure how I discovered this. Every object in VFP has a hidden Application property that
+		*	points to _VFP/Application in the process where it runs.
+		StrToFile(Transform(Datetime()) + ": ThreadID " + Transform(loThreadHandler.Application.ThreadID) + Chr(13), "MTLog.txt", 1)
+		loWorkerMgr.SetMainProcess(loThreadHandler.Application, "<<lcWorkerApp>>")
+		StrToFile(Transform(Datetime()) + ": loThreadHandler.Application - " + loThreadHandler.Application.Name + Chr(13), "MTLog.txt", 1)
+		StrToFile(Transform(Datetime()) + ": Setting Procedure File - <<lcProcedureFile>>" + Chr(13), "MTLog.txt", 1)
+		If !Empty("<<lcProcedureFile>>")
+			Set Procedure To "<<lcProcedureFile>>" Additive
+		EndIf 
+	Catch to loException
+		lcException = "Error: " + Transform(loException.ErrorNo) + Chr(13) ;
+			+ "Message: " + Transform(loException.Message) + Chr(13) ;
+			+ "Program: " + Transform(loException.Procedure) + Chr(13) ;
+			+ "LineNo: " + Transform(loException.LineNo) + Chr(13) ;
+			+ "Code: " + Transform(loException.LineContents) + Chr(13)
+		StrToFile(lcException, "MTLog.txt", 1)
+	EndTry 
+	loWorkerMgr.StartMTCommandLoop(loThreadHandler)
+EndText 
+
+This.CreateThread(This.cWorkerCOMProgID)
+
+ENDPROC
+PROCEDURE stopthread
+* Stop thread used in MTDLL
+? Program()
+
+This.cMTScript = "STOPWORKER"
+SetEvent(This.nEventHandle)
+	
+*	? Transform(This.nEventHandle) + ": loWorkerProxy RefCount - " + Transform(SYS(3098, This))
+*	Release This
+
+Local oCOMRef
+oCOMRef = _VFP.Eval("This")
+? "Pointer", Sys(3095, oCOMRef)
+? Program(), "oComRef+", Sys(3097, oComRef)
+? Program(), "oComRef-", Sys(3098, oComRef)
+
+* Use timer to release thread
+* This gives thread a chance to process STOPWORKER command before thread is closed
+If !This.lReleaseProcessed
+	Local loTimer as Timer
+	loTimer = CreateObject("Timer")
+	loTimer.Interval = 1
+	BindEvent(loTimer, "Timer", This, "Release")
+	This.oReleaseTimer = loTimer
+	loTimer.Enabled = .t.
+EndIf 
+
+*JAL*	lnRefs = Sys(3097, oComRef) - 5
+*JAL*	For i = 1 to lnRefs
+*JAL*		? Program(), "oComRef-", Sys(3098, oComRef)
+*JAL*	EndFor 
+ENDPROC
+[END METHODS]
+[START RESERVED1]
+Class[END RESERVED1]
+[START RESERVED2]
+1[END RESERVED2]
+[START RESERVED3]
+*createthread Create thread for MTDLL.
+*release Release thread and object references.
+*sendcommand Send command to worker thread.
+*startthread Start thread for MTDLL worker.
+*stopthread Stop thread used in MTDLL.
+_memberdata XML Metadata for customizable properties
+cmtscript Startup/Stop script for MTDLL worker.
+cworkercomprogid MTDLL COM Prog ID.
+lreleaseprocessed Is set to .T. when Release() is processed, so it will only be processed once.
+neventhandle Handle for Win32 events sent to MTDLL to process a command.
+nthreadhandle Thread Handle.
+nthreadid Thread ID.
+oevents Reference to worker events object.
+omtcommand Command object for MTDLL worker.
+oreleasetimer Timer used to call Release().
+[END RESERVED3]
+[START RESERVED6]
+Pixels[END RESERVED6]
+
+[ RECORD]
+[PLATFORM] COMMENT 
+[UNIQUEID] RESERVED  
+[OBJNAME] threadhandler
+
+[ RECORD]
+[PLATFORM] WINDOWS 
 [UNIQUEID] _2XR0NRM8S
 [CLASS] timer
 [BASECLASS] timer
@@ -1713,7 +1964,7 @@ PROCEDURE startmtcommandloop
 * Start command loop for MTDLL
 * When using MTDLL workers, the thread will shutdown as soon as program is complete
 * So, we have to use a loop to keep program alive and fetch commands from main thread.
-Lparameters loWorkerProxy as WorkerProxy of ParallelFox.vcx
+Lparameters loThreadHandler as ThreadHandler of ParallelFox.vcx
 Local lnEventHandle, lcScript, llExit, lnWaitStatus
 
 #DEFINE INFINITE 0xFFFFFFFF
@@ -1723,9 +1974,9 @@ DECLARE INTEGER WaitForSingleObject IN kernel32;
     INTEGER hHandle,;
     INTEGER dwMilliseconds
 
-lnEventHandle = loWorkerProxy.nMTEventHandle
+lnEventHandle = loThreadHandler.nEventHandle
 
-This.SetWorkerEvents(loWorkerProxy.oEvents)
+This.SetWorkerEvents(loThreadHandler.oEvents)
 
 StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": " + Program() + Chr(13), "MTLog.txt", 1)
 
@@ -1738,7 +1989,7 @@ Do while .t.
 	If lnWaitStatus <> 0
 		* Zero means event fired
 		* If timeout, check and see if proxy still good
-		If lnWaitStatus = WAIT_TIMEOUT and Type("loWorkerProxy.Name") = "C"
+		If lnWaitStatus = WAIT_TIMEOUT and Type("loThreadHandler.Name") = "C"
 			StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": Wait Timeout " + Chr(13), "MTLog.txt", 1)
 			Loop 
 		Else 
@@ -1751,8 +2002,8 @@ Do while .t.
 	StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": Event Received" + Chr(13), "MTLog.txt", 1)
 
 	Try
-		lcScript = loWorkerProxy.cMTScript
-		This.oCommand = loWorkerProxy.oMTCommand
+		lcScript = loThreadHandler.cMTScript
+		This.oCommand = loThreadHandler.oMTCommand
 	Catch 
 		* If can't access worker proxy object or commands, exit	
 		llExit = .t.
@@ -1783,27 +2034,27 @@ If VarType(_Screen.oMainProcess) = "O" and !IsNull(_Screen.oMainProcess)
 	_Screen.oMainProcess.oMainVFP = NULL
 	_Screen.oMainProcess = NULL
 EndIf 
-StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": loWorkerProxy Pointer - " + Transform(SYS(3095, loWorkerProxy)) + Chr(13), "MTLog.txt", 1)
-StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": loWorkerProxy RefCount + " + Transform(SYS(3097, loWorkerProxy)) + Chr(13), "MTLog.txt", 1)
-StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": loWorkerProxy RefCount - " + Transform(SYS(3098, loWorkerProxy)) + Chr(13), "MTLog.txt", 1)
+StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": loThreadHandler Pointer - " + Transform(SYS(3095, loThreadHandler)) + Chr(13), "MTLog.txt", 1)
+StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": loThreadHandler RefCount + " + Transform(SYS(3097, loThreadHandler)) + Chr(13), "MTLog.txt", 1)
+StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": loThreadHandler RefCount - " + Transform(SYS(3098, loThreadHandler)) + Chr(13), "MTLog.txt", 1)
 
-*JAL*	lnRefs = Sys(3097, loWorkerProxy)
+*JAL*	lnRefs = Sys(3097, loThreadHandler)
 *JAL*	For i = 1 to lnRefs
-*JAL*		StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": loWorkerProxy RefCount - " + Transform(SYS(3098, loWorkerProxy)) + Chr(13), "MTLog.txt", 1)
+*JAL*		StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": loThreadHandler RefCount - " + Transform(SYS(3098, loThreadHandler)) + Chr(13), "MTLog.txt", 1)
 *JAL*	EndFor 
 
-*JAL*	StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": loWorkerProxy After RefCount + " + Transform(SYS(3097, loWorkerProxy)) + Chr(13), "MTLog.txt", 1)
-*JAL*	StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": loWorkerProxy After RefCount - " + Transform(SYS(3098, loWorkerProxy)) + Chr(13), "MTLog.txt", 1)
+*JAL*	StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": loThreadHandler After RefCount + " + Transform(SYS(3097, loThreadHandler)) + Chr(13), "MTLog.txt", 1)
+*JAL*	StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": loThreadHandler After RefCount - " + Transform(SYS(3098, loThreadHandler)) + Chr(13), "MTLog.txt", 1)
 
-*JAL*	StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": loWorkerProxy RefCount - " + Transform(SYS(3098, loWorkerProxy)) + Chr(13), "MTLog.txt", 1)
-*JAL*	loWorkerProxy = NULL
-* Release loWorkerProxy
+*JAL*	StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": loThreadHandler RefCount - " + Transform(SYS(3098, loThreadHandler)) + Chr(13), "MTLog.txt", 1)
+*JAL*	loThreadHandler = NULL
+* Release loThreadHandler
 
 This.SetWorkerEvents(NULL)
 
 StrToFile(Transform(Datetime()) + " - " + Transform(lnEventHandle) + ": SetWorkerEvents(NULL)" + Chr(13), "MTLog.txt", 1)
 
-* loWorkerProxy.Release()
+* loThreadHandler.Release()
 
 ENDPROC
 [END METHODS]
@@ -1840,83 +2091,37 @@ Pixels[END RESERVED6]
 [BASECLASS] custom
 [OBJNAME] workerproxy
 [START PROPERTIES]
+
 Height = 16
 Name = "workerproxy"
 Width = 99
-_memberdata =     1223<VFPData><memberdata name="lbusy" display="lBusy"/><memberdata name="oworker" display="oWorker"/><memberdata name="sendcommand" display="SendCommand"/><memberdata name="complete" display="Complete"/><memberdata name="llocked" display="lLocked"/><memberdata name="ldebugmode" display="lDebugMode"/><memberdata name="stopworker" display="StopWorker"/><memberdata name="handleerror" display="HandleError"/><memberdata name="oevents" display="oEvents"/><memberdata name="oapplication" display="oApplication"/><memberdata name="lcomplete" display="lComplete"/><memberdata name="nworkernum" display="nWorkerNum"/><memberdata name="createthread" display="CreateThread"/><memberdata name="cmtscript" display="cMTScript"/><memberdata name="lmtdll" display="lMTDLL"/><memberdata name="nmteventhandle" display="nMTEventHandle"/><memberdata name="nmthandle" display="nMTHandle"/><memberdata name="nmtthreadid" display="nMTThreadID"/><memberdata name="omtcommand" display="oMTCommand"/><memberdata name="release" display="Release"/><memberdata name="closethread" display="CloseThread"/><memberdata name="lclosethreadprocessed" display="lCloseThreadProcessed"/><memberdata name="oclosethreadtimer" display="oCloseThreadTimer"/></VFPData>
-cmtscript = 
+_memberdata =      723<VFPData><memberdata name="lbusy" display="lBusy"/><memberdata name="oworker" display="oWorker"/><memberdata name="sendcommand" display="SendCommand"/><memberdata name="complete" display="Complete"/><memberdata name="llocked" display="lLocked"/><memberdata name="ldebugmode" display="lDebugMode"/><memberdata name="stopworker" display="StopWorker"/><memberdata name="handleerror" display="HandleError"/><memberdata name="oevents" display="oEvents"/><memberdata name="oapplication" display="oApplication"/><memberdata name="lcomplete" display="lComplete"/><memberdata name="nworkernum" display="nWorkerNum"/><memberdata name="lmtdll" display="lMTDLL"/><memberdata name="othreadhandler" display="oThreadHandler"/></VFPData>
 lbusy = .F.
-lclosethreadprocessed = .F.
 lcomplete = .F.
 ldebugmode = .F.
 llocked = .F.
 lmtdll = .F.
-nmteventhandle = 0
-nmthandle = 0
-nmtthreadid = 0
 nworkernum = 0
 oapplication = .NULL.
-oclosethreadtimer = .NULL.
 oevents = .NULL.
-omtcommand = .NULL.
+othreadhandler = .NULL.
 oworker = .NULL.
 [END PROPERTIES]
 [START PROTECTED]
-lclosethreadprocessed
 ldebugmode
 lmtdll
-nmthandle
-nmtthreadid
 oapplication
-oclosethreadtimer
+othreadhandler
 oworker
 [END PROTECTED]
 [START METHODS]
 PROCEDURE Destroy
-Local lnThreadExitCode, lnThreadCheck
 Debugout Time(0), "(" + Transform(This.nWorkerNum) + ")", Program()
 
 ? Program()
 
-#DEFINE STILL_ALIVE 259
-
 If This.lMTDLL
-	
-*JAL*		DECLARE INTEGER GetExitCodeThread IN kernel32;
-*JAL*		    INTEGER hThread,;
-*JAL*		    LONG @lpExitCode
-
     This.StopWorker()
-	
-*JAL*		* If thread is still alive, give it a chance to stop normally before terminating
-*JAL*		For lnThreadCheck = 1 to 10
-*JAL*			lnThreadExitCode = 0
-*JAL*			GetExitCodeThread(This.nMTHandle, @lnThreadExitCode)
-*JAL*			If lnThreadExitCode <> STILL_ALIVE
-*JAL*				? "Thread exited normally", This.nMTHandle, lnThreadCheck
-*JAL*				Exit
-*JAL*			EndIf 
-*JAL*			
-*JAL*			? "Thread still alive", This.nMTHandle, lnThreadCheck
-
-*JAL*			* Give DMULT a chance to unload worker normally
-*JAL*			Inkey(.1, "H")
-*JAL*		EndFor 
-*JAL*			
-*JAL*		* Kill thread if it is still running
-*JAL*		* Heavy handed, but otherwise VFP will crash, especially after CLEAR ALL
-*JAL*		If lnThreadExitCode = STILL_ALIVE
-*JAL*			Declare Long TerminateThread IN kernel32 ;
-*JAL*				Long hThread, Long dwExitCode
-*JAL*				
-*JAL*		 	? "TerminateThread:", This.nMTHandle, TerminateThread(This.nMTHandle, 0)
-*JAL*		EndIf 
-
-*JAL*		Declare CloseHandle in Win32API LONG
-*JAL*			
-*JAL*		CloseHandle(This.nMTEventHandle)
-*JAL*		CloseHandle(This.nMTHandle)
-
 EndIf 
 
 
@@ -1970,32 +2175,11 @@ lcDirectory = ["] + Evl(lcDirectory, FullPath("")) + ["]
 lcProcedureFile = Evl(lcProcedureFile, "")
 If This.lMTDLL
 	* Multi-threaded DLL
-	Text to This.cMTScript TEXTMERGE NOSHOW 
-		Lparameters loWorkerProxy as WorkerProxy of ParallelFox.vcx
-		Local loWorkerMgr as WorkerMgr of ParallelFox.vcx, loException as Exception, lcException
-		Try 
-			CD <<lcDirectory>>
-			StrToFile(Transform(Datetime()) + ": Creating WorkerMgr Object" + Chr(13), "MTLog.txt", 1)
-			loWorkerMgr = NewObject("<<_Screen.ParPoolMgr.cWorkerClass>>", "<<lcWorkerVCX>>", "<<lcWorkerApp>>")
-			StrToFile(Transform(Datetime()) + ": Setting Main Process" + Chr(13), "MTLog.txt", 1)
-			StrToFile(Transform(Datetime()) + ": ThreadID " + Transform(loWorkerProxy.Application.ThreadID) + Chr(13), "MTLog.txt", 1)
-			loWorkerMgr.SetMainProcess(loWorkerProxy.Application, "<<lcWorkerApp>>")
-			StrToFile(Transform(Datetime()) + ": loWorkerProxy.Application - " + loWorkerProxy.Application.Name + Chr(13), "MTLog.txt", 1)
-			StrToFile(Transform(Datetime()) + ": Setting Procedure File - <<lcProcedureFile>>" + Chr(13), "MTLog.txt", 1)
-			If !Empty("<<lcProcedureFile>>")
-				Set Procedure To "<<lcProcedureFile>>" Additive
-			EndIf 
-		Catch to loException
-			lcException = "Error: " + Transform(loException.ErrorNo) + Chr(13) ;
-				+ "Message: " + Transform(loException.Message) + Chr(13) ;
-				+ "Program: " + Transform(loException.Procedure) + Chr(13) ;
-				+ "LineNo: " + Transform(loException.LineNo) + Chr(13) ;
-				+ "Code: " + Transform(loException.LineContents) + Chr(13)
-			StrToFile(lcException, "MTLog.txt", 1)
-		EndTry 
-		loWorkerMgr.StartMTCommandLoop(loWorkerProxy)
-	EndText 
-	This.CreateThread("ParallelFoxMT.Application")
+	Local loThreadHandler as ThreadHandler of ParallelFox.vcx
+	loThreadHandler = NewObject("ThreadHandler", "ParallelFox.vcx")
+	This.oThreadHandler = loThreadHandler
+	loThreadHandler.oEvents = This.oEvents
+	loThreadHandler.StartThread(lcDirectory, lcWorkerVCX, lcWorkerApp, lcProcedureFile)
 Else 
 	lcWorkerVCX = FullPath(_Screen.ParPoolMgr.cWorkerLibrary)
 	If Directory(JustPath(lcWorkerVCX))
@@ -2024,68 +2208,6 @@ Else
 EndIf 
 
 ENDPROC
-PROCEDURE closethread
-Local lnThreadExitCode, lnThreadCheck
-Debugout Time(0), "(" + Transform(This.nWorkerNum) + ")", Program()
-
-#DEFINE STILL_ALIVE 259
-
-If This.lCloseThreadProcessed
-	Return 
-EndIf 
-This.lCloseThreadProcessed = .t.
-This.oCloseThreadTimer = NULL
-
-? Program()
-
-DECLARE INTEGER GetExitCodeThread IN kernel32;
-    INTEGER hThread,;
-    LONG @lpExitCode
-
-* If thread is still alive, give it a chance to stop normally before terminating
-For lnThreadCheck = 1 to 10
-	lnThreadExitCode = 0
-	GetExitCodeThread(This.nMTHandle, @lnThreadExitCode)
-	If lnThreadExitCode <> STILL_ALIVE
-		? "Thread exited normally", This.nMTHandle, lnThreadCheck
-		Exit
-	EndIf 
-	
-	? "Thread still alive", This.nMTHandle, lnThreadCheck
-
-	* Give DMULT a chance to unload worker normally
-	Inkey(.1, "H")
-EndFor 
-	
-* Kill thread if it is still running
-* Heavy handed, but otherwise VFP will crash, especially after CLEAR ALL
-If lnThreadExitCode = STILL_ALIVE
-	Declare Long TerminateThread IN kernel32 ;
-		Long hThread, Long dwExitCode
-		
- 	? "TerminateThread:", This.nMTHandle, TerminateThread(This.nMTHandle, 0)
-EndIf 
-
-Declare CloseHandle in Win32API LONG
-	
-CloseHandle(This.nMTEventHandle)
-CloseHandle(This.nMTHandle)
-
-Local oCOMRef
-oCOMRef = _VFP.Eval("This")
-? "Pointer", Sys(3095, oCOMRef)
-? Program(), "oComRef+", Sys(3097, oComRef)
-? Program(), "oComRef-", Sys(3098, oComRef)
-? Program(), "oComRef-", Sys(3098, oComRef)
-
-*JAL*	lnRefs = Sys(3097, oComRef) - 1
-*JAL*	For i = 1 to lnRefs
-*JAL*		? Program(), "oComRef-", Sys(3098, oComRef)
-*JAL*	EndFor 
-
-* Release This
-
-ENDPROC
 PROCEDURE complete
 Lparameters lvReturn
 
@@ -2102,77 +2224,12 @@ This.lComplete = .t.
 _Screen.ParPoolMgr.ProcessQueue()
 
 ENDPROC
-PROCEDURE createthread
-* Create thread for MTDLL using Christof's DMULT
-Lparameters lcWorkerCOMProgID
-Local lnThreadID
-
-Declare Long CreateThreadWithObject in DMult.DLL ;
-	String lpszClass, ;
-	String lpszMethod, ;
-	Object oRef,  ;
-	Long @lpdwThreadId 
-
-* Create event 
-* Win32 event is sent to MTDLL when main thread is ready to process another command
-DECLARE INTEGER CreateEvent IN kernel32;
-    INTEGER lpEventAttributes, INTEGER bManualReset,;
-    INTEGER bInitialState, STRING lpName
- 
-DECLARE INTEGER SetEvent IN kernel32 INTEGER hEvent
-
-This.nMTEventHandle = CreateEvent (0, 0, 0, 0)
-
-* Create thread 
-Local oCOMRef
-oCOMRef = _VFP.Eval("This")
-? Program(), "oComRef+", Sys(3097, oComRef)
-? Program(), "oComRef-", Sys(3098, oComRef)
-
-lnThreadID = 0
-This.nMTHandle = CreateThreadWithObject( ;
-	Strconv(lcWorkerCOMProgID + Chr(0),5), ;
-	Strconv("StartMTWorker" + Chr(0),5), ;
-	oCOMRef, ;
-	@lnThreadID)
-
-? Program(), "CreateThreadWithObject oComRef+", Sys(3097, oComRef)
-? Program(), "CreateThreadWithObject oComRef-", Sys(3098, oComRef)
-
-This.nMTThreadID = lnThreadID
-
-? "Event Handle", This.nMTEventHandle
-? "Thread Handle", This.nMTHandle
-? "Thread ID", This.nMTThreadID
-
-
-ENDPROC
 PROCEDURE handleerror
 Lparameters lnError, lcMethod, lnLine, lcMessage, lcCode
 
 Debugout Time(0), "(" + Transform(This.nWorkerNum) + ")", Program(), lnError, lcMethod, lnLine, lcMessage, lcCode
 
 This.Complete()
-ENDPROC
-PROCEDURE release
-* Release worker proxy object
-
-? Program()
-
-This.oReleaseTimer = .f.
-
-*JAL*	Local oCOMRef
-*JAL*	oCOMRef = _VFP.Eval("This")
-*JAL*	? "Pointer", Sys(3095, oCOMRef)
-*JAL*	? Program(), "oComRef+", Sys(3097, oComRef)
-*JAL*	? Program(), "oComRef-", Sys(3098, oComRef)
-
-*JAL*	lnRefs = Sys(3097, oComRef) - 6
-*JAL*	For i = 1 to lnRefs
-*JAL*		? Program(), "oComRef-", Sys(3098, oComRef)
-*JAL*	EndFor 
-
-Release This
 ENDPROC
 PROCEDURE sendcommand
 * Send command to worker process.
@@ -2192,9 +2249,7 @@ BindEvent(This.oEvents, "UpdateProgress", loCommand.oEvents, "UpdateProgress")
 BindEvent(This.oEvents, "ReturnCursor", loCommand.oEvents, "ReturnCursor")
 
 If This.lMTDLL
-	* Set command, then send event so MTDLL worker will grab command from main process
-	This.oMTCommand = loCommand
-	SetEvent(This.nMTEventHandle)
+	This.oThreadHandler.SendCommand(loCommand)
 Else 
 	This.oWorker.SendCommand(loCommand)
 EndIf 
@@ -2207,39 +2262,10 @@ This.oWorker = NULL
 This.oApplication = NULL
 
 If This.lMTDLL
-
-*JAL*		Declare Long CreateThreadWithObject in DMult.DLL ;
-*JAL*			String lpszClass, ;
-*JAL*			String lpszMethod, ;
-*JAL*			Object oRef,  ;
-*JAL*			Long @lpdwThreadId 
-
-? Program()
-
-	This.cMTScript = "STOPWORKER"
-	SetEvent(This.nMTEventHandle)
-	
-*	? Transform(This.nMTEventHandle) + ": loWorkerProxy RefCount - " + Transform(SYS(3098, This))
-*	Release This
-
-Local oCOMRef
-oCOMRef = _VFP.Eval("This")
-? "Pointer", Sys(3095, oCOMRef)
-? Program(), "oComRef+", Sys(3097, oComRef)
-? Program(), "oComRef-", Sys(3098, oComRef)
-
-Local loTimer as Timer
-loTimer = CreateObject("Timer")
-loTimer.Interval = 1
-BindEvent(loTimer, "Timer", This, "CloseThread")
-This.oCloseThreadTimer = loTimer
-loTimer.Enabled = .t.
-
-*JAL*	lnRefs = Sys(3097, oComRef) - 5
-*JAL*	For i = 1 to lnRefs
-*JAL*		? Program(), "oComRef-", Sys(3098, oComRef)
-*JAL*	EndFor 
-
+	If Vartype(This.oThreadHandler) = "O" and !IsNull(This.oThreadHandler)
+		This.oThreadHandler.StopThread()
+		This.oThreadHandler = NULL
+	EndIf 
 EndIf 
 
 ENDPROC
@@ -2249,29 +2275,20 @@ Class[END RESERVED1]
 [START RESERVED2]
 1[END RESERVED2]
 [START RESERVED3]
-*closethread Close MTLL thread.
 *complete Fires when worker has finished executing command.
-*createthread Create thread for MTDLL.
 *handleerror Fires when error returned from worker.
-*release Release worker proxy object.
 *sendcommand Send command to worker process.
 *stopworker Stop worker process.
 _memberdata XML Metadata for customizable properties
-cmtscript Startup/Stop script for MTDLL worker.
 lbusy Worker is busy processing command.
-lclosethreadprocessed Is set to .T. when CloseThread() is processed, so it will only be processed once.
 lcomplete Is .T. when current command is complete, but lBusy is still .T. Worker will be released for another command when queue is processed.
 ldebugmode Start workers in Debug mode.
 llocked Is .T. when worker is locked to a specific command and was busy when command queue was processed.
 lmtdll Is .T. when using MTDLL workers.
-nmteventhandle Handle for Win32 events sent to MTDLL to process a command.
-nmthandle Thread Handle
-nmtthreadid Thread ID
 nworkernum Worker number.
 oapplication Reference to ParallelFox Application COM object.
-oclosethreadtimer Timer used to call CloseThread().
 oevents Reference to worker events object.
-omtcommand Command object for MTDLL worker.
+othreadhandler MTDLL Thread Handler.
 oworker Reference to Worker process.
 [END RESERVED3]
 [START RESERVED6]
