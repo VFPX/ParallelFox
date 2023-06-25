@@ -718,6 +718,62 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 		Return This.Load_Test_Many_Workers_Run()
 	EndFunc 
 
+	* Multiple Instance Tests
+	Function MultiInstance_DoCmd_Runs
+		This.nWorkerCount = 8
+		This.nIterations = 200
+		* Start First instance with Debug Mode
+		* Debug mode has to be first instance in test. 
+		*	COM gets confused instantiating VFP when non-debug workers are already running.
+		Local Parallel as Parallel, lnI
+		Parallel = NewObject("Parallel", "ParallelFox.vcx")		
+		Parallel.BindEvent("ReturnError", This.oErrorHandler, "HandleError")
+		Parallel.SetWorkerCount(This.nWorkerCount)
+		Parallel.SetMultiThreaded(.f.)
+		* Short pause to let previous instances of VFP close, or may get error
+		Inkey(1, "H")
+		Parallel.StartWorkers(This.cTestHelperFile,,.t.)
+
+		* Start Second instance with MTDLL workers
+		Local Parallel2 as Parallel, lnI
+		Parallel2 = NewObject("Parallel", "ParallelFox.vcx")
+		Parallel2.SetInstance("MTDLL")		
+		Parallel2.BindEvent("ReturnError", This.oErrorHandler, "HandleError")
+		Parallel2.SetWorkerCount(This.nWorkerCount)
+		Parallel2.SetMultiThreaded(.t.)
+		Parallel2.StartWorkers(This.cTestHelperFile,,.f.)
+		
+		* Third instance with EXE workers
+		Local Parallel3 as Parallel, lnI
+		Parallel3 = NewObject("Parallel", "ParallelFox.vcx")
+		Parallel3.SetInstance("NonDebug")		
+		Parallel3.BindEvent("ReturnError", This.oErrorHandler, "HandleError")
+		Parallel3.SetWorkerCount(This.nWorkerCount)
+		Parallel3.SetMultiThreaded(.f.)
+		Parallel3.StartWorkers(This.cTestHelperFile,,.f.)	
+					
+		* Run in first instance
+		For lnI = 1 to This.nIterations
+			Parallel.DoCmd([? "FoxPro Rocks"], This.lAllWorkers)
+		EndFor
+		* Run in second instance
+		For lnI = 1 to This.nIterations
+			Parallel2.DoCmd([? "FoxPro Rocks"], This.lAllWorkers)
+		EndFor
+		* Run in third instance
+		For lnI = 1 to This.nIterations
+			Parallel3.DoCmd([? "FoxPro Rocks"], This.lAllWorkers)
+		EndFor
+		
+		* Stop/wait both instances
+		Parallel.StopWorkers()	
+		Parallel2.StopWorkers()	
+		Parallel3.StopWorkers()	
+		Parallel.Wait()
+		Parallel2.Wait()
+		Parallel3.Wait()
+	EndFunc 
+
 **********************************************************************
 ENDDEFINE
 **********************************************************************

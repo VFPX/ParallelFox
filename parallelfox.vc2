@@ -347,11 +347,11 @@ DEFINE CLASS events AS custom
 
 	PROCEDURE updatecommandcount		&& Update number of commands currently running.
 		* Update number of commands currently running.
-		Lparameters llAllWorkers
+		Lparameters llAllWorkers, lnWorkerCount
 		Local lnCommands
 		
 		If llAllWorkers
-			lnCommands = _Screen.ParPoolMgr.nWorkerCount
+			lnCommands = lnWorkerCount
 		Else
 			lnCommands = 1
 		EndIf 
@@ -500,6 +500,7 @@ DEFINE CLASS parallel AS custom
 		*m: docmd		&& Execute single command on worker.
 		*m: execscript		&& Execute script on worker.
 		*m: onerror		&& Set up global handler for worker errors. Available variables are nError, cMethod, nLine, cMessage, cCode. Example: Parallel.OnError("Do MyErrorHandler with nError, cMethod, nLine, cMessage, cCode")
+		*m: setinstance		&& Set instance of parallel pool manager, creating new instance if necessary.
 		*m: setmultithreaded		&& Set .T. to use in-process multithreaded DLL workers. Otherwise, out-of-process EXEs are used.
 		*m: setworkerclass		&& Change worker class from default. lcClass and lcLibrary are used in debug mode.
 		*m: setworkercount		&& Set number of workers. Defaults to CPU count. Set before starting workers.
@@ -507,12 +508,15 @@ DEFINE CLASS parallel AS custom
 		*m: stopworkers		&& Stop worker processes.
 		*m: wait		&& Wait until workers have finished processing queued commands.
 		*p: cpucount		&& Number of logical processors on machine.
+		*p: oparpoolmgr		&& Reference to parallel pool manager for current instance.
 		*p: _events		&& Use Parallel.BindEvent().
 		*p: _memberdata		&& XML Metadata for customizable properties
 	*</DefinedPropArrayMethod>
 
+	PROTECTED oparpoolmgr
 	cpucount = 0		&& Number of logical processors on machine.
 	Name = "parallel"
+	oparpoolmgr = .NULL.		&& Reference to parallel pool manager for current instance.
 	_events = NULL		&& Use Parallel.BindEvent().
 	_memberdata = <VFPData>
 		<memberdata name="do" display="Do"/>
@@ -532,6 +536,8 @@ DEFINE CLASS parallel AS custom
 		<memberdata name="setworkerclass" display="SetWorkerClass"/>
 		<memberdata name="detecthyperthreading" display="DetectHyperThreading"/>
 		<memberdata name="setmultithreaded" display="SetMultiThreaded"/>
+		<memberdata name="oparpoolmgr" display="oParPoolMgr"/>
+		<memberdata name="setinstance" display="SetInstance"/>
 		</VFPData>		&& XML Metadata for customizable properties
 	
 	PROCEDURE bindevent		&& Bind to worker events: "Complete", "UpdateProgress", "ReturnData", "ReturnError".
@@ -545,7 +551,7 @@ DEFINE CLASS parallel AS custom
 		
 		* Unbind global error handler if overriding
 		If Upper(cEvent) = "RETURNERROR"
-			UnBindEvents(This._Events, "ReturnError", _Screen.ParPoolMgr, "HandleError")
+			UnBindEvents(This._Events, "ReturnError", This.oParPoolMgr, "HandleError")
 		EndIf 
 		
 		BindEvent(This._Events, cEvent, oEventHandler, cDelegate, nFlags)
@@ -566,14 +572,14 @@ DEFINE CLASS parallel AS custom
 			tPar14, tPar15, tPar16, tPar17, tPar18, tPar19, tPar20, ;
 			tPar21, tPar22, tPar23, tPar24
 			
-		This._Events.UpdateCommandCount(lAllWorkers)
+		This._Events.UpdateCommandCount(lAllWorkers, This.oParPoolMgr.nWorkerCount)
 			
-		loParameters = _Screen.ParPoolMgr.CreateParameterObject(Pcount()-2, @tPar1, @tPar2, @tPar3, @tPar4, ;
+		loParameters = This.oParPoolMgr.CreateParameterObject(Pcount()-2, @tPar1, @tPar2, @tPar3, @tPar4, ;
 			@tPar5, @tPar6, @tPar7, @tPar8, @tPar9, @tPar10, @tPar11, ;
 			@tPar12, @tPar13, @tPar14, @tPar15, @tPar16, @tPar17, @tPar18, ;
 			@tPar19, @tPar20, @tPar21, @tPar22, @tPar23, @tPar24)
 			
-		_Screen.ParPoolMgr.QueueCommand("Call", cFunction,,,,loParameters, lAllWorkers, This._Events)
+		This.oParPoolMgr.QueueCommand("Call", cFunction,,,,loParameters, lAllWorkers, This._Events)
 		
 		
 	ENDPROC
@@ -593,14 +599,14 @@ DEFINE CLASS parallel AS custom
 			tPar14, tPar15, tPar16, tPar17, tPar18, tPar19, tPar20, ;
 			tPar21
 			
-		This._Events.UpdateCommandCount(lAllWorkers)
+		This._Events.UpdateCommandCount(lAllWorkers, This.oParPoolMgr.nWorkerCount)
 			
-		loParameters = _Screen.ParPoolMgr.CreateParameterObject(Pcount()-5, @tPar1, @tPar2, @tPar3, @tPar4, ;
+		loParameters = This.oParPoolMgr.CreateParameterObject(Pcount()-5, @tPar1, @tPar2, @tPar3, @tPar4, ;
 			@tPar5, @tPar6, @tPar7, @tPar8, @tPar9, @tPar10, @tPar11, ;
 			@tPar12, @tPar13, @tPar14, @tPar15, @tPar16, @tPar17, @tPar18, ;
 			@tPar19, @tPar20, @tPar21)
 			
-		_Screen.ParPoolMgr.QueueCommand("CallMethod", cMethod, cClassName, cModule, cInApplication, ;
+		This.oParPoolMgr.QueueCommand("CallMethod", cMethod, cClassName, cModule, cInApplication, ;
 			loParameters, lAllWorkers, This._Events)
 		
 	ENDPROC
@@ -610,7 +616,7 @@ DEFINE CLASS parallel AS custom
 		
 		Debugout Time(0), Program()
 		
-		_Screen.ParPoolMgr.ClearQueue()
+		This.oParPoolMgr.ClearQueue()
 	ENDPROC
 
 	PROCEDURE Destroy
@@ -623,11 +629,11 @@ DEFINE CLASS parallel AS custom
 	PROCEDURE detecthyperthreading		&& Returns .T. when HyperThreading is enabled.
 		* Returns .T. when HyperThreading is Enabled.
 		* Default value is NULL.  Detection is a little slow, so only run once.
-		If IsNull(_Screen.ParPoolMgr.lHyperThreading)
-			_Screen.ParPoolMgr.DetectHyperThreading()
+		If IsNull(This.oParPoolMgr.lHyperThreading)
+			This.oParPoolMgr.DetectHyperThreading()
 		EndIf
 		
-		Return _Screen.ParPoolMgr.lHyperThreading
+		Return This.oParPoolMgr.lHyperThreading
 	ENDPROC
 
 	PROCEDURE do		&& Execute program on worker.
@@ -643,14 +649,14 @@ DEFINE CLASS parallel AS custom
 			tPar14, tPar15, tPar16, tPar17, tPar18, tPar19, tPar20, ;
 			tPar21, tPar22, tPar23
 		
-		This._Events.UpdateCommandCount(lAllWorkers)
+		This._Events.UpdateCommandCount(lAllWorkers, This.oParPoolMgr.nWorkerCount)
 			
-		loParameters = _Screen.ParPoolMgr.CreateParameterObject(Pcount()-3, @tPar1, @tPar2, @tPar3, @tPar4, ;
+		loParameters = This.oParPoolMgr.CreateParameterObject(Pcount()-3, @tPar1, @tPar2, @tPar3, @tPar4, ;
 			@tPar5, @tPar6, @tPar7, @tPar8, @tPar9, @tPar10, @tPar11, ;
 			@tPar12, @tPar13, @tPar14, @tPar15, @tPar16, @tPar17, @tPar18, ;
 			@tPar19, @tPar20, @tPar21, @tPar22, @tPar23)
 			
-		_Screen.ParPoolMgr.QueueCommand("Do", cPRG, cInProgram,,,loParameters, lAllWorkers, This._Events)
+		This.oParPoolMgr.QueueCommand("Do", cPRG, cInProgram,,,loParameters, lAllWorkers, This._Events)
 		
 	ENDPROC
 
@@ -659,9 +665,9 @@ DEFINE CLASS parallel AS custom
 		
 		Debugout Time(0), Program(), cCommand, lAllWorkers
 		
-		This._Events.UpdateCommandCount(lAllWorkers)
+		This._Events.UpdateCommandCount(lAllWorkers, This.oParPoolMgr.nWorkerCount)
 			
-		_Screen.ParPoolMgr.QueueCommand("DoCmd", cCommand,,,,, lAllWorkers, This._Events)
+		This.oParPoolMgr.QueueCommand("DoCmd", cCommand,,,,, lAllWorkers, This._Events)
 	ENDPROC
 
 	PROCEDURE execscript		&& Execute script on worker.
@@ -677,28 +683,26 @@ DEFINE CLASS parallel AS custom
 			tPar14, tPar15, tPar16, tPar17, tPar18, tPar19, tPar20, ;
 			tPar21, tPar22, tPar23, tPar24
 			
-		This._Events.UpdateCommandCount(lAllWorkers)
+		This._Events.UpdateCommandCount(lAllWorkers, This.oParPoolMgr.nWorkerCount)
 			
-		loParameters = _Screen.ParPoolMgr.CreateParameterObject(Pcount()-2, @tPar1, @tPar2, @tPar3, @tPar4, ;
+		loParameters = This.oParPoolMgr.CreateParameterObject(Pcount()-2, @tPar1, @tPar2, @tPar3, @tPar4, ;
 			@tPar5, @tPar6, @tPar7, @tPar8, @tPar9, @tPar10, @tPar11, ;
 			@tPar12, @tPar13, @tPar14, @tPar15, @tPar16, @tPar17, @tPar18, ;
 			@tPar19, @tPar20, @tPar21, @tPar22, @tPar23, @tPar24)
 			
-		_Screen.ParPoolMgr.QueueCommand("ExecScript", cScript,,,,loParameters, lAllWorkers, This._Events)
+		This.oParPoolMgr.QueueCommand("ExecScript", cScript,,,,loParameters, lAllWorkers, This._Events)
 		
 		
 	ENDPROC
 
 	PROCEDURE Init
-		* Instantiate parallel pool manager
-		If Type("_Screen.ParPoolMgr") <> "O" or IsNull(_Screen.ParPoolMgr)
-			_Screen.NewObject("ParPoolMgr", "ParPoolMgr", "ParallelFox.vcx")
-		EndIf 
+		* Instantiate default parallel pool manager
+		This.SetInstance()
 		
-		This.CPUCount = _Screen.ParPoolMgr.nCPUCount
+		This.CPUCount = This.oParPoolMgr.nCPUCount
 		
 		This._Events = NewObject("Events", "ParallelFox.vcx")
-		This.BindEvent("ReturnError", _Screen.ParPoolMgr, "HandleError")
+		This.BindEvent("ReturnError", This.oParPoolMgr, "HandleError")
 		
 	ENDPROC
 
@@ -707,15 +711,37 @@ DEFINE CLASS parallel AS custom
 		
 		Debugout Time(0), Program(), cOnErrorCommand
 		
-		_Screen.ParPoolMgr.cOnError = cOnErrorCommand
+		This.oParPoolMgr.cOnError = cOnErrorCommand
+	ENDPROC
+
+	PROCEDURE setinstance		&& Set instance of parallel pool manager, creating new instance if necessary.
+		* Set instance of parallel pool manager, creating new instance if necessary.
+		* Call before StartWorkers() and other Set... functions.
+		* Default instance name is "DEFAULT" (empty string not allowed in collection)
+		Lparameters cInstanceName
+		
+		cInstanceName = Upper(Evl(cInstanceName, "DEFAULT"))
+		
+		* Pool manager collection
+		If Type("_Screen.ParPoolMgrs") <> "O" or IsNull(_Screen.ParPoolMgrs)
+			_Screen.AddObject("ParPoolMgrs", "Collection")
+		EndIf 
+		
+		If _Screen.ParPoolMgrs.GetKey(cInstanceName) > 0
+			This.oParPoolMgr = _Screen.ParPoolMgrs.Item(cInstanceName)
+		Else 
+			This.oParPoolMgr = NewObject("ParPoolMgr", "ParallelFox.vcx", "", cInstanceName)
+			_Screen.ParPoolMgrs.Add(This.oParPoolMgr, cInstanceName)
+		EndIf 
+		
 	ENDPROC
 
 	PROCEDURE setmultithreaded		&& Set .T. to use in-process multithreaded DLL workers. Otherwise, out-of-process EXEs are used.
 		* Set .T. to use in-process multithreaded DLL workers. Otherwise, out-of-process EXEs are used.
 		* Must be set before StartWorkers is called.
-		Lparameters llMTDLL
+		Lparameters lMTDLL
 		
-		_Screen.ParPoolMgr.lMTDLL = llMTDLL
+		This.oParPoolMgr.lMTDLL = lMTDLL
 		
 	ENDPROC
 
@@ -725,9 +751,9 @@ DEFINE CLASS parallel AS custom
 		
 		Debugout Time(0), Program(), cCOMProgID, cClass, cLibrary
 		
-		_Screen.ParPoolMgr.cWorkerCOMProgID = cCOMProgID
-		_Screen.ParPoolMgr.cWorkerClass = cClass
-		_Screen.ParPoolMgr.cWorkerLibrary = cLibrary
+		This.oParPoolMgr.cWorkerCOMProgID = cCOMProgID
+		This.oParPoolMgr.cWorkerClass = cClass
+		This.oParPoolMgr.cWorkerLibrary = cLibrary
 	ENDPROC
 
 	PROCEDURE setworkercount		&& Set number of workers. Defaults to CPU count. Set before starting workers.
@@ -736,7 +762,7 @@ DEFINE CLASS parallel AS custom
 		* Set before starting workers.
 		Lparameters nWorkerCount, nTerminalServerCount
 		
-		_Screen.ParPoolMgr.SetWorkerCount(nWorkerCount, nTerminalServerCount)
+		This.oParPoolMgr.SetWorkerCount(nWorkerCount, nTerminalServerCount)
 		
 		
 	ENDPROC
@@ -748,7 +774,7 @@ DEFINE CLASS parallel AS custom
 		
 		Debugout Time(0), Program(), cProcedureFile, cDirectory, lDebugMode
 		
-		_Screen.ParPoolMgr.StartWorkers(cProcedureFile, cDirectory, lDebugMode)
+		This.oParPoolMgr.StartWorkers(cProcedureFile, cDirectory, lDebugMode)
 	ENDPROC
 
 	PROCEDURE stopworkers		&& Stop worker processes.
@@ -759,9 +785,9 @@ DEFINE CLASS parallel AS custom
 		Debugout Time(0), Program(), lStopImmediately
 		
 		If lStopImmediately
-			_Screen.ParPoolMgr.StopWorkers()
+			This.oParPoolMgr.StopWorkers()
 		Else
-			_Screen.ParPoolMgr.QueueCommand("StopWorkers")
+			This.oParPoolMgr.QueueCommand("StopWorkers")
 		EndIf 
 	ENDPROC
 
@@ -791,11 +817,11 @@ DEFINE CLASS parallel AS custom
 			Case lnKey = 24
 				Exit 
 			* Wait for commands from current instance of Parallel object
-			Case !lAllWorkers and !(This._Events.nCommands > 0 and _Screen.ParPoolMgr.nBusyWorkers > 0)
+			Case !lAllWorkers and !(This._Events.nCommands > 0 and This.oParPoolMgr.nBusyWorkers > 0)
 				Exit 
 			* Wait for commands from all instances of Parallel object
-			Case lAllWorkers and !(_Screen.ParPoolMgr.nBusyWorkers > 0 ;
-					or (Type("_Screen.ParPoolMgr.CommandQueue.Count") = "N" and _Screen.ParPoolMgr.CommandQueue.Count > 0))
+			Case lAllWorkers and !(This.oParPoolMgr.nBusyWorkers > 0 ;
+					or (Type("This.oParPoolMgr.CommandQueue.Count") = "N" and This.oParPoolMgr.CommandQueue.Count > 0))
 				Exit 
 			EndCase 
 		EndDo 
@@ -864,6 +890,7 @@ DEFINE CLASS parpoolmgr AS amanager OF "parallelfox.vcx"
 		*m: setworkercount		&& Sets number for workers.
 		*m: startworkers		&& Start worker processes.
 		*m: stopworkers		&& Stop worker processes.
+		*p: cinstancename		&& Name of current pool manager instance.
 		*p: commandqueue		&& Command queue collection.
 		*p: conerror		&& On Error command.
 		*p: cworkerclass		&& Worker class name (used in debug mode).
@@ -880,6 +907,7 @@ DEFINE CLASS parpoolmgr AS amanager OF "parallelfox.vcx"
 	*</DefinedPropArrayMethod>
 
 	PROTECTED ldebugmode,nprocessing
+	cinstancename = 		&& Name of current pool manager instance.
 	commandqueue = 		&& Command queue collection.
 	conerror = This.DisplayErrors(nError, cMethod, nLine, cMessage, cCode)		&& On Error command.
 	cworkerclass = WorkerMgr		&& Worker class name (used in debug mode).
@@ -916,6 +944,7 @@ DEFINE CLASS parpoolmgr AS amanager OF "parallelfox.vcx"
 		<memberdata name="displayerrors" display="DisplayErrors"/>
 		<memberdata name="oerrorlist" display="oErrorList"/>
 		<memberdata name="lmtdll" display="lMTDLL"/>
+		<memberdata name="cinstancename" display="cInstanceName"/>
 		</VFPData>
 	
 	PROCEDURE clearqueue		&& Remove all pending commands from queue.
@@ -955,6 +984,9 @@ DEFINE CLASS parpoolmgr AS amanager OF "parallelfox.vcx"
 
 	PROCEDURE Init
 		* Number of logical processors on machine.
+		Lparameters lcInstanceName
+		
+		This.cInstanceName = lcInstanceName
 		This.nCPUCount = Evl(Val(GetEnv("NUMBER_OF_PROCESSORS")), 1)
 		This.SetWorkerCount(This.nCPUCount, 1)
 		
@@ -1155,7 +1187,7 @@ DEFINE CLASS parpoolmgr AS amanager OF "parallelfox.vcx"
 		This.lDebugMode = llDebugMode
 		
 		For lnWorker = 1 to This.nWorkerCount
-			loWorkerProxy = NewObject("WorkerProxy", "ParallelFox.vcx", "", lcProcedureFile, lcDirectory, llDebugMode, lnWorker, This.lMTDLL)
+			loWorkerProxy = NewObject("WorkerProxy", "ParallelFox.vcx", "", lcProcedureFile, lcDirectory, llDebugMode, lnWorker, This.lMTDLL, This)
 			ComArray(loWorkerProxy, 11)
 			This.Workers.Add(loWorkerProxy)
 		EndFor 
@@ -1338,7 +1370,7 @@ DEFINE CLASS threadhandler AS custom
 
 	PROCEDURE startthread		&& Start thread for MTDLL worker.
 		* Start thread for MTDLL worker
-		Lparameters lcDirectory, lcWorkerVCX, lcWorkerApp, lcProcedureFile
+		Lparameters lcDirectory, lcWorkerClass, lcWorkerVCX, lcWorkerApp, lcProcedureFile
 		
 		* Start startup script for MTDLL worker
 		Text to This.cMTScript TEXTMERGE NOSHOW 
@@ -1346,7 +1378,7 @@ DEFINE CLASS threadhandler AS custom
 			Local loWorkerMgr as WorkerMgr of ParallelFox.vcx, loException as Exception, lcException
 			Try 
 				CD <<lcDirectory>>
-				loWorkerMgr = NewObject("<<_Screen.ParPoolMgr.cWorkerClass>>", "<<lcWorkerVCX>>", "<<lcWorkerApp>>")
+				loWorkerMgr = NewObject("<<lcWorkerClass>>", "<<lcWorkerVCX>>", "<<lcWorkerApp>>")
 				* Not sure how I discovered this. Every object in VFP has a hidden Application property that
 				*	points to _VFP/Application in the process where it runs.
 				loWorkerMgr.SetMainProcess(loThreadHandler.Application, "<<lcWorkerApp>>")
@@ -1966,7 +1998,7 @@ DEFINE CLASS workermgr AS amanager OF "parallelfox.vcx"
 				If lnWaitStatus = WAIT_TIMEOUT and Type("loThreadHandler.Name") = "C"
 					Loop 
 				Else 
-					* Otherwise, something went wrong, so exit
+					* Otherwise, something went wrong, so exit
 					Exit 
 				EndIf 
 			EndIf 
@@ -2020,12 +2052,13 @@ DEFINE CLASS workerproxy AS custom
 		*p: nworkernum		&& Worker number.
 		*p: oapplication		&& Reference to ParallelFox Application COM object.
 		*p: oevents		&& Reference to worker events object.
+		*p: oparpoolmgr		&& Reference to parallel pool manager for current instance.
 		*p: othreadhandler		&& MTDLL Thread Handler.
 		*p: oworker		&& Reference to Worker process.
 		*p: _memberdata		&& XML Metadata for customizable properties
 	*</DefinedPropArrayMethod>
 
-	PROTECTED ldebugmode,lmtdll,oapplication,othreadhandler,oworker
+	PROTECTED ldebugmode,lmtdll,oapplication,oparpoolmgr,othreadhandler,oworker
 	Height = 16
 	lbusy = .F.		&& Worker is busy processing command.
 	lcomplete = .F.		&& Is .T. when current command is complete, but lBusy is still .T. Worker will be released for another command when queue is processed.
@@ -2036,6 +2069,7 @@ DEFINE CLASS workerproxy AS custom
 	nworkernum = 0		&& Worker number.
 	oapplication = .NULL.		&& Reference to ParallelFox Application COM object.
 	oevents = .NULL.		&& Reference to worker events object.
+	oparpoolmgr = .NULL.		&& Reference to parallel pool manager for current instance.
 	othreadhandler = .NULL.		&& MTDLL Thread Handler.
 	oworker = .NULL.		&& Reference to Worker process.
 	Width = 99
@@ -2054,6 +2088,7 @@ DEFINE CLASS workerproxy AS custom
 		<memberdata name="nworkernum" display="nWorkerNum"/>
 		<memberdata name="lmtdll" display="lMTDLL"/>
 		<memberdata name="othreadhandler" display="oThreadHandler"/>
+		<memberdata name="oparpoolmgr" display="oParPoolMgr"/>
 		</VFPData>		&& XML Metadata for customizable properties
 	
 	PROCEDURE complete		&& Fires when worker has finished executing command.
@@ -2068,8 +2103,8 @@ DEFINE CLASS workerproxy AS custom
 		
 		This.lComplete = .t.
 		*JAL*	This.lBusy = .f.
-		*JAL*	_Screen.ParPoolMgr.nBusyWorkers = _Screen.ParPoolMgr.nBusyWorkers - 1 
-		_Screen.ParPoolMgr.ProcessQueue()
+		*JAL*	This.oParPoolMgr.nBusyWorkers = This.oParPoolMgr.nBusyWorkers - 1 
+		This.oParPoolMgr.ProcessQueue()
 		
 	ENDPROC
 
@@ -2093,13 +2128,14 @@ DEFINE CLASS workerproxy AS custom
 
 	PROCEDURE Init
 		* Create worker process
-		Lparameters lcProcedureFile, lcDirectory, llDebugMode, lnWorkerNum, llMTDLL
+		Lparameters lcProcedureFile, lcDirectory, llDebugMode, lnWorkerNum, llMTDLL, loParPoolMgr
 		Local lhWndForeground
 		Local loVFP as VisualFoxPro.Application, lcWorkerVCX, lcWorkerAPP, lcWorkerCmd
 		
 		Debugout Time(0), "(" + Transform(lnWorkerNum) + ")", Program(), lcProcedureFile, lcDirectory, llDebugMode, llMTDLL
 		
 		This.lMTDLL = llMTDLL
+		This.oParPoolMgr = loParPoolMgr
 		
 		* In Windows XP and earlier, main process can lose focus when 
 		*	instantiating COM EXE. Make sure we keep it.
@@ -2120,8 +2156,8 @@ DEFINE CLASS workerproxy AS custom
 				This.oApplication = CreateObject("ParallelFox.Application")
 				loVFP = This.oApplication.VFP
 			EndIf 
-		 	lcWorkerVCX = FullPath(_Screen.ParPoolMgr.cWorkerLibrary)
-		*JAL*		This.oWorker = CreateObject(_Screen.ParPoolMgr.cWorkerCOMProgID)
+			lcWorkerVCX = FullPath(This.oParPoolMgr.cWorkerLibrary)
+		*JAL*		This.oWorker = CreateObject(This.oParPoolMgr.cWorkerCOMProgID)
 		EndIf 
 		* ParallelFox.vcx is compiled into APP/EXE
 		If InList(Upper(JustExt(lcProcedureFile)), "APP", "EXE")
@@ -2144,13 +2180,13 @@ DEFINE CLASS workerproxy AS custom
 			loThreadHandler = NewObject("ThreadHandler", "ParallelFox.vcx")
 			This.oThreadHandler = loThreadHandler
 			loThreadHandler.oEvents = This.oEvents
-			loThreadHandler.StartThread(lcDirectory, lcWorkerVCX, lcWorkerApp, lcProcedureFile)
+			loThreadHandler.StartThread(lcDirectory, This.oParPoolMgr.cWorkerClass, lcWorkerVCX, lcWorkerApp, lcProcedureFile)
 		Else 
-			lcWorkerVCX = FullPath(_Screen.ParPoolMgr.cWorkerLibrary)
+			lcWorkerVCX = FullPath(This.oParPoolMgr.cWorkerLibrary)
 			If Directory(JustPath(lcWorkerVCX))
 				loVFP.DoCmd([CD "] + JustPath(lcWorkerVCX) + ["])
 			EndIf 
-			lcWorkerCmd = Textmerge([NewObject("<<_Screen.ParPoolMgr.cWorkerClass>>", "<<lcWorkerVCX>>", "<<lcWorkerApp>>")])
+			lcWorkerCmd = Textmerge([NewObject("<<This.oParPoolMgr.cWorkerClass>>", "<<lcWorkerVCX>>", "<<lcWorkerApp>>")])
 			This.oWorker = loVFP.Eval(lcWorkerCmd)
 		
 			* In Windows XP and earlier, main process can lose focus when 
@@ -2212,6 +2248,7 @@ DEFINE CLASS workerproxy AS custom
 			EndIf 
 		EndIf 
 		
+		This.oParPoolMgr = NULL
 	ENDPROC
 
 ENDDEFINE
