@@ -188,8 +188,32 @@ DEFINE CLASS errorhandler AS custom
 	PROCEDURE handleerror		&& Handle worker error.
 		* Handle worker error and return to main process
 		Lparameters lnError, lcMethod, lnLine, lcMessage, lcCode
+		Local array laCallStack[1,6]
+		Local lnRow, lnErrorRow, lcCallStack
 		Local Worker as Worker
 		Worker = NewObject("Worker", "ParallelFox.vcx")
+		
+		* Add call stack to lcCode
+		AStackInfo(laCallStack)
+		lnErrorRow = Max(Alen(laCallStack, 1) - 1, 1)
+		For lnRow =  lnErrorRow to 1 step -1
+		
+			* aStackInfo does a better job of capturing code 
+			If lnRow = lnErrorRow
+				lcCode = Alltrim(Alltrim(laCallStack[lnRow,6],0,Chr(9))) + Chr(13) 
+				lcCode = lcCode + "====== Call Stack ======" + Chr(13)
+			EndIf 
+		
+			lcCallStack = Transform(laCallStack[lnRow,1]) + "  "	&& Call Stack Level 
+		*	lcCallStack = lcCallStack + laCallStack[lnRow,2] + "  "	&& Current program filename 
+			lcCallStack = lcCallStack + laCallStack[lnRow,3] + "  "	&& Module or Object name 
+			lcCallStack = lcCallStack + JustFname(laCallStack[lnRow,4]) + "  "	&& Module or Object Source filename 
+			lcCallStack = lcCallStack + "Line " + Transform(laCallStack[lnRow,5]) + "  "	&& Line number in the object source file
+		*	lcCallStack = lcCallStack + laCallStack[lnRow,6] + "  "	&& Source line contents
+			
+			lcCode = lcCode + lcCallStack + Chr(13)
+			
+		EndFor 
 		
 		Worker.ReturnError(lnError, lcMethod, lnLine, lcMessage, lcCode)
 		
@@ -201,7 +225,7 @@ DEFINE CLASS errorhandler AS custom
 		* Default error handler 
 		* Unhandled errors may cause workers to crash when not in debug mode
 		
-		On Error _Screen.oErrorHandler.HandleError(Error(), Sys(16), Lineno(1), Message(), Message(1))
+		On Error _Screen.oErrorHandler.HandleError(Error(), Sys(16), Lineno(), Message(), Message(1))
 	ENDPROC
 
 ENDDEFINE
@@ -390,6 +414,7 @@ DEFINE CLASS frmerrorlist AS form
 		Message: <<lcMessage>>
 		Method: <<lcMethod>>
 		Line: <<lnLine>>
+		Code: <<lcCode>>
 		<<Replicate("-",100)>>
 		
 		EndText 

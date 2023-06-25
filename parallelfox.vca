@@ -198,13 +198,37 @@ PROCEDURE Init
 * Default error handler 
 * Unhandled errors may cause workers to crash when not in debug mode
 
-On Error _Screen.oErrorHandler.HandleError(Error(), Sys(16), Lineno(1), Message(), Message(1))
+On Error _Screen.oErrorHandler.HandleError(Error(), Sys(16), Lineno(), Message(), Message(1))
 ENDPROC
 PROCEDURE handleerror
 * Handle worker error and return to main process
 Lparameters lnError, lcMethod, lnLine, lcMessage, lcCode
+Local array laCallStack[1,6]
+Local lnRow, lnErrorRow, lcCallStack
 Local Worker as Worker
 Worker = NewObject("Worker", "ParallelFox.vcx")
+
+* Add call stack to lcCode
+AStackInfo(laCallStack)
+lnErrorRow = Max(Alen(laCallStack, 1) - 1, 1)
+For lnRow =  lnErrorRow to 1 step -1
+
+	* aStackInfo does a better job of capturing code 
+	If lnRow = lnErrorRow
+		lcCode = Alltrim(Alltrim(laCallStack[lnRow,6],0,Chr(9))) + Chr(13) 
+		lcCode = lcCode + "====== Call Stack ======" + Chr(13)
+	EndIf 
+
+	lcCallStack = Transform(laCallStack[lnRow,1]) + "  "	&& Call Stack Level 
+*	lcCallStack = lcCallStack + laCallStack[lnRow,2] + "  "	&& Current program filename 
+	lcCallStack = lcCallStack + laCallStack[lnRow,3] + "  "	&& Module or Object name 
+	lcCallStack = lcCallStack + JustFname(laCallStack[lnRow,4]) + "  "	&& Module or Object Source filename 
+	lcCallStack = lcCallStack + "Line " + Transform(laCallStack[lnRow,5]) + "  "	&& Line number in the object source file
+*	lcCallStack = lcCallStack + laCallStack[lnRow,6] + "  "	&& Source line contents
+	
+	lcCode = lcCode + lcCallStack + Chr(13)
+	
+EndFor 
 
 Worker.ReturnError(lnError, lcMethod, lnLine, lcMessage, lcCode)
 
@@ -390,6 +414,7 @@ Error: <<lnError>>
 Message: <<lcMessage>>
 Method: <<lcMethod>>
 Line: <<lnLine>>
+Code: <<lcCode>>
 <<Replicate("-",100)>>
 
 EndText 
@@ -1188,15 +1213,15 @@ Pixels[END RESERVED6]
 [OBJNAME] threadhandler
 [START PROPERTIES]
 Name = "threadhandler"
-_memberdata =      781<VFPData><memberdata name="nthreadhandle" display="nThreadHandle"/><memberdata name="cmtscript" display="cMTScript"/><memberdata name="neventhandle" display="nEventHandle"/><memberdata name="nthreadid" display="nThreadID"/><memberdata name="omtcommand" display="oMTCommand"/><memberdata name="startthread" display="StartThread"/><memberdata name="createthread" display="CreateThread"/><memberdata name="cworkercomprogid" display="cWorkerCOMProgID"/><memberdata name="stopthread" display="StopThread"/><memberdata name="release" display="Release"/><memberdata name="lreleaseprocessed" display="lReleaseProcessed"/><memberdata name="oreleasetimer" display="oReleaseTimer"/><memberdata name="sendcommand" display="SendCommand"/><memberdata name="oevents" display="oEvents"/></VFPData>
+_memberdata =      777<VFPData><memberdata name="nthreadhandle" display="nThreadHandle"/><memberdata name="cmtscript" display="cMTScript"/><memberdata name="neventhandle" display="nEventHandle"/><memberdata name="nthreadid" display="nThreadID"/><memberdata name="startthread" display="StartThread"/><memberdata name="createthread" display="CreateThread"/><memberdata name="cworkercomprogid" display="cWorkerCOMProgID"/><memberdata name="stopthread" display="StopThread"/><memberdata name="release" display="Release"/><memberdata name="lreleaseprocessed" display="lReleaseProcessed"/><memberdata name="oreleasetimer" display="oReleaseTimer"/><memberdata name="sendcommand" display="SendCommand"/><memberdata name="oevents" display="oEvents"/><memberdata name="ocommand" display="oCommand"/></VFPData>
 cmtscript = 
 cworkercomprogid = ParallelFoxMT.Application
 lreleaseprocessed = .F.
 neventhandle = 0
 nthreadhandle = 0
 nthreadid = 0
+ocommand = .NULL.
 oevents = .NULL.
-omtcommand = .NULL.
 oreleasetimer = 
 [END PROPERTIES]
 [START PROTECTED]
@@ -1302,7 +1327,7 @@ PROCEDURE sendcommand
 Lparameters loCommand as Command of ParallelFox.vcx
 
 * Set command, then send event so MTDLL worker will grab command from main process
-This.oMTCommand = loCommand
+This.oCommand = loCommand
 SetEvent(This.nEventHandle)
 
 ENDPROC
@@ -1316,25 +1341,16 @@ Text to This.cMTScript TEXTMERGE NOSHOW
 	Local loWorkerMgr as WorkerMgr of ParallelFox.vcx, loException as Exception, lcException
 	Try 
 		CD <<lcDirectory>>
-		StrToFile(Transform(Datetime()) + ": Creating WorkerMgr Object" + Chr(13), "MTLog.txt", 1)
 		loWorkerMgr = NewObject("<<_Screen.ParPoolMgr.cWorkerClass>>", "<<lcWorkerVCX>>", "<<lcWorkerApp>>")
-		StrToFile(Transform(Datetime()) + ": Setting Main Process" + Chr(13), "MTLog.txt", 1)
 		* Not sure how I discovered this. Every object in VFP has a hidden Application property that
 		*	points to _VFP/Application in the process where it runs.
-		StrToFile(Transform(Datetime()) + ": ThreadID " + Transform(loThreadHandler.Application.ThreadID) + Chr(13), "MTLog.txt", 1)
 		loWorkerMgr.SetMainProcess(loThreadHandler.Application, "<<lcWorkerApp>>")
-		StrToFile(Transform(Datetime()) + ": loThreadHandler.Application - " + loThreadHandler.Application.Name + Chr(13), "MTLog.txt", 1)
-		StrToFile(Transform(Datetime()) + ": Setting Procedure File - <<lcProcedureFile>>" + Chr(13), "MTLog.txt", 1)
 		If !Empty("<<lcProcedureFile>>")
 			Set Procedure To "<<lcProcedureFile>>" Additive
 		EndIf 
 	Catch to loException
-		lcException = "Error: " + Transform(loException.ErrorNo) + Chr(13) ;
-			+ "Message: " + Transform(loException.Message) + Chr(13) ;
-			+ "Program: " + Transform(loException.Procedure) + Chr(13) ;
-			+ "LineNo: " + Transform(loException.LineNo) + Chr(13) ;
-			+ "Code: " + Transform(loException.LineContents) + Chr(13)
-		StrToFile(lcException, "MTLog.txt", 1)
+		loThreadHandler.oEvents.ReturnError(loException.ErrorNo, "Thread startup script: " + loException.Procedure, loException.LineNo, ;
+			loException.Message, loException.LineContents)
 	EndTry 
 	loWorkerMgr.StartMTCommandLoop(loThreadHandler)
 EndText 
@@ -1377,8 +1393,8 @@ lreleaseprocessed Is set to .T. when Release() is processed, so it will only be 
 neventhandle Handle for Win32 events sent to MTDLL to process a command.
 nthreadhandle Thread Handle.
 nthreadid Thread ID.
+ocommand Command object for MTDLL worker.
 oevents Reference to worker events object.
-omtcommand Command object for MTDLL worker.
 oreleasetimer Timer used to call Release().
 [END RESERVED3]
 [START RESERVED6]
@@ -1940,14 +1956,14 @@ Do while .t.
 		If lnWaitStatus = WAIT_TIMEOUT and Type("loThreadHandler.Name") = "C"
 			Loop 
 		Else 
-			* Otherwise, something went wrong, so exit
+			* Otherwise, something went wrong, so exit
 			Exit 
 		EndIf 
 	EndIf 
 
 	Try
 		lcScript = loThreadHandler.cMTScript
-		This.oCommand = loThreadHandler.oMTCommand
+		This.oCommand = loThreadHandler.oCommand
 	Catch 
 		* If can't access worker proxy object or commands, exit	
 		llExit = .t.
