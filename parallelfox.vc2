@@ -172,6 +172,48 @@ DEFINE CLASS command AS custom
 
 ENDDEFINE
 
+DEFINE CLASS commandhandler AS custom 
+ 	*< CLASSDATA: Baseclass="custom" Timestamp="" Scale="Pixels" Uniqueid="" />
+
+	*<DefinedPropArrayMethod>
+		*m: executecommand		&& Run command when event fires.
+		*p: ccommand		&& Command to execute when event fires.
+		*p: _memberdata		&& XML Metadata for customizable properties
+	*</DefinedPropArrayMethod>
+
+	ccommand = 		&& Command to execute when event fires.
+	Height = 16
+	Name = "commandhandler"
+	Width = 100
+	_memberdata = <VFPData>
+		<memberdata name="ccommand" display="cCommand"/>
+		<memberdata name="executecommand" display="ExecuteCommand"/>
+		</VFPData>		&& XML Metadata for customizable properties
+	
+	PROCEDURE Destroy
+		Debugout Time(0), Program()
+		
+	ENDPROC
+
+	PROCEDURE executecommand		&& Run command when event fires.
+		* Simple event handler to execute one-line command when event fires.
+		* Used by Parallel.BindEvent().
+		Lparameters tPar1, tPar2, tPar3, tPar4, tPar5, tPar6, ;
+			tPar7, tPar8, tPar9, tPar10, tPar11, tPar12, tPar13, ;
+			tPar14, tPar15, tPar16, tPar17, tPar18, tPar19, tPar20, ;
+			tPar21, tPar22, tPar23, tPar24, tPar25, tPar26
+		Local lcCommmand
+			
+		Debugout Time(0), Program()
+		
+		lcCommand = This.cCommand
+		&lcCommand
+		
+		
+	ENDPROC
+
+ENDDEFINE
+
 DEFINE CLASS errorhandler AS custom 
  	*< CLASSDATA: Baseclass="custom" Timestamp="" Scale="Pixels" Uniqueid="" />
 
@@ -244,11 +286,13 @@ DEFINE CLASS events AS custom
 		*m: updatecommandcount		&& Update number of commands currently running.
 		*m: updateprogress		&& Fires when Worker.UpdateProgress() is called on worker.
 		*p: ncommands		&& Number of commands currently queued or running.
+		*p: ohandlers		&& Collection to keep event handlers in scope.
 		*p: _memberdata		&& XML Metadata for customizable properties
 	*</DefinedPropArrayMethod>
 
 	Name = "events"
 	ncommands = 0		&& Number of commands currently queued or running.
+	ohandlers = .NULL.		&& Collection to keep event handlers in scope.
 	_memberdata = <VFPData>
 		<memberdata name="ncommands" display="nCommands"/>
 		<memberdata name="complete" display="Complete"/>
@@ -260,6 +304,7 @@ DEFINE CLASS events AS custom
 		<memberdata name="returncursor" display="ReturnCursor"/>
 		<memberdata name="setdatasession" display="SetDataSession"/>
 		<memberdata name="getdatasession" display="GetDataSession"/>
+		<memberdata name="ohandlers" display="oHandlers"/>
 		</VFPData>		&& XML Metadata for customizable properties
 	
 	PROCEDURE complete		&& Fires when worker has finished executing command.
@@ -275,6 +320,10 @@ DEFINE CLASS events AS custom
 		* Return data session ID of events object.
 		
 		Return Set("Datasession")
+	ENDPROC
+
+	PROCEDURE Init
+		This.oHandlers = CreateObject("Collection")
 	ENDPROC
 
 	PROCEDURE loadcursor		&& Load cursor from temp table.
@@ -542,7 +591,8 @@ DEFINE CLASS parallel AS custom
 	
 	PROCEDURE bindevent		&& Bind to worker events: "Complete", "UpdateProgress", "ReturnData", "ReturnError".
 		* Bind to worker events
-		Lparameters cEvent, oEventHandler, cDelegate, nFlags
+		Lparameters cEvent, oEventHandlerOrCommand, cDelegate, nFlags
+		Local loCommandHandler as CommandHandler of ParallelFox.vcx
 		
 		Debugout Time(0), Program(), cEvent, cDelegate
 		
@@ -554,7 +604,15 @@ DEFINE CLASS parallel AS custom
 			UnBindEvents(This._Events, "ReturnError", This.oParPoolMgr, "HandleError")
 		EndIf 
 		
-		BindEvent(This._Events, cEvent, oEventHandler, cDelegate, nFlags)
+		If Vartype(oEventHandlerOrCommand) = "C"
+			* Use simple handler to execute one line of code when event fires
+			loCommandHandler = NewObject("CommandHandler", "ParallelFox.vcx")
+			loCommandHandler.cCommand = oEventHandlerOrCommand
+			BindEvent(This._Events, cEvent, loCommandHandler, "ExecuteCommand", nFlags)
+			This._Events.oHandlers.Add(loCommandHandler) && keep handler in scope
+		Else 
+			BindEvent(This._Events, cEvent, oEventHandlerOrCommand, cDelegate, nFlags)
+		EndIf 
 		
 		
 	ENDPROC
@@ -623,6 +681,8 @@ DEFINE CLASS parallel AS custom
 		Debugout Time(0), Program()
 		
 		UnBindEvents(This)
+		
+		This._Events.oHandlers.Remove(-1)	&& remove all simple event handlers from collection
 		
 	ENDPROC
 

@@ -535,6 +535,42 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 		Return This.Complete_Returns_Expected_Result()
 	EndFunc 
 
+	Function SimpleCommandHandler_Returns_Expected_Result
+		Local Parallel as Parallel, lnI, lcScript, lcOldTag
+		Parallel = NewObject("Parallel", "ParallelFox.vcx")
+		
+		* Use simple command instead of object for handler
+		* tPar1 is return value from Complete. Set it to public property.
+		lcOldTag = _Screen.Tag
+		Parallel.BindEvent("Complete", "_Screen.Tag = tPar1")
+
+		Parallel.BindEvent("ReturnError", This.oErrorHandler, "HandleError")
+		Parallel.SetWorkerCount(This.nWorkerCount)
+		Parallel.SetMultiThreaded(This.lMTDLL)
+		If This.lDebugMode
+			* Short pause to let previous instances of VFP close, or may get error
+			Inkey(1, "H")
+		EndIf 
+		Parallel.StartWorkers(This.cTestHelperFile,,This.lDebugMode)
+		
+		Parallel.Call("FoxProRocks")
+		Parallel.StopWorkers()
+		Parallel.Wait()
+		
+		This.AssertEquals("FoxPro Rocks!", _Screen.Tag)
+		_Screen.Tag = lcOldTag
+	EndFunc 
+
+	Function SimpleCommandHandler_Returns_Expected_Result_DebugMode
+		This.lDebugMode = .t.
+		Return This.SimpleCommandHandler_Returns_Expected_Result()
+	EndFunc 
+
+	Function SimpleCommandHandler_Returns_Expected_Result_MTDLL
+		This.lMTDLL = .t.
+		Return This.SimpleCommandHandler_Returns_Expected_Result()
+	EndFunc 
+
 	Function ReturnData_Returns_Expected_Results
 		Local Parallel as Parallel, lnI, lcScript
 		Parallel = NewObject("Parallel", "ParallelFox.vcx")
