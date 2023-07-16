@@ -40,6 +40,15 @@ Define Class TestHelper as Custom
 		Use in Select("TestCursor")
 	EndProc 
 
+	Procedure OpenTempTable
+		Lparameters lcTempTable
+		Local Worker as Worker
+		Worker = NewObject("Worker", "ParallelFox.vcx") 
+		Worker.OpenTempTable(lcTempTable, "TestCursor")
+		Worker.ReturnCursor("TestCursor")
+		Worker.CloseTempTable("TestCursor")
+	EndProc 
+
 EndDefine 
 
 Define Class TestEventHandler as Custom

@@ -544,6 +544,8 @@ DEFINE CLASS parallel AS custom
 		*m: call		&& Execute/call function on worker.
 		*m: callmethod		&& Execute/call class method on worker.
 		*m: clearqueue		&& Remove all pending commands from queue.
+		*m: createtemptable		&& Create temporary table that can be used by workers with Worker.OpenTempTable().
+		*m: deletetemptable		&& Delete temporary table previously created with CreateTempTable(). Make sure Worker.CloseTempTable() is used to close table/DBC in workers.
 		*m: detecthyperthreading		&& Returns .T. when HyperThreading is enabled.
 		*m: do		&& Execute program on worker.
 		*m: docmd		&& Execute single command on worker.
@@ -587,6 +589,8 @@ DEFINE CLASS parallel AS custom
 		<memberdata name="setmultithreaded" display="SetMultiThreaded"/>
 		<memberdata name="oparpoolmgr" display="oParPoolMgr"/>
 		<memberdata name="setinstance" display="SetInstance"/>
+		<memberdata name="createtemptable" display="CreateTempTable"/>
+		<memberdata name="deletetemptable" display="DeleteTempTable"/>
 		</VFPData>		&& XML Metadata for customizable properties
 	
 	PROCEDURE bindevent		&& Bind to worker events: "Complete", "UpdateProgress", "ReturnData", "ReturnError".
@@ -675,6 +679,52 @@ DEFINE CLASS parallel AS custom
 		Debugout Time(0), Program()
 		
 		This.oParPoolMgr.ClearQueue()
+	ENDPROC
+
+	PROCEDURE createtemptable		&& Create temporary table that can be used by workers with Worker.OpenTempTable().
+		* Create temporary table that can be used by workers with Worker.OpenTempTable()
+		Lparameters lcAlias
+		Local lcTempTable, lcAlias
+		
+		lcAlias = Evl(lcAlias, Alias())
+		
+		Do while .t.
+			lcTempTable = Addbs(Sys(2023)) + Alltrim(lcAlias) + Sys(2015) + "_" + Transform(_VFP.ThreadId)
+			If !File(lcTempTable + ".DBC") and !File(lcTempTable + ".DBF")
+				Exit && filename is good
+			EndIf 
+		EndDo 
+		
+		* Could have long field names in cursor, so create database
+		lcDBC = Dbc()
+		Create Database (lcTempTable + ".DBC")
+		
+		Select (lcAlias)
+		Copy To (lcTempTable) DATABASE (lcTempTable)
+		
+		* Database is opened exclusively, so close it
+		Set Database To (lcTempTable)
+		Close Databases
+		Set Database To (lcDBC)
+		
+		Return JustFname(lcTempTable)
+	ENDPROC
+
+	PROCEDURE deletetemptable		&& Delete temporary table previously created with CreateTempTable(). Make sure Worker.CloseTempTable() is used to close table/DBC in workers.
+		* Delete temporary table previously created with CreateTempTable()
+		* Make sure Worker.CloseTempTable() is used to close table/DBC in workers
+		Lparameters lcTempTable
+		Local lcSafety, lcTempFiles
+		
+		lcSafety = Set("Safety")
+		Try
+			Set Safety Off
+			lcTempFiles = Addbs(Sys(2023)) + Alltrim(lcTempTable) + ".*"
+			Erase (lcTempFiles)
+		Finally
+			Set Safety &lcSafety
+		EndTry 
+		
 	ENDPROC
 
 	PROCEDURE Destroy
@@ -1538,8 +1588,10 @@ DEFINE CLASS worker AS custom
  	*< CLASSDATA: Baseclass="custom" Timestamp="" Scale="Pixels" Uniqueid="" />
 
 	*<DefinedPropArrayMethod>
+		*m: closetemptable		&& Close temporary table and associated DBC.
 		*m: endcriticalsection		&& End Critical Section of code.
 		*m: isworker		&& Returns .T. if currently running in Worker process.
+		*m: opentemptable		&& Open temporary table created in main process.
 		*m: returncursor		&& Return cursor to main process.
 		*m: returndata		&& Return data to main process. Due to limitations with VFP BindEvent(), arrays are not supported and cannot be returned.
 		*m: returnerror		&& Return error to main process.
@@ -1571,8 +1623,29 @@ DEFINE CLASS worker AS custom
 		<memberdata name="returnerror" display="ReturnError"/>
 		<memberdata name="isworker" display="IsWorker"/>
 		<memberdata name="returncursor" display="ReturnCursor"/>
+		<memberdata name="opentemptable" display="OpenTempTable"/>
+		<memberdata name="closetemptable" display="CloseTempTable"/>
 		</VFPData>		&& XML Metadata for customizable properties
 	
+	PROCEDURE closetemptable		&& Close temporary table and associated DBC.
+		* Close temporary table and associated DBC
+		Lparameters lcAlias
+		Local lnCurrentArea, lcCurrentDBC, lcDBC
+		
+		If Used(lcAlias)
+			lnCurrentArea = Select()
+			lcCurrentDBC = Dbc()
+			Select (lcAlias)
+			lcDBC = CursorGetProp("Database")
+			Use
+			Close Databases
+			Set Database To (lcCurrentDBC)
+			Select (lnCurrentArea)
+		EndIf 
+		
+		
+	ENDPROC
+
 	PROCEDURE Destroy
 		* End any active critical sections
 		Local lnRows, lnRow, lnhMutex 
@@ -1634,6 +1707,17 @@ DEFINE CLASS worker AS custom
 		* Returns .T. if currently running in Worker process.
 		
 		Return Type("_Screen.oWorkerEvents") = "O"
+	ENDPROC
+
+	PROCEDURE opentemptable		&& Open temporary table created in main process.
+		* Open temporary table created in main process
+		Lparameters lcTempTable, lcAlias
+		
+		lcAlias = Evl(lcAlias, lcTempTable)
+		
+		Select 0
+		Use (Addbs(Sys(2023)) + lcTempTable) Alias (lcAlias) Shared
+		
 	ENDPROC
 
 	PROCEDURE returncursor		&& Return cursor to main process.

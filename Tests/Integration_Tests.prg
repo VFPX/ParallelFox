@@ -681,6 +681,52 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 		Return This.ReturnCursor_Returns_Cursor()
 	EndFunc 
 
+	Function CreateTempTable_Returns_Cursor
+		Local Parallel as Parallel, lnI, lcScript, lcTempTable
+		Parallel = NewObject("Parallel", "ParallelFox.vcx")
+		
+		* Bind event to handler
+		Local loTestEventHandler as TestEventHandler of Tests\TestHelper.prg
+		loTestEventHandler = NewObject("TestEventHandler", This.cTestHelperFile)
+		Parallel.BindEvent("ReturnCursor", loTestEventHandler, "ReturnCursor")
+
+		Parallel.BindEvent("ReturnError", This.oErrorHandler, "HandleError")
+		Parallel.SetWorkerCount(This.nWorkerCount)
+		Parallel.SetMultiThreaded(This.lMTDLL)
+		If This.lDebugMode
+			* Short pause to let previous instances of VFP close, or may get error
+			Inkey(1, "H")
+		EndIf 
+		Parallel.StartWorkers(This.cTestHelperFile,,This.lDebugMode)
+		
+		Use in Select("TempTable")
+		Create Cursor TempTable (Test C(20))
+		Insert Into TempTable (Test) VALUES ("FoxPro Rocks!") 
+		lcTempTable = Parallel.CreateTempTable("TempTable")
+		Use in Select("TempTable")
+		Parallel.CallMethod("OpenTempTable", "TestHelper", This.cTestHelperFile,,,lcTempTable)
+		Parallel.StopWorkers()
+		Parallel.Wait()
+		Parallel.DeleteTempTable(lcTempTable)
+
+		This.AssertTrue(Used("TestCursor"), "TestCursor is not open.")
+		This.AssertEquals("TESTCURSOR", Upper(loTestEventHandler.vResult))
+		This.AssertEquals("FoxPro Rocks!", Rtrim(TestCursor.Test))
+		This.AssertFalse(File(Addbs(Sys(2023)) + lcTempTable + ".DBF"), "TempTable.DBF still exists.")
+		This.AssertFalse(File(Addbs(Sys(2023)) + lcTempTable + ".DBC"), "TempTable.DBC still exists.")
+		Use in Select("TestCursor")
+	EndFunc
+
+	Function CreateTempTable_Returns_Cursor_DebugMode
+		This.lDebugMode = .t.
+		Return This.CreateTempTable_Returns_Cursor()
+	EndFunc 
+
+	Function CreateTempTable_Returns_Cursor_MTDLL
+		This.lMTDLL = .t.
+		Return This.CreateTempTable_Returns_Cursor()
+	EndFunc 
+
 	Function Error_Returns_Error
 		Local Parallel as Parallel, lnI, lcScript
 		Parallel = NewObject("Parallel", "ParallelFox.vcx")
