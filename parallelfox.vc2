@@ -285,11 +285,13 @@ DEFINE CLASS events AS custom
 		*m: setdatasession		&& Set data session so events occur in same session as Parallel object.
 		*m: updatecommandcount		&& Update number of commands currently running.
 		*m: updateprogress		&& Fires when Worker.UpdateProgress() is called on worker.
+		*p: iscancelled		&& Is set to .T. when cancellation is requested by main process.
 		*p: ncommands		&& Number of commands currently queued or running.
 		*p: ohandlers		&& Collection to keep event handlers in scope.
 		*p: _memberdata		&& XML Metadata for customizable properties
 	*</DefinedPropArrayMethod>
 
+	iscancelled = .F.		&& Is set to .T. when cancellation is requested by main process.
 	Name = "events"
 	ncommands = 0		&& Number of commands currently queued or running.
 	ohandlers = .NULL.		&& Collection to keep event handlers in scope.
@@ -305,6 +307,7 @@ DEFINE CLASS events AS custom
 		<memberdata name="setdatasession" display="SetDataSession"/>
 		<memberdata name="getdatasession" display="GetDataSession"/>
 		<memberdata name="ohandlers" display="oHandlers"/>
+		<memberdata name="iscancelled" display="IsCancelled"/>
 		</VFPData>		&& XML Metadata for customizable properties
 	
 	PROCEDURE complete		&& Fires when worker has finished executing command.
@@ -543,6 +546,7 @@ DEFINE CLASS parallel AS custom
 		*m: bindevent		&& Bind to worker events: "Complete", "UpdateProgress", "ReturnData", "ReturnError".
 		*m: call		&& Execute/call function on worker.
 		*m: callmethod		&& Execute/call class method on worker.
+		*m: cancel		&& Clear remaining queue and set IsCancelled property for all workers.
 		*m: clearqueue		&& Remove all pending commands from queue.
 		*m: createtemptable		&& Create temporary table that can be used by workers with Worker.OpenTempTable().
 		*m: deletetemptable		&& Delete temporary table previously created with CreateTempTable(). Make sure Worker.CloseTempTable() is used to close table/DBC in workers.
@@ -591,6 +595,7 @@ DEFINE CLASS parallel AS custom
 		<memberdata name="setinstance" display="SetInstance"/>
 		<memberdata name="createtemptable" display="CreateTempTable"/>
 		<memberdata name="deletetemptable" display="DeleteTempTable"/>
+		<memberdata name="cancel" display="Cancel"/>
 		</VFPData>		&& XML Metadata for customizable properties
 	
 	PROCEDURE bindevent		&& Bind to worker events: "Complete", "UpdateProgress", "ReturnData", "ReturnError".
@@ -671,6 +676,14 @@ DEFINE CLASS parallel AS custom
 		This.oParPoolMgr.QueueCommand("CallMethod", cMethod, cClassName, cModule, cInApplication, ;
 			loParameters, lAllWorkers, This._Events)
 		
+	ENDPROC
+
+	PROCEDURE cancel		&& Clear remaining queue and set IsCancelled property for all workers.
+		* Clear remaining queue and set IsCancelled property for all workers
+		
+		Debugout Time(0), Program()
+		
+		This.oParPoolMgr.Cancel()
 	ENDPROC
 
 	PROCEDURE clearqueue		&& Remove all pending commands from queue.
@@ -992,6 +1005,7 @@ DEFINE CLASS parpoolmgr AS amanager OF "parallelfox.vcx"
  	*< CLASSDATA: Baseclass="custom" Timestamp="" Scale="Pixels" Uniqueid="" />
 
 	*<DefinedPropArrayMethod>
+		*m: cancel		&& Clear remaining queue and set IsCancelled property for all workers.
 		*m: clearqueue		&& Remove all pending commands from queue.
 		*m: displayerrors		&& Default error handler displays list of errors from workers.
 		*m: handleerror		&& Global Error Handler.
@@ -1055,8 +1069,22 @@ DEFINE CLASS parpoolmgr AS amanager OF "parallelfox.vcx"
 		<memberdata name="oerrorlist" display="oErrorList"/>
 		<memberdata name="lmtdll" display="lMTDLL"/>
 		<memberdata name="cinstancename" display="cInstanceName"/>
+		<memberdata name="cancel" display="Cancel"/>
 		</VFPData>
 	
+	PROCEDURE cancel		&& Clear remaining queue and set IsCancelled property for all workers.
+		* Clear remaining queue and set IsCancelled property for all workers
+		Local loWorkerProxy as WorkerProxy of ParallelFox.vcx
+		
+		Debugout Time(0), Program()
+		
+		This.ClearQueue()
+		
+		For each loWorkerProxy in This.Workers FoxObject
+			loWorkerProxy.oEvents.IsCancelled = .t.
+		EndFor 
+	ENDPROC
+
 	PROCEDURE clearqueue		&& Remove all pending commands from queue.
 		* Remove all pending commands from queue.
 		
@@ -1590,6 +1618,7 @@ DEFINE CLASS worker AS custom
 	*<DefinedPropArrayMethod>
 		*m: closetemptable		&& Close temporary table and associated DBC.
 		*m: endcriticalsection		&& End Critical Section of code.
+		*m: iscancelled		&& Returns .T. if cancellation requested in main process.
 		*m: isworker		&& Returns .T. if currently running in Worker process.
 		*m: opentemptable		&& Open temporary table created in main process.
 		*m: returncursor		&& Return cursor to main process.
@@ -1625,6 +1654,7 @@ DEFINE CLASS worker AS custom
 		<memberdata name="returncursor" display="ReturnCursor"/>
 		<memberdata name="opentemptable" display="OpenTempTable"/>
 		<memberdata name="closetemptable" display="CloseTempTable"/>
+		<memberdata name="iscancelled" display="IsCancelled"/>
 		</VFPData>		&& XML Metadata for customizable properties
 	
 	PROCEDURE closetemptable		&& Close temporary table and associated DBC.
@@ -1701,6 +1731,12 @@ DEFINE CLASS worker AS custom
 		    INTEGER hMutex
 		
 		
+	ENDPROC
+
+	PROCEDURE iscancelled		&& Returns .T. if cancellation requested in main process.
+		* Returns .T. if cancellation requested in main process
+		
+		Return _Screen.oWorkerEvents.IsCancelled
 	ENDPROC
 
 	PROCEDURE isworker		&& Returns .T. if currently running in Worker process.

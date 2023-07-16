@@ -48,6 +48,22 @@ Define Class TestHelper as Custom
 		Worker.ReturnCursor("TestCursor")
 		Worker.CloseTempTable("TestCursor")
 	EndProc 
+	
+	Procedure Cancellation
+		Lparameters lnIterations
+		Local lnProgress
+		Local Worker as Worker
+		Worker = NewObject("Worker", "ParallelFox.vcx")
+		For lnProgress = 1 to lnIterations
+			If Worker.IsCancelled()
+				Worker.UpdateProgress(lnProgress, "Cancelled")
+				Exit 
+			Else
+				Worker.UpdateProgress(lnProgress, "In Progress")	
+				Worker.Sleep(1000)
+			EndIf
+		EndFor 
+	EndProc 
 
 EndDefine 
 
