@@ -1313,7 +1313,7 @@ DEFINE CLASS parpoolmgr AS amanager OF "parallelfox.vcx"
 		* Start worker processes
 		* Same EXE is used for all workers
 		Lparameters lcProcedureFile, lcDirectory, llDebugMode
-		Local lnWorker, loWorkerProxy as WorkerProxy of ParallelFox.vcx
+		Local lnWorker, loWorkerProxy as WorkerProxy of ParallelFox.vcx, lcWOnTop
 		
 		Debugout Time(0), Program(), lcProcedureFile, lcDirectory, llDebugMode
 		
@@ -1324,11 +1324,18 @@ DEFINE CLASS parpoolmgr AS amanager OF "parallelfox.vcx"
 		
 		This.lDebugMode = llDebugMode
 		
+		lcWOnTop = Wontop()
+		
 		For lnWorker = 1 to This.nWorkerCount
 			loWorkerProxy = NewObject("WorkerProxy", "ParallelFox.vcx", "", lcProcedureFile, lcDirectory, llDebugMode, lnWorker, This.lMTDLL, This)
 			ComArray(loWorkerProxy, 11)
 			This.Workers.Add(loWorkerProxy)
 		EndFor 
+		
+		* Restore active window if focus was lost when workers started
+		If !(Wontop() == lcWOnTop)
+			Activate Window (lcWOnTop)
+		EndIf
 		
 	ENDPROC
 
@@ -2222,6 +2229,7 @@ DEFINE CLASS workerproxy AS custom
 	*<DefinedPropArrayMethod>
 		*m: complete		&& Fires when worker has finished executing command.
 		*m: handleerror		&& Fires when error returned from worker.
+		*m: isregistered		&& Check if COM object is registered.
 		*m: sendcommand		&& Send command to worker process.
 		*m: stopworker		&& Stop worker process.
 		*p: lbusy		&& Worker is busy processing command.
@@ -2269,6 +2277,7 @@ DEFINE CLASS workerproxy AS custom
 		<memberdata name="lmtdll" display="lMTDLL"/>
 		<memberdata name="othreadhandler" display="oThreadHandler"/>
 		<memberdata name="oparpoolmgr" display="oParPoolMgr"/>
+		<memberdata name="isregistered" display="IsRegistered"/>
 		</VFPData>		&& XML Metadata for customizable properties
 	
 	PROCEDURE complete		&& Fires when worker has finished executing command.
@@ -2314,13 +2323,10 @@ DEFINE CLASS workerproxy AS custom
 		
 		Debugout Time(0), "(" + Transform(lnWorkerNum) + ")", Program(), lcProcedureFile, lcDirectory, llDebugMode, llMTDLL
 		
+		#DEFINE PARALLELFOX_CLSID "{76DE0CE0-CE45-491B-9EDF-6F91CDBD9880}"
+		
 		This.lMTDLL = llMTDLL
 		This.oParPoolMgr = loParPoolMgr
-		
-		* In Windows XP and earlier, main process can lose focus when 
-		*	instantiating COM EXE. Make sure we keep it.
-		DECLARE INTEGER GetForegroundWindow IN user32
-		lhWndForeground = GetForegroundWindow()
 		
 		This.nWorkerNum = lnWorkerNum
 		* Debug mode starts workers in full VFP.
@@ -2333,7 +2339,20 @@ DEFINE CLASS workerproxy AS custom
 			* Must maintain reference to Application object, or COM instance will close even though we also 
 			*	have reference to Worker object.
 			If !This.lMTDLL
-				This.oApplication = CreateObject("ParallelFox.Application")
+				* Prevent worker EXE from stealing focus
+				DECLARE INTEGER LockSetForegroundWindow IN user32 INTEGER uLockCode
+				LockSetForegroundWindow(1) && lock		
+				If  This.IsRegistered("ParallelFox.Application") or !File("ParallelFox.exe")
+					* Instantiate registered COM object
+					This.oApplication = CreateObject("ParallelFox.Application")
+				Else 
+					* Use reg-free COM to launch ParallelFox COM Server
+					Local lcRun
+					lcRun = [Run /n "] + FullPath("ParallelFox.exe") + [" /automation -Embedding]
+					&lcRun
+					This.oApplication = CreateObjectEx(PARALLELFOX_CLSID, GetEnv("COMPUTERNAME"))
+				EndIf 
+				LockSetForegroundWindow(2) && unlock
 				loVFP = This.oApplication.VFP
 			EndIf 
 			lcWorkerVCX = FullPath(This.oParPoolMgr.cWorkerLibrary)
@@ -2369,16 +2388,6 @@ DEFINE CLASS workerproxy AS custom
 			lcWorkerCmd = Textmerge([NewObject("<<This.oParPoolMgr.cWorkerClass>>", "<<lcWorkerVCX>>", "<<lcWorkerApp>>")])
 			This.oWorker = loVFP.Eval(lcWorkerCmd)
 		
-			* In Windows XP and earlier, main process can lose focus when 
-			*	instantiating COM EXE. Make sure we keep it.
-			* This issue apparently only affects IDE, and can cause wrong window 
-			*	to get focus at runtime if workers started when main VFP window is not visible.
-			*	So, only applying to IDE.  May revisit if issue presents itself at runtime or other scenarios.
-			If _VFP.StartMode = 0 and Os(3) < "6" and GetForegroundWindow() <> lhWndForeground
-				DECLARE INTEGER SetForegroundWindow IN user32 INTEGER hwnd
-				SetForegroundWindow(lhWndForeground)
-			EndIf
-		
 			This.oWorker.SetMainProcess(_VFP, lcWorkerApp)
 			This.oWorker.DoCmd("CD " + lcDirectory)
 			If !Empty(lcProcedureFile)
@@ -2388,6 +2397,38 @@ DEFINE CLASS workerproxy AS custom
 			This.oWorker.SetWorkerEvents(This.oEvents)
 		EndIf 
 		
+	ENDPROC
+
+	PROCEDURE isregistered		&& Check if COM object is registered.
+		* Check if COM object is registered
+		Lparameters lcLookUpKey
+		
+		* Registry roots
+		#DEFINE HKEY_CLASSES_ROOT           -2147483648  && BITSET(0,31)
+		#DEFINE HKEY_CURRENT_USER           -2147483647  && BITSET(0,31)+1
+		#DEFINE HKEY_LOCAL_MACHINE          -2147483646  && BITSET(0,31)+2
+		#DEFINE HKEY_USERS                  -2147483645  && BITSET(0,31)+3
+		
+		* Load DLLs
+		Clear Dlls RegOpenKey
+		Clear Dlls RegCloseKey
+		LOCAL nHKey,cSubKey,nResult
+		DECLARE Integer RegOpenKey IN Win32API ;
+			Integer nHKey, String @cSubKey, Integer @nResult
+		DECLARE Integer RegCloseKey IN Win32API ;
+			Integer nHKey
+		
+		* Try to open key
+		Local lnErrorCode, lnSubKey
+		lnSubKey = 0
+		lnErrorCode = RegOpenKey(HKEY_CLASSES_ROOT,lcLookUpKey,@lnSubKey)
+		If lnErrorCode = 0	&& success
+			* Close key
+			=RegCloseKey(lnSubKey)
+			Return .t.
+		Else
+			Return .f.
+		EndIf 
 	ENDPROC
 
 	PROCEDURE sendcommand		&& Send command to worker process.
