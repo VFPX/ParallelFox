@@ -190,7 +190,7 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 		For lnI = 1 to This.nIterations
 			Parallel.DoCmd([? "FoxPro Rocks"], This.lAllWorkers)
 		EndFor
-		
+
 		Parallel.StopWorkers()	
 		Parallel.Wait()
 	EndFunc 
@@ -895,6 +895,46 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 		This.lMTDLL = .t.
 		Return This.Cancellation_Prevents_Completion()
 	EndFunc 	
+
+	Function Worker_Version_Matches_Main_Process	
+		* Worker version should match main process for VFP 9.0, Advanced 32-bit, Advanced 64-bit	 
+		Local Parallel as Parallel, lnI
+		Parallel = NewObject("Parallel", "ParallelFox.vcx")
+		
+		* Bind event to handler
+		Local loTestEventHandler as TestEventHandler of Tests\TestHelper.prg
+		loTestEventHandler = NewObject("TestEventHandler", This.cTestHelperFile)
+		Parallel.BindEvent("Complete", loTestEventHandler, "Complete")
+		
+		Parallel.BindEvent("ReturnError", This.oErrorHandler, "HandleError")
+		Parallel.SetWorkerCount(This.nWorkerCount)
+		Parallel.SetMultiThreaded(This.lMTDLL)
+		If This.lDebugMode
+			* Short pause to let previous instances of VFP close, or may get error
+			Inkey(1, "H")
+		EndIf 
+		Parallel.StartWorkers(This.cTestHelperFile,,This.lDebugMode)
+				
+		For lnI = 1 to This.nIterations
+			Parallel.Call("Version", This.lAllWorkers, 4)
+		EndFor
+		
+		Parallel.StopWorkers()	
+		Parallel.Wait()
+		
+		This.AssertEquals(Version(4), loTestEventHandler.vResult)
+	EndFunc 	
+
+	Function Worker_Version_Matches_Main_Process_DebugMode
+		This.lDebugMode = .t.
+		Return This.Worker_Version_Matches_Main_Process()
+	EndFunc 
+	
+	Function Worker_Version_Matches_Main_Process_MTDLL
+		This.lMTDLL = .t.
+		Return This.Worker_Version_Matches_Main_Process()
+	EndFunc 
+
 
 **********************************************************************
 ENDDEFINE

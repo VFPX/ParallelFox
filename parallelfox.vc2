@@ -1516,26 +1516,39 @@ DEFINE CLASS threadhandler AS custom
 	PROCEDURE startthread		&& Start thread for MTDLL worker.
 		* Start thread for MTDLL worker
 		Lparameters lcDirectory, lcWorkerClass, lcWorkerVCX, lcWorkerApp, lcProcedureFile
+		lcProcedureFile = EVL(lcProcedureFile, "")
 		
 		* Start startup script for MTDLL worker
 		Text to This.cMTScript TEXTMERGE NOSHOW 
 			Lparameters loThreadHandler as ThreadHandler of ParallelFox.vcx
 			Local loWorkerMgr as WorkerMgr of ParallelFox.vcx, loException as Exception, lcException
+		*JAL*	cLog = "C:\VFPX\ParallelFox\mt.log"
+		*JAL*	ON ERROR StrToFile(CHR(13) + "-- Error: " + Message() + Chr(13), cLog, 1)	
+		*JAL*	StrToFile(CHR(13) + "Program: " + Program() + Chr(13), cLog, 1)	
+		*JAL*	StrToFile("Procedure: " + SET("Procedure") + Chr(13), cLog, 1)	
 			Try 
 				CD <<lcDirectory>>
+		*JAL*	StrToFile(FullPath("") + Chr(13), cLog, 1)		
 				loWorkerMgr = NewObject("<<lcWorkerClass>>", "<<lcWorkerVCX>>", "<<lcWorkerApp>>")
+		*JAL*	StrToFile("loWorkerMgr" + Chr(13), cLog, 1)		
 				* Not sure how I discovered this. Every object in VFP has a hidden Application property that
 				*	points to _VFP/Application in the process where it runs.
 				loWorkerMgr.SetMainProcess(loThreadHandler.Application, "<<lcWorkerApp>>")
+		*JAL*	StrToFile("loWorkerMgr.SetMainProcess" + Chr(13), cLog, 1)		
 				If !Empty("<<lcProcedureFile>>")
 					Set Procedure To "<<lcProcedureFile>>" Additive
+		*JAL*	StrToFile("Set Procedure: " + SET("Procedure") + Chr(13), cLog, 1)		
 				EndIf 
 			Catch to loException
+		*JAL*		StrToFile("Error: " + Message() + Chr(13), cLog, 1)		
 				loThreadHandler.oEvents.ReturnError(loException.ErrorNo, "Thread startup script: " + loException.Procedure, loException.LineNo, ;
 					loException.Message, loException.LineContents)
 			EndTry 
+		*JAL*	StrToFile("Before StartMTCommandLoop" + Chr(13), cLog, 1)		
 			loWorkerMgr.StartMTCommandLoop(loThreadHandler)
+		*JAL*	StrToFile("After StartMTCommandLoop" + Chr(13), cLog, 1)		
 		EndText 
+		*JAL*	StrToFile(This.cMTScript + Chr(13) + Chr(13), "C:\VFPX\ParallelFox\mt.log")
 		
 		This.CreateThread(This.cWorkerCOMProgID)
 		
@@ -2317,21 +2330,39 @@ DEFINE CLASS workerproxy AS custom
 
 	PROCEDURE Init
 		* Create worker process
-		Lparameters lcProcedureFile, lcDirectory, llDebugMode, lnWorkerNum, llMTDLL, loParPoolMgr
+		Lparameters lcProcedureFile, lcDirectory, llDebugMode, lnWorkerNum, llMTDLL, loParPoolMgr, ;
+			lcParallelFoxProgID, lcRegFreeClassID, lcRegFreeParallelFox, lcVFPProgID, lcMTDLLProgID 
 		Local lhWndForeground
 		Local loVFP as VisualFoxPro.Application, lcWorkerVCX, lcWorkerAPP, lcWorkerCmd
 		
 		Debugout Time(0), "(" + Transform(lnWorkerNum) + ")", Program(), lcProcedureFile, lcDirectory, llDebugMode, llMTDLL
 		
 		#DEFINE PARALLELFOX_CLSID "{76DE0CE0-CE45-491B-9EDF-6F91CDBD9880}"
+		#DEFINE PARALLELFOXA_CLSID "{2080588E-D21B-4ACE-A1DF-761CF2A296D5}"
 		
 		This.lMTDLL = llMTDLL
 		This.oParPoolMgr = loParPoolMgr
 		
+		Do Case
+		Case Version(5) >= 1000	&& VFP Advanced
+			lcVFPProgID = "VisualFoxpro.Application.a"
+			lcParallelFoxProgID = "ParallelFoxA.Application"
+			lcRegFreeParallelFox = "ParallelFoxA.exe"
+			lcRegFreeClassID = PARALLELFOXA_CLSID 
+			* MTDLL crashes due to problems with ExecScript(), so use VFP9 version for now
+		*	lcMTDLLProgID = "ParallelFoxMTA.Application"
+			lcMTDLLProgID = "ParallelFoxMT.Application"
+		Otherwise	&& VFP 9.0
+			lcVFPProgID = "VisualFoxPro.Application." + SUBSTR(VERSION(4),2,1)
+			lcParallelFoxProgID = "ParallelFox.Application"
+			lcRegFreeParallelFox = "ParallelFox.exe"
+			lcRegFreeClassID = PARALLELFOX_CLSID 
+			lcMTDLLProgID = "ParallelFoxMT.Application"
+		EndCase 
 		This.nWorkerNum = lnWorkerNum
 		* Debug mode starts workers in full VFP.
 		If llDebugMode and _VFP.StartMode = 0
-			loVFP = CreateObject("VisualFoxPro.Application." + SUBSTR(VERSION(4),2,1))
+			loVFP = CreateObject(lcVFPProgID)
 			loVFP.Visible = .t.
 			This.lDebugMode = .t.
 			This.lMTDLL = .f.
@@ -2342,15 +2373,15 @@ DEFINE CLASS workerproxy AS custom
 				* Prevent worker EXE from stealing focus
 				DECLARE INTEGER LockSetForegroundWindow IN user32 INTEGER uLockCode
 				LockSetForegroundWindow(1) && lock		
-				If  This.IsRegistered("ParallelFox.Application") or !File("ParallelFox.exe")
+				If  This.IsRegistered(lcParallelFoxProgID) or !File(lcRegFreeParallelFox)
 					* Instantiate registered COM object
-					This.oApplication = CreateObject("ParallelFox.Application")
+					This.oApplication = CreateObject(lcParallelFoxProgID)
 				Else 
 					* Use reg-free COM to launch ParallelFox COM Server
 					Local lcRun
-					lcRun = [Run /n "] + FullPath("ParallelFox.exe") + [" /automation -Embedding]
+					lcRun = [Run /n "] + FullPath(lcRegFreeParallelFox) + [" /automation -Embedding]
 					&lcRun
-					This.oApplication = CreateObjectEx(PARALLELFOX_CLSID, GetEnv("COMPUTERNAME"))
+					This.oApplication = CreateObjectEx(lcRegFreeClassID, GetEnv("COMPUTERNAME"))
 				EndIf 
 				LockSetForegroundWindow(2) && unlock
 				loVFP = This.oApplication.VFP
@@ -2379,6 +2410,7 @@ DEFINE CLASS workerproxy AS custom
 			loThreadHandler = NewObject("ThreadHandler", "ParallelFox.vcx")
 			This.oThreadHandler = loThreadHandler
 			loThreadHandler.oEvents = This.oEvents
+			loThreadHandler.cWorkerCOMProgID = lcMTDLLProgID 
 			loThreadHandler.StartThread(lcDirectory, This.oParPoolMgr.cWorkerClass, lcWorkerVCX, lcWorkerApp, lcProcedureFile)
 		Else 
 			lcWorkerVCX = FullPath(This.oParPoolMgr.cWorkerLibrary)
@@ -2396,7 +2428,7 @@ DEFINE CLASS workerproxy AS custom
 			EndIf 
 			This.oWorker.SetWorkerEvents(This.oEvents)
 		EndIf 
-		
+		 
 	ENDPROC
 
 	PROCEDURE isregistered		&& Check if COM object is registered.

@@ -45,6 +45,7 @@ EndProc
 
 Procedure Query1
 	Set Path To "..;examples" Additive 
+	SET EXCLUSIVE Off
 	Local Worker as Worker of ParallelFox.vcx
 	Worker = NewObject("Worker", "ParallelFox.vcx")
 	? Program()
@@ -55,6 +56,7 @@ EndProc
 
 Procedure Query2
 	Set Path To "..;examples" Additive 
+	SET EXCLUSIVE Off
 	Local Worker as Worker of ParallelFox.vcx
 	Worker = NewObject("Worker", "ParallelFox.vcx")
 	? Program()
@@ -65,6 +67,7 @@ EndProc
 
 Procedure Query3
 	Set Path To "..;examples" Additive 
+	SET EXCLUSIVE Off
 	Local Worker as Worker of ParallelFox.vcx
 	Worker = NewObject("Worker", "ParallelFox.vcx")
 	? Program()
