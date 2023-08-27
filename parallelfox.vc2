@@ -557,6 +557,7 @@ DEFINE CLASS parallel AS custom
 		*m: onerror		&& Set up global handler for worker errors. Available variables are nError, cMethod, nLine, cMessage, cCode. Example: Parallel.OnError("Do MyErrorHandler with nError, cMethod, nLine, cMessage, cCode")
 		*m: setinstance		&& Set instance of parallel pool manager, creating new instance if necessary.
 		*m: setmultithreaded		&& Set .T. to use in-process multithreaded DLL workers. Otherwise, out-of-process EXEs are used.
+		*m: setregfreecom		&& Set .T. to use out-of-process COM EXE without requiring registration. Does not apply to debug mode or in-process MTDLL.
 		*m: setworkerclass		&& Change worker class from default. lcClass and lcLibrary are used in debug mode.
 		*m: setworkercount		&& Set number of workers. Defaults to CPU count. Set before starting workers.
 		*m: startworkers		&& Start worker processes.
@@ -596,6 +597,7 @@ DEFINE CLASS parallel AS custom
 		<memberdata name="createtemptable" display="CreateTempTable"/>
 		<memberdata name="deletetemptable" display="DeleteTempTable"/>
 		<memberdata name="cancel" display="Cancel"/>
+		<memberdata name="setregfreecom" display="SetRegFreeCOM"/>
 		</VFPData>		&& XML Metadata for customizable properties
 	
 	PROCEDURE bindevent		&& Bind to worker events: "Complete", "UpdateProgress", "ReturnData", "ReturnError".
@@ -868,6 +870,18 @@ DEFINE CLASS parallel AS custom
 		
 	ENDPROC
 
+	PROCEDURE setregfreecom		&& Set .T. to use out-of-process COM EXE without requiring registration. Does not apply to debug mode or in-process MTDLL.
+		* Set .T. to use out-of-process COM EXE without requiring registration. 
+		* Does not apply to debug mode or in-process MTDLL.
+		* Include path to EXE if not in current path
+		Lparameters llRegFreeCOM, lcRegFreePath
+		
+		This.oParPoolMgr.lRegFreeCOM = llRegFreeCOM
+		If !Empty(lcRegFreePath)
+			This.cRegFreePath = lcRegFreePath
+		EndIf 
+	ENDPROC
+
 	PROCEDURE setworkerclass		&& Change worker class from default. lcClass and lcLibrary are used in debug mode.
 		* Change worker class from default. lcClass and lcLibrary are used in debug mode.
 		Lparameters cCOMProgID, cClass, cLibrary
@@ -1017,11 +1031,13 @@ DEFINE CLASS parpoolmgr AS amanager OF "parallelfox.vcx"
 		*p: cinstancename		&& Name of current pool manager instance.
 		*p: commandqueue		&& Command queue collection.
 		*p: conerror		&& On Error command.
+		*p: cregfreepath		&& Path to registration-free COM EXE if not in current path.
 		*p: cworkerclass		&& Worker class name (used in debug mode).
 		*p: cworkercomprogid		&& COM ProgID for worker class.
 		*p: cworkerlibrary		&& Worker class library (used in debug mode).
 		*p: ldebugmode		&& Start workers in Debug mode.
 		*p: lmtdll		&& Set .T. to use in-process multithreaded DLL workers. Otherwise, out-of-process EXEs are used.
+		*p: lregfreecom		&& Set .T. to use out-of-process COM EXE without requiring registration. Does not apply to debug mode or in-process MTDLL.
 		*p: nbusyworkers		&& Number of workers currently processing commands.
 		*p: ncpucount		&& Number of logical processors on machine.
 		*p: nprocessing		&& Number of times ProcessQueue has been called.
@@ -1034,11 +1050,13 @@ DEFINE CLASS parpoolmgr AS amanager OF "parallelfox.vcx"
 	cinstancename = 		&& Name of current pool manager instance.
 	commandqueue = 		&& Command queue collection.
 	conerror = This.DisplayErrors(nError, cMethod, nLine, cMessage, cCode)		&& On Error command.
+	cregfreepath = 		&& Path to registration-free COM EXE if not in current path.
 	cworkerclass = WorkerMgr		&& Worker class name (used in debug mode).
 	cworkercomprogid = ParallelFox.WorkerMgr		&& COM ProgID for worker class.
 	cworkerlibrary = ParallelFox.vcx		&& Worker class library (used in debug mode).
 	ldebugmode = .F.		&& Start workers in Debug mode.
 	lmtdll = .F.		&& Set .T. to use in-process multithreaded DLL workers. Otherwise, out-of-process EXEs are used.
+	lregfreecom = .F.		&& Set .T. to use out-of-process COM EXE without requiring registration. Does not apply to debug mode or in-process MTDLL.
 	Name = "parpoolmgr"
 	nbusyworkers = 0		&& Number of workers currently processing commands.
 	ncpucount = 0		&& Number of logical processors on machine.
@@ -1070,6 +1088,8 @@ DEFINE CLASS parpoolmgr AS amanager OF "parallelfox.vcx"
 		<memberdata name="lmtdll" display="lMTDLL"/>
 		<memberdata name="cinstancename" display="cInstanceName"/>
 		<memberdata name="cancel" display="Cancel"/>
+		<memberdata name="lregfreecom" display="lRegFreeCOM"/>
+		<memberdata name="cregfreepath" display="cRegFreePath"/>
 		</VFPData>
 	
 	PROCEDURE cancel		&& Clear remaining queue and set IsCancelled property for all workers.
@@ -2350,7 +2370,7 @@ DEFINE CLASS workerproxy AS custom
 			ERROR "ParallelFox is not functional with VFP Advanced 64-bit version."
 			lcVFPProgID = "VisualFoxpro.Application.a"
 			lcParallelFoxProgID = "ParallelFox64.Application"
-			lcRegFreeParallelFox = "ParallelFox64.exe"
+			lcRegFreeParallelFox = Evl(This.oParPoolMgr.cRegFreePath, "ParallelFox64.exe")
 			lcRegFreeClassID = PARALLELFOX64_CLSID 
 			* MTDLL crashes due to problems with ExecScript(), so use VFP9 version for now
 		*	lcMTDLLProgID = "ParallelFoxMTA.Application"
@@ -2358,7 +2378,7 @@ DEFINE CLASS workerproxy AS custom
 		Case Version(5) >= 1000	&& VFP Advanced 32-bit
 			lcVFPProgID = "VisualFoxpro.Application.a"
 			lcParallelFoxProgID = "ParallelFoxA.Application"
-			lcRegFreeParallelFox = "ParallelFoxA.exe"
+			lcRegFreeParallelFox = Evl(This.oParPoolMgr.cRegFreePath, "ParallelFoxA.exe")
 			lcRegFreeClassID = PARALLELFOXA_CLSID 
 			* MTDLL crashes due to problems with ExecScript(), so use VFP9 version for now
 		*	lcMTDLLProgID = "ParallelFoxMTA.Application"
@@ -2366,7 +2386,7 @@ DEFINE CLASS workerproxy AS custom
 		Otherwise	&& VFP 9.0
 			lcVFPProgID = "VisualFoxPro.Application." + SUBSTR(VERSION(4),2,1)
 			lcParallelFoxProgID = "ParallelFox.Application"
-			lcRegFreeParallelFox = "ParallelFox.exe"
+			lcRegFreeParallelFox = Evl(This.oParPoolMgr.cRegFreePath, "ParallelFox.exe")
 			lcRegFreeClassID = PARALLELFOX_CLSID 
 			lcMTDLLProgID = "ParallelFoxMT.Application"
 		EndCase 
@@ -2384,11 +2404,14 @@ DEFINE CLASS workerproxy AS custom
 				* Prevent worker EXE from stealing focus
 				DECLARE INTEGER LockSetForegroundWindow IN user32 INTEGER uLockCode
 				LockSetForegroundWindow(1) && lock		
-				If  This.IsRegistered(lcParallelFoxProgID) or !File(lcRegFreeParallelFox)
+				If !This.oParPoolMgr.lRegFreeCOM && This.IsRegistered(lcParallelFoxProgID) or !File(lcRegFreeParallelFox)
 					* Instantiate registered COM object
 					This.oApplication = CreateObject(lcParallelFoxProgID)
 				Else 
 					* Use reg-free COM to launch ParallelFox COM Server
+					If !File(lcRegFreeParallelFox)
+						Error 1, lcRegFreeParallelFox
+					EndIf 
 					Local lcRun
 					lcRun = [Run /n "] + FullPath(lcRegFreeParallelFox) + [" /automation -Embedding]
 					&lcRun

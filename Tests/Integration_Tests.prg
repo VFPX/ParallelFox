@@ -935,6 +935,29 @@ DEFINE CLASS Integration_Tests as FxuTestCase OF FxuTestCase.prg
 		Return This.Worker_Version_Matches_Main_Process()
 	EndFunc 
 
+	Function Reg_Free_COM_DoCmd_Runs
+				Local Parallel as Parallel, lnI
+		Parallel = NewObject("Parallel", "ParallelFox.vcx")
+		
+		Parallel.BindEvent("ReturnError", This.oErrorHandler, "HandleError")
+		Parallel.SetWorkerCount(This.nWorkerCount)
+		Parallel.SetMultiThreaded(This.lMTDLL)
+		Parallel.SetRegFreeCOM(.t.)
+		If This.lDebugMode
+			* Short pause to let previous instances of VFP close, or may get error
+			Inkey(1, "H")
+		EndIf 
+		Parallel.StartWorkers(This.cTestHelperFile,,This.lDebugMode)
+				
+		For lnI = 1 to This.nIterations
+			Parallel.DoCmd([? "FoxPro Rocks"], This.lAllWorkers)
+		EndFor
+
+		* Wait window 
+		Parallel.StopWorkers()	
+		Parallel.Wait()
+		Parallel.SetRegFreeCOM(.f.) && make sure doesn't affect other tests
+	EndFunc 
 
 **********************************************************************
 ENDDEFINE
