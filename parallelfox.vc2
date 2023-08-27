@@ -2339,12 +2339,23 @@ DEFINE CLASS workerproxy AS custom
 		
 		#DEFINE PARALLELFOX_CLSID "{76DE0CE0-CE45-491B-9EDF-6F91CDBD9880}"
 		#DEFINE PARALLELFOXA_CLSID "{2080588E-D21B-4ACE-A1DF-761CF2A296D5}"
+		#DEFINE PARALLELFOX64_CLSID "{EF323FE2-C5E2-448B-A6A6-0BDE249849D3}"
 		
 		This.lMTDLL = llMTDLL
 		This.oParPoolMgr = loParPoolMgr
 		
 		Do Case
-		Case Version(5) >= 1000	&& VFP Advanced
+		Case Version(5) >= 1000 and _Win64 = .t.	&& VFP Advanced 64-bit
+			* VFPA64 workers crash, probably when calling back into main process. More testing required.
+			ERROR "ParallelFox is not functional with VFP Advanced 64-bit version."
+			lcVFPProgID = "VisualFoxpro.Application.a"
+			lcParallelFoxProgID = "ParallelFox64.Application"
+			lcRegFreeParallelFox = "ParallelFox64.exe"
+			lcRegFreeClassID = PARALLELFOX64_CLSID 
+			* MTDLL crashes due to problems with ExecScript(), so use VFP9 version for now
+		*	lcMTDLLProgID = "ParallelFoxMTA.Application"
+			lcMTDLLProgID = "ParallelFoxMT.Application"
+		Case Version(5) >= 1000	&& VFP Advanced 32-bit
 			lcVFPProgID = "VisualFoxpro.Application.a"
 			lcParallelFoxProgID = "ParallelFoxA.Application"
 			lcRegFreeParallelFox = "ParallelFoxA.exe"
