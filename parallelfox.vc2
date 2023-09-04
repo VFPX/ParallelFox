@@ -874,7 +874,7 @@ DEFINE CLASS parallel AS custom
 		* Set .T. to use out-of-process COM EXE without requiring registration. 
 		* Does not apply to debug mode or in-process MTDLL.
 		* Include path to EXE if not in current path
-		Lparameters llRegFreeCOM, lcRegFreePath
+		Lparameters lRegFreeCOM, cRegFreePath
 		
 		This.oParPoolMgr.lRegFreeCOM = llRegFreeCOM
 		If !Empty(lcRegFreePath)
