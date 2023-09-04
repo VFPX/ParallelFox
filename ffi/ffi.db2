@@ -195,9 +195,9 @@
 
 		<RECORD>
 			<MEMBER>Parallel.BindEvent</MEMBER>
-			<TYPE>F</TYPE>
+			<TYPE>M</TYPE>
 			<DESCRIP><![CDATA[Bind to worker events: "Complete", "UpdateProgress", "ReturnData", "ReturnError".]]></DESCRIP>
-			<TIP><![CDATA[cEvent, oEventHandler, cDelegate, [nFlags]]]></TIP>
+			<TIP><![CDATA[BindEvent(cEvent, oEventHandler, cDelegate, [nFlags])]]></TIP>
 			<SCRIPT><![CDATA[lparameters toFoxCode, ;
   toData
 local lcMember, ;
@@ -810,10 +810,10 @@ Functional on Windows XP SP3, Windows Server 2003, and later only.]]></TIP>
 
 		<RECORD>
 			<MEMBER>Parallel.SetMultiThreaded</MEMBER>
-			<TYPE>F</TYPE>
+			<TYPE>M</TYPE>
 			<DESCRIP><![CDATA[Set to use in-process multithreaded DLL workers or out-of-process EXEs.
 Must be set before StartWorkers is called.]]></DESCRIP>
-			<TIP><![CDATA[SetMultiThreaded(\b lMTDLL \b0)
+			<TIP><![CDATA[SetMultiThreaded(> lMTDLL <)
 Set .T. to use in-process multithreaded DLL workers. Otherwise, out-of-process EXEs are used.]]></TIP>
 			<SCRIPT></SCRIPT>
 			<CLASS></CLASS>
@@ -827,8 +827,40 @@ Set .T. to use in-process multithreaded DLL workers. Otherwise, out-of-process E
 Call before StartWorkers() and other Set... functions.]]></DESCRIP>
 			<TIP><![CDATA[SetInstance(> [cInstanceName] <)
 Name of instance to set/switch to.
-Default instance name is "DEFAULT"., Two]]></TIP>
+Default instance name is "DEFAULT".]]></TIP>
 			<SCRIPT></SCRIPT>
+			<CLASS></CLASS>
+			<LIBRARY></LIBRARY>
+		</RECORD>
+
+		<RECORD>
+			<MEMBER>Parallel.SetRegFreeCOM</MEMBER>
+			<TYPE>M</TYPE>
+			<DESCRIP><![CDATA[Set to use out-of-process COM EXE without requiring registration.
+Does not apply to debug mode or in-process MTDLL.]]></DESCRIP>
+			<TIP><![CDATA[SetRegFreeCOM(lRegFreeCOM, [cRegFreePath])]]></TIP>
+			<SCRIPT><![CDATA[lparameters toFoxCode, ;
+  toData
+local lcMember, ;
+  lnPos, ;
+  lcParameters, ;
+  lnParameters
+lcMember     = alltrim(substr(toData.Member, rat('.', toData.Member) + 1))
+lnPos        = atc(lcMember, toFoxCode.FullLine)
+lcParameters = substr(toFoxCode.FullLine, lnPos + len(lcMember))
+lnParameters = occurs(',', lcParameters) + 1
+do case
+  case lnParameters = 1
+    toFoxCode.ValueTip  = 'SetRegFreeCOM(> lRegFreeCOM <, [cRegFreePath])' ;
+    	+ chr(13) + "lRegFreeCOM: Set .T. to use out-of-process COM EXE without requiring registration. ." ;
+    	+ chr(13) + "Does not apply to debug mode or in-process MTDLL.."
+    toFoxCode.ValueType = 'T'
+  case lnParameters = 2
+    toFoxCode.ValueTip  = 'SetRegFreeCOM(lRegFreeCOM, > [cRegFreePath] <)' ;
+    	+ chr(13) + "cRegFreePath (optional): Include path to EXE if not in current path."
+    toFoxCode.ValueType = 'T'
+endcase
+]]></SCRIPT>
 			<CLASS></CLASS>
 			<LIBRARY></LIBRARY>
 		</RECORD>
