@@ -209,7 +209,6 @@ DEFINE CLASS commandhandler AS custom
 		lcCommand = This.cCommand
 		&lcCommand
 		
-		
 	ENDPROC
 
 ENDDEFINE
@@ -317,6 +316,14 @@ DEFINE CLASS events AS custom
 		
 		This.nCommands = This.nCommands - 1 
 		
+	ENDPROC
+
+	PROCEDURE Destroy
+		Debugout Time(0), Program()
+		
+		If !IsNull(This.oHandlers) and This.oHandlers.Count > 0
+			This.oHandlers.Remove(-1)	&& remove all simple event handlers from collection
+		EndIf 
 	ENDPROC
 
 	PROCEDURE getdatasession		&& Return data session ID of events object.
@@ -746,9 +753,6 @@ DEFINE CLASS parallel AS custom
 		Debugout Time(0), Program()
 		
 		UnBindEvents(This)
-		
-		This._Events.oHandlers.Remove(-1)	&& remove all simple event handlers from collection
-		
 	ENDPROC
 
 	PROCEDURE detecthyperthreading		&& Returns .T. when HyperThreading is enabled.
@@ -876,9 +880,9 @@ DEFINE CLASS parallel AS custom
 		* Include path to EXE if not in current path
 		Lparameters lRegFreeCOM, cRegFreePath
 		
-		This.oParPoolMgr.lRegFreeCOM = llRegFreeCOM
-		If !Empty(lcRegFreePath)
-			This.cRegFreePath = lcRegFreePath
+		This.oParPoolMgr.lRegFreeCOM = lRegFreeCOM
+		If !Empty(cRegFreePath)
+			This.cRegFreePath = cRegFreePath
 		EndIf 
 	ENDPROC
 
@@ -1174,7 +1178,6 @@ DEFINE CLASS parpoolmgr AS amanager OF "parallelfox.vcx"
 		
 		* Prevent error if run in the middle of CLEAR ALL
 		If Type("This.Workers.Count") = "U" or Type("This.CommandQueue.Count") = "U"
-			? "Exiting ProcessQueue"
 			Return 
 		EndIf 
 		
@@ -1542,33 +1545,21 @@ DEFINE CLASS threadhandler AS custom
 		Text to This.cMTScript TEXTMERGE NOSHOW 
 			Lparameters loThreadHandler as ThreadHandler of ParallelFox.vcx
 			Local loWorkerMgr as WorkerMgr of ParallelFox.vcx, loException as Exception, lcException
-		*JAL*	cLog = "C:\VFPX\ParallelFox\mt.log"
-		*JAL*	ON ERROR StrToFile(CHR(13) + "-- Error: " + Message() + Chr(13), cLog, 1)	
-		*JAL*	StrToFile(CHR(13) + "Program: " + Program() + Chr(13), cLog, 1)	
-		*JAL*	StrToFile("Procedure: " + SET("Procedure") + Chr(13), cLog, 1)	
 			Try 
 				CD <<lcDirectory>>
-		*JAL*	StrToFile(FullPath("") + Chr(13), cLog, 1)		
 				loWorkerMgr = NewObject("<<lcWorkerClass>>", "<<lcWorkerVCX>>", "<<lcWorkerApp>>")
-		*JAL*	StrToFile("loWorkerMgr" + Chr(13), cLog, 1)		
 				* Not sure how I discovered this. Every object in VFP has a hidden Application property that
 				*	points to _VFP/Application in the process where it runs.
 				loWorkerMgr.SetMainProcess(loThreadHandler.Application, "<<lcWorkerApp>>")
-		*JAL*	StrToFile("loWorkerMgr.SetMainProcess" + Chr(13), cLog, 1)		
 				If !Empty("<<lcProcedureFile>>")
 					Set Procedure To "<<lcProcedureFile>>" Additive
-		*JAL*	StrToFile("Set Procedure: " + SET("Procedure") + Chr(13), cLog, 1)		
 				EndIf 
 			Catch to loException
-		*JAL*		StrToFile("Error: " + Message() + Chr(13), cLog, 1)		
 				loThreadHandler.oEvents.ReturnError(loException.ErrorNo, "Thread startup script: " + loException.Procedure, loException.LineNo, ;
 					loException.Message, loException.LineContents)
 			EndTry 
-		*JAL*	StrToFile("Before StartMTCommandLoop" + Chr(13), cLog, 1)		
 			loWorkerMgr.StartMTCommandLoop(loThreadHandler)
-		*JAL*	StrToFile("After StartMTCommandLoop" + Chr(13), cLog, 1)		
 		EndText 
-		*JAL*	StrToFile(This.cMTScript + Chr(13) + Chr(13), "C:\VFPX\ParallelFox\mt.log")
 		
 		This.CreateThread(This.cWorkerCOMProgID)
 		
@@ -1708,6 +1699,7 @@ DEFINE CLASS worker AS custom
 			Select (lcAlias)
 			lcDBC = CursorGetProp("Database")
 			Use
+			Set Database To (lcDBC)
 			Close Databases
 			Set Database To (lcCurrentDBC)
 			Select (lnCurrentArea)
@@ -2100,17 +2092,19 @@ DEFINE CLASS workermgr AS amanager OF "parallelfox.vcx"
 
 	PROCEDURE Init
 		_VFP.Caption = "ParallelFox Worker"
+		* Make sure ParallelFox.vcx can be found in workers
+		Set Path To (JustPath(This.ClassLibrary)) Additive
 		* Set Unattended mode unless in debug mode
 		* Make sure an error handler is in place on worker or displaying UI 
 		*	can cause worker to crash.
 		If _VFP.StartMode > 1
 			Sys(2335,0)
 			* Default error handler
-			_Screen.NewObject("oErrorHandler", "ErrorHandler", "ParallelFox.vcx")
+			_Screen.NewObject("oErrorHandler", "ErrorHandler", This.ClassLibrary)
 		EndIf 
 		Set TablePrompt Off
 		If _VFP.StartMode <> 5
-			This.oCmdTimer = NewObject("tmrCommand", "ParallelFox.vcx")
+			This.oCmdTimer = NewObject("tmrCommand", This.ClassLibrary)
 		EndIf 
 		
 		Return DoDefault()
