@@ -705,13 +705,13 @@ DEFINE CLASS parallel AS custom
 
 	PROCEDURE createtemptable		&& Create temporary table that can be used by workers with Worker.OpenTempTable().
 		* Create temporary table that can be used by workers with Worker.OpenTempTable()
-		Lparameters lcAlias
-		Local lcTempTable, lcAlias
+		Lparameters cAlias
+		Local lcTempTable
 		
-		lcAlias = Evl(lcAlias, Alias())
+		cAlias = Evl(cAlias, Alias())
 		
 		Do while .t.
-			lcTempTable = Addbs(Sys(2023)) + Alltrim(lcAlias) + Sys(2015) + "_" + Transform(_VFP.ThreadId)
+			lcTempTable = Addbs(Sys(2023)) + Alltrim(cAlias) + Sys(2015) + "_" + Transform(_VFP.ThreadId)
 			If !File(lcTempTable + ".DBC") and !File(lcTempTable + ".DBF")
 				Exit && filename is good
 			EndIf 
@@ -721,7 +721,7 @@ DEFINE CLASS parallel AS custom
 		lcDBC = Dbc()
 		Create Database (lcTempTable + ".DBC")
 		
-		Select (lcAlias)
+		Select (cAlias)
 		Copy To (lcTempTable) DATABASE (lcTempTable)
 		
 		* Database is opened exclusively, so close it
@@ -734,14 +734,14 @@ DEFINE CLASS parallel AS custom
 
 	PROCEDURE deletetemptable		&& Delete temporary table previously created with CreateTempTable(). Make sure Worker.CloseTempTable() is used to close table/DBC in workers.
 		* Delete temporary table previously created with CreateTempTable()
-		* Make sure Worker.CloseTempTable() is used to close table/DBC in workers
-		Lparameters lcTempTable
+		* Make sure Worker.CloseTempTable() is used to close table/DBC in workers before deleting
+		Lparameters cTempTable
 		Local lcSafety, lcTempFiles
 		
 		lcSafety = Set("Safety")
 		Try
 			Set Safety Off
-			lcTempFiles = Addbs(Sys(2023)) + Alltrim(lcTempTable) + ".*"
+			lcTempFiles = Addbs(Sys(2023)) + Alltrim(cTempTable) + ".*"
 			Erase (lcTempFiles)
 		Finally
 			Set Safety &lcSafety
@@ -1690,13 +1690,13 @@ DEFINE CLASS worker AS custom
 	
 	PROCEDURE closetemptable		&& Close temporary table and associated DBC.
 		* Close temporary table and associated DBC
-		Lparameters lcAlias
+		Lparameters cAlias
 		Local lnCurrentArea, lcCurrentDBC, lcDBC
 		
-		If Used(lcAlias)
+		If Used(cAlias)
 			lnCurrentArea = Select()
 			lcCurrentDBC = Dbc()
-			Select (lcAlias)
+			Select (cAlias)
 			lcDBC = CursorGetProp("Database")
 			Use
 			Set Database To (lcDBC)
@@ -1779,12 +1779,12 @@ DEFINE CLASS worker AS custom
 
 	PROCEDURE opentemptable		&& Open temporary table created in main process.
 		* Open temporary table created in main process
-		Lparameters lcTempTable, lcAlias
+		Lparameters cTempTable, cAlias
 		
-		lcAlias = Evl(lcAlias, lcTempTable)
+		cAlias = Evl(cAlias, cTempTable)
 		
 		Select 0
-		Use (Addbs(Sys(2023)) + lcTempTable) Alias (lcAlias) Shared
+		Use (Addbs(Sys(2023)) + cTempTable) Alias (cAlias) Shared
 		
 	ENDPROC
 
