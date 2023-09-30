@@ -196,8 +196,8 @@
 		<RECORD>
 			<MEMBER>Parallel.BindEvent</MEMBER>
 			<TYPE>M</TYPE>
-			<DESCRIP><![CDATA[Bind to worker events: "Complete", "UpdateProgress", "ReturnData", "ReturnError".]]></DESCRIP>
-			<TIP><![CDATA[BindEvent(cEvent, oEventHandler, cDelegate, [nFlags])]]></TIP>
+			<DESCRIP><![CDATA[Bind to worker events: "Complete", "UpdateProgress", "ReturnData", "ReturnError", "ReturnCursor".]]></DESCRIP>
+			<TIP><![CDATA[BindEvent(cEvent, oEventHandler | cCommand, cDelegate, [nFlags])]]></TIP>
 			<SCRIPT><![CDATA[lparameters toFoxCode, ;
   toData
 local lcMember, ;
@@ -226,12 +226,13 @@ do case
     endif
     toFoxCode.ValueType = 'L'
   case lnParameters = 2
-    toFoxCode.ValueTip  = 'BindEvent(eEvent,  > oEventHandler <, cDelegate,  [nFlags])' ;
-    	+ chr(13) + "oEventHandler: Specifies the object, which must be a valid Visual FoxPro object, handling the event."
+    toFoxCode.ValueTip  = 'BindEvent(eEvent,  > oEventHandler | cCommand <, cDelegate,  [nFlags])' ;
+    	+ chr(13) + "oEventHandler: Specifies the object, which must be a valid Visual FoxPro object, handling the event." ;
+    	+ chr(13) + "cCommand: A single command to be passed as a string and executed rather than requiring an object as the event handler."
     toFoxCode.ValueType = 'T'
   case lnParameters = 3
-    toFoxCode.ValueTip  = 'BindEvent(eEvent,  oEventHandler, > cDelegate <, [nFlags])' ;
-    	+ chr(13) + [cDelegate: Specifies the method, or "delegate", that handles the event for oEventHandler. The delegate method must have the same parameters as the event specified in cEvent.]
+    toFoxCode.ValueTip  = 'BindEvent(eEvent,  oEventHandler | cCommand, > cDelegate <, [nFlags])' ;
+    	+ chr(13) + [cDelegate: Specifies the method, or "delegate", that handles the event for oEventHandler. The delegate method must have the same parameters as the event specified in cEvent. Not used if cCommand is specified rather than oEventHandler.]
     toFoxCode.ValueType = 'T'
   case lnParameters = 4
 text to toFoxCode.ValueTip  noshow
@@ -814,7 +815,8 @@ Functional on Windows XP SP3, Windows Server 2003, and later only.]]></TIP>
 			<DESCRIP><![CDATA[Set to use in-process multithreaded DLL workers or out-of-process EXEs.
 Must be set before StartWorkers is called.]]></DESCRIP>
 			<TIP><![CDATA[SetMultiThreaded(> lMTDLL <)
-Set .T. to use in-process multithreaded DLL workers. Otherwise, out-of-process EXEs are used.]]></TIP>
+Set .T. to use in-process multithreaded DLL workers. Otherwise, out-of-process EXEs are used.
+Must be set before StartWorkers is called.]]></TIP>
 			<SCRIPT></SCRIPT>
 			<CLASS></CLASS>
 			<LIBRARY></LIBRARY>
@@ -826,8 +828,8 @@ Set .T. to use in-process multithreaded DLL workers. Otherwise, out-of-process E
 			<DESCRIP><![CDATA[Set/switch to instance of parallel pool manager, creating new instance if necessary.
 Call before StartWorkers() and other Set... functions.]]></DESCRIP>
 			<TIP><![CDATA[SetInstance(> [cInstanceName] <)
-Name of instance to set/switch to.
-Default instance name is "DEFAULT".]]></TIP>
+Name of instance to set/switch to. Default instance name is "DEFAULT".
+Call before StartWorkers() and other Set... functions.]]></TIP>
 			<SCRIPT></SCRIPT>
 			<CLASS></CLASS>
 			<LIBRARY></LIBRARY>
@@ -852,8 +854,8 @@ lnParameters = occurs(',', lcParameters) + 1
 do case
   case lnParameters = 1
     toFoxCode.ValueTip  = 'SetRegFreeCOM(> lRegFreeCOM <, [cRegFreePath])' ;
-    	+ chr(13) + "lRegFreeCOM: Set .T. to use out-of-process COM EXE without requiring registration. ." ;
-    	+ chr(13) + "Does not apply to debug mode or in-process MTDLL.."
+    	+ chr(13) + "lRegFreeCOM: Set .T. to use out-of-process COM EXE without requiring registration." ;
+    	+ chr(13) + "Does not apply to debug mode or in-process MTDLL."
     toFoxCode.ValueType = 'T'
   case lnParameters = 2
     toFoxCode.ValueTip  = 'SetRegFreeCOM(lRegFreeCOM, > [cRegFreePath] <)' ;
@@ -861,6 +863,88 @@ do case
     toFoxCode.ValueType = 'T'
 endcase
 ]]></SCRIPT>
+			<CLASS></CLASS>
+			<LIBRARY></LIBRARY>
+		</RECORD>
+
+		<RECORD>
+			<MEMBER>Parallel.CreateTempTable</MEMBER>
+			<TYPE>M</TYPE>
+			<DESCRIP><![CDATA[Create temporary table that can be used by workers.
+Returns name of temporary table to be opened with Worker.OpenTempTable().]]></DESCRIP>
+			<TIP><![CDATA[CreateTempTable(> cAlias <)
+cAlias: Alias of currently open cursor used to create temporary table.
+Returns name of temporary table to be opened with Worker.OpenTempTable().]]></TIP>
+			<SCRIPT></SCRIPT>
+			<CLASS></CLASS>
+			<LIBRARY></LIBRARY>
+		</RECORD>
+
+		<RECORD>
+			<MEMBER>Parallel.DeleteTempTable</MEMBER>
+			<TYPE>M</TYPE>
+			<DESCRIP><![CDATA[Delete temporary table previously created with CreateTempTable().
+Make sure Worker.CloseTempTable() is used to close table in workers before deleting.]]></DESCRIP>
+			<TIP><![CDATA[DeleteTempTable(> cTempTable <)
+cTempTable: Name of temporary table to be deleted, previously returned by CreateTempTable().
+Make sure Worker.CloseTempTable() is used to close table in workers before deleting.]]></TIP>
+			<SCRIPT></SCRIPT>
+			<CLASS></CLASS>
+			<LIBRARY></LIBRARY>
+		</RECORD>
+
+		<RECORD>
+			<MEMBER>Worker.OpenTempTable</MEMBER>
+			<TYPE>M</TYPE>
+			<DESCRIP><![CDATA[Open temporary table created in main process.]]></DESCRIP>
+			<TIP><![CDATA[OpenTempTable(cTempTable, [cAlias])]]></TIP>
+			<SCRIPT><![CDATA[lparameters toFoxCode, ;
+  toData
+local lcMember, ;
+  lnPos, ;
+  lcParameters, ;
+  lnParameters
+lcMember     = alltrim(substr(toData.Member, rat('.', toData.Member) + 1))
+lnPos        = atc(lcMember, toFoxCode.FullLine)
+lcParameters = substr(toFoxCode.FullLine, lnPos + len(lcMember))
+lnParameters = occurs(',', lcParameters) + 1
+do case
+  case lnParameters = 1
+    toFoxCode.ValueTip  = 'OpenTempTable(> cTempTable <, [cAlias])' ;
+    	+ chr(13) + "cTempTable: Name of temporary table to open." ;
+    	+ chr(13) + "Previously returned by Parallel.CreateTempTable()."
+    toFoxCode.ValueType = 'T'
+  case lnParameters = 2
+    toFoxCode.ValueTip  = 'OpenTempTable(cTempTable, > [cAlias] <)' ;
+    	+ chr(13) + "cAlias (optional): Alias to use for temporary table in worker. If not specified, alias is the same as cTempTable."
+    toFoxCode.ValueType = 'T'
+endcase
+]]></SCRIPT>
+			<CLASS></CLASS>
+			<LIBRARY></LIBRARY>
+		</RECORD>
+
+		<RECORD>
+			<MEMBER>Worker.CloseTempTable</MEMBER>
+			<TYPE>M</TYPE>
+			<DESCRIP><![CDATA[Close temporary table previously opened with Worker.OpenTempTable().]]></DESCRIP>
+			<TIP><![CDATA[CloseTempTable(> cAlias <)
+cAlias: Alias of temporary table to close.]]></TIP>
+			<SCRIPT></SCRIPT>
+			<CLASS></CLASS>
+			<LIBRARY></LIBRARY>
+		</RECORD>
+
+		<RECORD>
+			<MEMBER>Parallel.Cancel</MEMBER>
+			<TYPE>M</TYPE>
+			<DESCRIP><![CDATA[Cancel current parallel processing.
+Clears the remaining command queue and sets Worker.IsCancelled() to .T. for all workers.
+]]></DESCRIP>
+			<TIP><![CDATA[Cancel()
+Cancel current parallel processing.
+Clears the remaining command queue and sets Worker.IsCancelled() to .T. for all workers.]]></TIP>
+			<SCRIPT></SCRIPT>
 			<CLASS></CLASS>
 			<LIBRARY></LIBRARY>
 		</RECORD>
