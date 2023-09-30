@@ -3,13 +3,25 @@
 * Registering ParallelFox.exe requires elevation on Windows Vista/7
 * ParallelFox /regserver without elevation will fail, but will not notify user of failure.
 * This program requests elevation and confirms registration.
+Local llSuccess, lcMessage
 ShellExec(FullPath("ParallelFox.exe"),"RunAs","/unregserver")
-Wait "Unregistering ParallelFox..." window timeout .5	&& wait for registration to complete
+ShellExec("RegSvr32.exe","RunAs", "/s /u " + FullPath("MTDLL/ParallelFoxMT.dll") )
+Wait "Unregistering ParallelFox..." window timeout 1	&& wait for registration to complete
+lcMessage = ""
+llSuccess = .t.
 If !IsRegistered("ParallelFox.Application")
-	MessageBox("ParallelFox was unregistered successfully.", 64, "ParallelFox")
+	lcMessage = "ParallelFox.exe was unregistered successfully."
 Else
-	MessageBox("ParallelFox was NOT unregistered.", 16, "ParallelFox")
+	llSuccess = .f.
+	lcMessage = "ParallelFox.exe was NOT unregistered."
 EndIf 
+If !IsRegistered("ParallelFoxMT.Application")
+	lcMessage = lcMessage + Chr(13) + "ParallelFoxMT.dll was unregistered successfully."
+Else
+	llSuccess = .f.
+	lcMessage = lcMessage + Chr(13) + "ParallelFoxMT.dll was NOT unregistered."
+EndIf 
+MessageBox(lcMessage, Iif(llSuccess, 64, 16), "ParallelFox")
 
 If MessageBox("Uninstall ParallelFox IntelliSense scripts?", 4+32, "ParallelFox IntelliSense") = 6
 	Do UninstallFFI
