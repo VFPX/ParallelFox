@@ -3,13 +3,25 @@
 * Registering ParallelFox.exe requires elevation on Windows Vista/7
 * ParallelFox /regserver without elevation will fail, but will not notify user of failure.
 * This program requests elevation and confirms registration.
-ShellExec(FullPath("ParallelFox.exe"),"RunAs","/regserver")
-Wait "Registering ParallelFox..." window timeout .5	&& wait for registration to complete
+Local llSuccess, lcMessage
+ShellExec(FullPath("ParallelFox.exe"),"RunAs", "/regserver")
+ShellExec("RegSvr32.exe","RunAs", "/s " + FullPath("MTDLL/ParallelFoxMT.dll") )
+Wait "Registering ParallelFox..." window timeout 1	&& wait for registration to complete
+lcMessage = ""
+llSuccess = .t.
 If IsRegistered("ParallelFox.Application")
-	MessageBox("ParallelFox was registered successfully.", 64, "ParallelFox")
+	lcMessage = "ParallelFox.exe was registered successfully."
 Else
-	MessageBox("ParallelFox was NOT registered.", 16, "ParallelFox")
+	llSuccess = .f.
+	lcMessage = "ParallelFox.exe was NOT registered."
 EndIf 
+If IsRegistered("ParallelFoxMT.Application")
+	lcMessage = lcMessage + Chr(13) + "ParallelFoxMT.dll was registered successfully."
+Else
+	llSuccess = .f.
+	lcMessage = lcMessage + Chr(13) + "ParallelFoxMT.dll was NOT registered."
+EndIf 
+MessageBox(lcMessage, Iif(llSuccess, 64, 16), "ParallelFox")
 
 If MessageBox("Do you want to install ParallelFox IntelliSense scripts? (Recommended)", 4+32, "ParallelFox IntelliSense") = 6
 	Do InstallFFI
