@@ -2320,7 +2320,9 @@ DEFINE CLASS workerproxy AS custom
 		This.lComplete = .t.
 		*JAL*	This.lBusy = .f.
 		*JAL*	This.oParPoolMgr.nBusyWorkers = This.oParPoolMgr.nBusyWorkers - 1 
-		This.oParPoolMgr.ProcessQueue()
+		If Vartype(This.oParPoolMgr) = "O" and !IsNull(This.oParPoolMgr)
+			This.oParPoolMgr.ProcessQueue()
+		EndIf 
 		
 	ENDPROC
 

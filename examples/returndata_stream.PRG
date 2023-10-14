@@ -12,7 +12,7 @@ Parallel.BindEvent("ReturnData", [? "Number of Units:", tPar1, "Time to Run:", t
 
 Parallel.Do("DoSomeWork")
 
-* Since there is no Parallel.Wait(), the cmain process remains active for input while code runs in background.
+* Since there is no Parallel.Wait(), the main process remains active for input while code runs in background.
 * Workers will not be stopped until work is complete.
 Parallel.StopWorkers()
 * Reset worker count to default

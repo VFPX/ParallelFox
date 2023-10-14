@@ -14,6 +14,8 @@ Parallel.StopWorkers()
 
 * Reset worker count to default
 Parallel.SetWorkerCount(Parallel.CPUCount)
+* Reset default global error handler
+Parallel.OnError("This.DisplayErrors(nError, cMethod, nLine, cMessage, cCode)")
 
 Procedure CauseError
 	Error "Test Error"

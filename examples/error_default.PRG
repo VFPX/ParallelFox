@@ -6,7 +6,7 @@ Parallel = NewObject("Parallel", "ParallelFox.vcx")
 * Error occurs on two workers and both will be reported
 Parallel.SetWorkerCount(2)
 Parallel.StartWorkers(FullPath("error_default.prg"))
-Parallel.Do("CauseError",, .t.)
+Parallel.Do("CauseError",,.t.)
 Parallel.Wait()
 Parallel.StopWorkers()
 

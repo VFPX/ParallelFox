@@ -10,7 +10,7 @@ Parallel.StartWorkers(FullPath("returndata_multiple.prg"))
 * Use command rather than object as handler.
 * IMPORTANT: Local variables are not in scope of command.
 * When using command, parameters returned from worker are named tPar1, tPar2, etc.
-Parallel.BindEvent("ReturnData", [? "Process:", tPar1, "Thread:", tPar2, "Random:", tPar3])
+Parallel.BindEvent("ReturnData", [? "Process:", tPar1, "Thread:", tPar2, "Unique:", tPar3])
 
 Wait "Running code in parallel..." Window Nowait
 Parallel.Call("GetWorkerInfo", .t.)

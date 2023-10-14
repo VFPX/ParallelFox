@@ -16,7 +16,7 @@ Parallel.SetWorkerCount(8)
 * It is typically an APP or EXE, and is often the same APP/EXE that is used in the main process, 
 * 	although it can be different.
 * For examples or debugging, it can also be a PRG.
-* In the case, the current program is used.
+* In this case, the current program is used.
 Parallel.StartWorkers(FullPath("basic_flow.prg"),,.f.)
 
 *** Run code in parallel
@@ -35,6 +35,10 @@ Wait clear
 *** Stop workers
 * Closes worker processes and frees up resources
 Parallel.StopWorkers()
+
+* Reset worker count to default
+Parallel.SetWorkerCount(Parallel.CPUCount)
+
 MessageBox("Code Complete.")
 
 Procedure SimulateWork

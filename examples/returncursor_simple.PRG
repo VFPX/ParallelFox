@@ -6,6 +6,7 @@ Parallel = NewObject("Parallel", "ParallelFox.vcx")
 * Use only one worker for this example
 Parallel.SetWorkerCount(1)
 Parallel.StartWorkers(FullPath("returncursor_simple.prg"))
+* Parallel.BindEvent("ReturnCursor", "Browse Last NoCaption NORMAL")
 
 Parallel.Do("GetUSACustomers",,,Home())
 Parallel.Wait()
