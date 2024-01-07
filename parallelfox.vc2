@@ -90,7 +90,7 @@ DEFINE CLASS amanager AS custom
 		
 		Debugout Time(0), Program()
 		
-		loParameters = NewObject("Parameters","ParallelFox.vcx")
+		loParameters = NewObject("Parameters",This.ClassLibrary)
 		loParameters.nPCount = lnPCount
 		* AddProperty(loParameters, "nPCount", lnPCount)
 		
@@ -232,7 +232,7 @@ DEFINE CLASS errorhandler AS custom
 		Local array laCallStack[1,6]
 		Local lnRow, lnErrorRow, lcCallStack
 		Local Worker as Worker
-		Worker = NewObject("Worker", "ParallelFox.vcx")
+		Worker = NewObject("Worker", This.ClassLibrary)
 		
 		* Add call stack to lcCode
 		AStackInfo(laCallStack)
@@ -624,7 +624,7 @@ DEFINE CLASS parallel AS custom
 		
 		If Vartype(oEventHandlerOrCommand) = "C"
 			* Use simple handler to execute one line of code when event fires
-			loCommandHandler = NewObject("CommandHandler", "ParallelFox.vcx")
+			loCommandHandler = NewObject("CommandHandler", This.ClassLibrary)
 			loCommandHandler.cCommand = oEventHandlerOrCommand
 			BindEvent(This._Events, cEvent, loCommandHandler, "ExecuteCommand", nFlags)
 			This._Events.oHandlers.Add(loCommandHandler) && keep handler in scope
@@ -830,7 +830,7 @@ DEFINE CLASS parallel AS custom
 		
 		This.CPUCount = This.oParPoolMgr.nCPUCount
 		
-		This._Events = NewObject("Events", "ParallelFox.vcx")
+		This._Events = NewObject("Events", This.ClassLibrary)
 		This.BindEvent("ReturnError", This.oParPoolMgr, "HandleError")
 		
 	ENDPROC
@@ -859,7 +859,7 @@ DEFINE CLASS parallel AS custom
 		If _Screen.ParPoolMgrs.GetKey(cInstanceName) > 0
 			This.oParPoolMgr = _Screen.ParPoolMgrs.Item(cInstanceName)
 		Else 
-			This.oParPoolMgr = NewObject("ParPoolMgr", "ParallelFox.vcx", "", cInstanceName)
+			This.oParPoolMgr = NewObject("ParPoolMgr", This.ClassLibrary, "", cInstanceName)
 			_Screen.ParPoolMgrs.Add(This.oParPoolMgr, cInstanceName)
 		EndIf 
 		
@@ -1125,7 +1125,7 @@ DEFINE CLASS parpoolmgr AS amanager OF "parallelfox.vcx"
 		Lparameters lnError, lcMethod, lnLine, lcMessage, lcCode
 		
 		If Vartype(This.oErrorList) <> "O" or IsNull(This.oErrorList)
-			This.oErrorList = NewObject("frmErrorList", "ParallelFox.vcx")
+			This.oErrorList = NewObject("frmErrorList", This.ClassLibrary)
 			This.oErrorList.Show()
 		EndIf 
 		
@@ -1294,7 +1294,7 @@ DEFINE CLASS parpoolmgr AS amanager OF "parallelfox.vcx"
 		
 		For lnWorker = 1 to lnWorkerCnt 
 			* Create command object
-			loCommand = NewObject("Command", "ParallelFox.vcx")
+			loCommand = NewObject("Command", This.ClassLibrary)
 			loCommand.cCommandType = Evl(lcCommandType, "")
 			loCommand.cCommand = Evl(lcCommand, "")
 			loCommand.cClass = Evl(lcClass, "")
@@ -1350,7 +1350,7 @@ DEFINE CLASS parpoolmgr AS amanager OF "parallelfox.vcx"
 		lcWOnTop = Wontop()
 		
 		For lnWorker = 1 to This.nWorkerCount
-			loWorkerProxy = NewObject("WorkerProxy", "ParallelFox.vcx", "", lcProcedureFile, lcDirectory, llDebugMode, lnWorker, This.lMTDLL, This)
+			loWorkerProxy = NewObject("WorkerProxy", This.ClassLibrary, "", lcProcedureFile, lcDirectory, llDebugMode, lnWorker, This.lMTDLL, This)
 			ComArray(loWorkerProxy, 11)
 			This.Workers.Add(loWorkerProxy)
 		EndFor 
@@ -2427,7 +2427,7 @@ DEFINE CLASS workerproxy AS custom
 		EndIf 
 		
 		* Set up worker events
-		This.oEvents = NewObject("Events", "ParallelFox.vcx")
+		This.oEvents = NewObject("Events", This.ClassLibrary)
 		This.oEvents.Name = "WorkerProxyEvents"	&& to distinguish object from other events objects during debugging
 		BindEvent(This.oEvents, "Complete", This, "Complete", 1)
 		BindEvent(This.oEvents, "ReturnError", This, "HandleError", 1)
@@ -2437,7 +2437,7 @@ DEFINE CLASS workerproxy AS custom
 		If This.lMTDLL
 			* Multi-threaded DLL
 			Local loThreadHandler as ThreadHandler of ParallelFox.vcx
-			loThreadHandler = NewObject("ThreadHandler", "ParallelFox.vcx")
+			loThreadHandler = NewObject("ThreadHandler", This.ClassLibrary)
 			This.oThreadHandler = loThreadHandler
 			loThreadHandler.oEvents = This.oEvents
 			loThreadHandler.cWorkerCOMProgID = lcMTDLLProgID 
