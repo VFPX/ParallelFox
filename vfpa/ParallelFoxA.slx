@@ -1,0 +1,7 @@
+<solution>
+	<projects>
+		<project name="parallelfoxa.pjx" buildaction="0" recompile="false" displayerrors="true" regenerate="false" runafterbuild="false" outputfile="" />
+		<project name="parallelfoxmta.pjx" buildaction="0" recompile="false" displayerrors="true" regenerate="false" runafterbuild="false" outputfile="" />
+	</projects>
+	<versioncontrol class="GitOperations" library="ProjectExplorerEngine.vcx" textconverter="FoxBin2PRG" repository="D:\VFPX\ParallelFox" includeinversioncontrol="3" autocommit="false" fileaddmessage="File added to project" fileremovemessage="File removed from project" cleanupmessage="Project cleanup" savedsolutionmessage="Solution settings changed" buildmessage="Built the project: version {Project.VersionNumber}" />
+</solution>
