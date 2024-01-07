@@ -1,31 +1,66 @@
 * Install/register ParallelFox on developer machine
+Local lcEXE, lcDLL, lcProgID, lcMTDLLProgId
+
+Do Case
+Case Version(5) >= 1000 and Evaluate("_Win64") = .t.	&& VFP Advanced 64-bit
+	* Doesn't work yet
+	MessageBox("ParallelFox is not functional with VFP Advanced 64-bit. It is partially supported on VFPA 32-bit." + Chr(13) + Chr(13) + ;
+		"See https://github.com/VFPX/ParallelFox/tree/master/vfpa for more details.", 16, "ParallelFox")
+	Return 
+	lcEXE = "ParallelFox64.exe"
+	lcProgID = "ParallelFox64.Application"
+	lcDLL = "ParallelFoxMT.dll"
+	lcMTDLLProgID = "ParallelFoxMT.Application"
+Case Version(5) >= 1000	&& VFP Advanced 32-bit
+	lcEXE = "ParallelFoxA.exe"
+	* Depending on how installed, DLL may be in VFPA folder
+	If !File(lcEXE)
+		lcEXE = "VFPA\" + lcEXE
+	EndIf 
+	lcProgID = "ParallelFoxA.Application"
+	* MTDLL crashes due to problems with ExecScript(), so use VFP9 version for now
+	lcDLL = "ParallelFoxMT.dll"
+	lcMTDLLProgID = "ParallelFoxMT.Application"	
+Otherwise	&& VFP 9.0
+	lcEXE = "ParallelFox.exe"
+	lcProgID = "ParallelFox.Application"
+	lcDLL = "ParallelFoxMT.dll"
+	lcMTDLLProgID = "ParallelFoxMT.Application"	
+EndCase 
 
 * Registering ParallelFox.exe requires elevation on Windows Vista/7
 * ParallelFox /regserver without elevation will fail, but will not notify user of failure.
 * This program requests elevation and confirms registration.
 Local llSuccess, lcMessage
-ShellExec(FullPath("ParallelFox.exe"),"RunAs", "/regserver")
-ShellExec("RegSvr32.exe","RunAs", "/s " + FullPath("MTDLL/ParallelFoxMT.dll") )
+ShellExec(FullPath(lcEXE),"RunAs", "/regserver")
+* Depending on how installed, DLL may be in MTDLL folder
+If !File(lcDLL)
+	lcDLL = "MTDLL/" + lcDLL
+EndIf 
+ShellExec("RegSvr32.exe","RunAs", "/s " + FullPath(lcDLL) )
 Wait "Registering ParallelFox..." window timeout 1	&& wait for registration to complete
 lcMessage = ""
 llSuccess = .t.
-If IsRegistered("ParallelFox.Application")
-	lcMessage = "ParallelFox.exe was registered successfully."
+If IsRegistered(lcProgID)
+	lcMessage = lcEXE + " was registered successfully."
 Else
 	llSuccess = .f.
-	lcMessage = "ParallelFox.exe was NOT registered."
+	lcMessage = lcEXE + " was NOT registered."
 EndIf 
-If IsRegistered("ParallelFoxMT.Application")
-	lcMessage = lcMessage + Chr(13) + "ParallelFoxMT.dll was registered successfully."
+If IsRegistered(lcMTDLLProgID)
+	lcMessage = lcMessage + Chr(13) + lcDLL + " was registered successfully."
 Else
 	llSuccess = .f.
-	lcMessage = lcMessage + Chr(13) + "ParallelFoxMT.dll was NOT registered."
+	lcMessage = lcMessage + Chr(13) + lcDLL + " was NOT registered."
 EndIf 
 MessageBox(lcMessage, Iif(llSuccess, 64, 16), "ParallelFox")
 
 If MessageBox("Do you want to install ParallelFox IntelliSense scripts? (Recommended)", 4+32, "ParallelFox IntelliSense") = 6
 	Do InstallFFI
 EndIf
+
+* Recompile class library in case running VFP Advanced
+Compile ClassLib ParallelFox.vcx
 
 MessageBox("Install Complete.", 64, "ParallelFox")
 
