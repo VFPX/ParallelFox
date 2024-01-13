@@ -5,7 +5,7 @@ Several features have been added with the release of ParallelFox 2.0:
 
 **In-process Workers**
 
-ParallelFox typically uses out-of-process EXEs for the workers. Version 2.0 includes the option to use in-process workers via a multi-threaded DLL.  See [out_vs_in_process.prg](examples/out_vs_in_process.prg).
+ParallelFox typically uses out-of-process EXEs for the workers. Version 2.0 includes the option to use in-process workers via a multi-threaded DLL.  See [out_vs_in_process.prg](examples/out_vs_in_process.PRG).
 
 **Single-command event handler**
 
