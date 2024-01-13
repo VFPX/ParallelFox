@@ -13,7 +13,7 @@ ParallelFox includes complete documentation (ParallelFox.chm).  The Help file is
 ParallelFox also takes advantage of Doug Hennig's [Favorites for IntelliSense](https://doughennig.com/papers.aspx), which Doug also used in the [MY project for Sedna](https://github.com/VFPX/My). This greatly simplifies the ParallelFox interfaces and provides extra details while you are coding. 
 
 ### New in 2
-The Help file has not been updated with new features in ParallelFox 2.0. A brief description of each new feature with examples can be found on the [New in 2](Newin2.md) page.
+The Help file has not been updated with new features in ParallelFox 2.0. A brief description of each new feature with examples can be found on the [New in 2](NewIn2.md) page.
 
 ParallelFox 2.0 was also presented at Southwest Fox 2023. The whitepaper and video of that session will be released at a later date.
 
